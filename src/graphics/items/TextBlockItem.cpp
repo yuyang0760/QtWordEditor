@@ -22,10 +22,14 @@ void TextBlockItem::updateBlock()
     if (!para)
         return;
 
-    // TODO: set rich text content and style
     m_textItem->setPlainText(para->text());
-    // Adjust position according to block boundingRect
-    m_textItem->setPos(m_block->boundingRect().topLeft());
+    
+    QFont font;
+    font.setPointSize(12);
+    m_textItem->setFont(font);
+    
+    QRectF rect = m_block->boundingRect();
+    m_textItem->setPos(rect.topLeft());
 }
 
 } // namespace QtWordEditor

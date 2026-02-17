@@ -4,13 +4,13 @@
 #include <QMainWindow>
 #include "core/Global.h"
 #include "ui/dialogs/PageSetupDialog.h"
+#include "editcontrol/cursor/Cursor.h"
 
 namespace QtWordEditor {
 
 class Document;
 class DocumentScene;
 class DocumentView;
-class Cursor;
 class Selection;
 class EditEventHandler;
 class FormatController;
@@ -55,6 +55,9 @@ private slots:
     void updateStatusBar(const QPointF &scenePos, const QPoint &viewPos);
     void switchToChinese();
     void switchToEnglish();
+    
+    void updateCursorPosition(const CursorPosition &pos);
+    QPointF calculateCursorVisualPosition(const CursorPosition &pos);
 
 private:
     void setupUi();
@@ -78,6 +81,8 @@ private:
     QPointF m_lastScenePos;
     QPoint m_lastViewPos;
     PageSetup m_pageSetup;
+    
+    CursorPosition m_currentCursorPos;
 };
 
 } // namespace QtWordEditor

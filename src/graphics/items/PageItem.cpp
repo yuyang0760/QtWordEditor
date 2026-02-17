@@ -14,7 +14,7 @@ PageItem::PageItem(Page *page, QGraphicsItem *parent)
     if (page) {
         setRect(page->pageRect());
         setBrush(QBrush(Qt::white));
-        setPen(QPen(Qt::lightGray, 1));
+        setPen(QPen(Qt::NoPen)); // 暂时禁用边框，方便调试位置
         // Add a subtle shadow
         QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
         shadow->setBlurRadius(10);

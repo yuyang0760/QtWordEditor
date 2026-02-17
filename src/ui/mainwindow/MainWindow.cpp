@@ -25,6 +25,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QDebug>
+#include <QFontMetrics>
 
 namespace QtWordEditor {
 
@@ -59,15 +60,16 @@ Document *MainWindow::document() const
 
 void MainWindow::setDocument(Document *document)
 {
-    if (m_document == document)
-        return;
-
+    qDebug() << "MainWindow::setDocument called, document =" << document;
+    qDebug() << "  m_document before =" << m_document;
+    
     if (m_document) {
     }
 
     m_document = document;
     m_scene->setDocument(document);
     m_styleManager->setDocument(document);
+    m_scene->rebuildFromDocument();
 }
 
 void MainWindow::setupUi()
@@ -118,7 +120,7 @@ void MainWindow::setupUi()
             this, &MainWindow::updateWindowTitle);
 
     connect(m_cursor, &Cursor::positionChanged,
-            this, &MainWindow::updateUI);
+            this, &MainWindow::updateCursorPosition);
 
     m_currentZoom = 100.0;
     
@@ -139,7 +141,25 @@ void MainWindow::setupUi()
                 }
             });
 
-    statusBar()->showMessage(tr("Ready"));
+    m_view->setFocus();
+    m_view->activateWindow();
+    
+    // 先创建新文档，这会调用 setDocument()
+    newDocument();
+    
+    m_cursor->setPosition(0, 0);
+    m_currentCursorPos = m_cursor->position();
+    QPointF initialPos = calculateCursorVisualPosition(m_currentCursorPos);
+    m_scene->updateCursor(initialPos, 20.0);
+    
+    // 初始化状态栏显示初始位置
+    if (m_lastScenePos.isNull()) {
+        QPoint center = m_view->viewport()->rect().center();
+        QPointF scenePos = m_view->mapToScene(center);
+        updateStatusBar(scenePos, center);
+    } else {
+        updateStatusBar(m_lastScenePos, m_lastViewPos);
+    }
 }
 
 void MainWindow::createActions()
@@ -277,35 +297,16 @@ bool MainWindow::maybeSave()
 void MainWindow::newDocument()
 {
     if (maybeSave()) {
-        delete m_document;
-        m_document = new Document(this);
+        while (m_document->sectionCount() > 0) {
+            m_document->removeSection(0);
+        }
         
         Section *section = new Section(m_document);
         m_document->addSection(section);
         
         ParagraphBlock *para1 = new ParagraphBlock(section);
-        para1->setText("欢迎使用 QtWordEditor!");
+        para1->setText("");
         section->addBlock(para1);
-        
-        ParagraphBlock *para2 = new ParagraphBlock(section);
-        para2->setText("这是一个功能丰富的文字处理软件，使用 Qt 框架开发。");
-        section->addBlock(para2);
-        
-        ParagraphBlock *para3 = new ParagraphBlock(section);
-        para3->setText("主要功能包括：");
-        section->addBlock(para3);
-        
-        ParagraphBlock *para4 = new ParagraphBlock(section);
-        para4->setText("- 富文本编辑");
-        section->addBlock(para4);
-        
-        ParagraphBlock *para5 = new ParagraphBlock(section);
-        para5->setText("- 段落格式化");
-        section->addBlock(para5);
-        
-        ParagraphBlock *para6 = new ParagraphBlock(section);
-        para6->setText("- 多页文档支持");
-        section->addBlock(para6);
         
         qreal pageWidth = Constants::PAGE_WIDTH;
         qreal pageHeight = Constants::PAGE_HEIGHT;
@@ -313,22 +314,33 @@ void MainWindow::newDocument()
         
         m_scene->clearPages();
         
-        for (int pageNum = 0; pageNum < 3; ++pageNum) {
-            PageBuilder builder(pageWidth, pageHeight, margin);
+        PageBuilder builder(pageWidth, pageHeight, margin);
+        for (int i = 0; i < section->blockCount(); ++i) {
+            Block *block = section->block(i);
+            block->setHeight(30.0);
+            builder.tryAddBlock(block);
             
-            for (int i = 0; i < section->blockCount(); ++i) {
-                Block *block = section->block(i);
-                block->setHeight(30.0);
-                builder.tryAddBlock(block);
+            ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                // 连接 textChanged 信号，当文本变化时重建场景
+                connect(paraBlock, &ParagraphBlock::textChanged, this, [this]() {
+                    qDebug() << "ParagraphBlock textChanged, rebuilding scene";
+                    m_scene->rebuildFromDocument();
+                });
+                qDebug() << "  ParagraphBlock created, text =" << paraBlock->text();
             }
-            
-            Page *page = builder.finishPage();
-            page->setPageNumber(pageNum + 1);
-            section->addPage(page);
-            m_scene->addPage(page);
         }
         
+        Page *page = builder.finishPage();
+        page->setPageNumber(1);
+        section->addPage(page);
+        
+        // 现在调用 setDocument，这会调用 m_scene->setDocument 和 rebuildFromDocument
         setDocument(m_document);
+        
+        // 重置光标位置到 (0, 0)
+        m_cursor->setPosition(0, 0);
+        
         m_currentFile.clear();
         m_isModified = false;
         statusBar()->showMessage(tr("New document created"));
@@ -449,6 +461,10 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
     
     Page *page = m_scene->pageAt(scenePos);
     
+    QString cursorInfo = QString("光标: 块%1, 偏移%2")
+        .arg(m_currentCursorPos.blockIndex)
+        .arg(m_currentCursorPos.offset);
+    
     if (page) {
         qreal pageSpacing = 30.0;
         qreal pageHeight = Constants::PAGE_HEIGHT;
@@ -458,7 +474,8 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
         qreal relativeX = scenePos.x();
         qreal relativeY = scenePos.y() - yOffset;
         
-        QString statusText = QString("缩放: %1%  |  页码: %2  |  场景坐标: (%3, %4)  |  相对坐标: (%5, %6)  |  视图坐标: (%7, %8)")
+        QString statusText = QString("%1  |  缩放: %2%  |  页码: %3  |  场景坐标: (%4, %5)  |  相对坐标: (%6, %7)  |  视图坐标: (%8, %9)")
+            .arg(cursorInfo)
             .arg(m_currentZoom, 0, 'f', 0)
             .arg(page->pageNumber())
             .arg(scenePos.x(), 0, 'f', 2)
@@ -469,7 +486,8 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
             .arg(viewPos.y());
         statusBar()->showMessage(statusText);
     } else {
-        QString statusText = QString("缩放: %1%  |  场景坐标: (%2, %3)  |  视图坐标: (%4, %5)")
+        QString statusText = QString("%1  |  缩放: %2%  |  场景坐标: (%3, %4)  |  视图坐标: (%5, %6)")
+            .arg(cursorInfo)
             .arg(m_currentZoom, 0, 'f', 0)
             .arg(scenePos.x(), 0, 'f', 2)
             .arg(scenePos.y(), 0, 'f', 2)
@@ -527,6 +545,54 @@ void MainWindow::retranslateUi()
     createActions();
     updateWindowTitle();
     statusBar()->showMessage(tr("Ready"));
+}
+
+void MainWindow::updateCursorPosition(const CursorPosition &pos)
+{
+    m_currentCursorPos = pos;
+    QPointF visualPos = calculateCursorVisualPosition(pos);
+    qreal cursorHeight = 20.0;
+    m_scene->updateCursor(visualPos, cursorHeight);
+    
+    // 同时更新状态栏，显示光标位置
+    updateStatusBar(m_lastScenePos, m_lastViewPos);
+}
+
+QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
+{
+    qDebug() << "calculateCursorVisualPosition called, pos:" << pos.blockIndex << "," << pos.offset;
+    
+    if (!m_document) {
+        qDebug() << "  m_document is null, returning (0,0)";
+        return QPointF(0, 0);
+    }
+
+    // 简单计算：固定的页面边距，加上块索引乘以 30 的行高
+    qreal x = Constants::PAGE_MARGIN;
+    qreal y = Constants::PAGE_MARGIN + pos.blockIndex * 30.0;
+
+    qDebug() << "  Base position (margin only):" << x << "," << y;
+
+    Block *block = m_document->block(pos.blockIndex);
+    if (block) {
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (paraBlock) {
+            QString text = paraBlock->text();
+            int charOffset = qMin(pos.offset, text.length());
+            qDebug() << "  Paragraph block, text:" << text << ", charOffset:" << charOffset;
+
+            QFont font;
+            font.setPointSize(12);
+            QFontMetrics fm(font);
+
+            QString textBeforeCursor = text.left(charOffset);
+            x += fm.horizontalAdvance(textBeforeCursor);
+            qDebug() << "  Text before cursor:" << textBeforeCursor << ", width:" << fm.horizontalAdvance(textBeforeCursor);
+        }
+    }
+    
+    qDebug() << "  Returning position:" << x << "," << y;
+    return QPointF(x, y);
 }
 
 } // namespace QtWordEditor

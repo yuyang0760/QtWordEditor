@@ -42,40 +42,19 @@ void ParagraphBlock::insert(int position, const QString &text, const CharacterSt
     if (text.isEmpty())
         return;
 
-    // Find the span containing the position
-    int currentPos = 0;
-    for (int i = 0; i < m_spans.size(); ++i) {
-        Span &span = m_spans[i];
-        int len = span.length();
-        if (position >= currentPos && position <= currentPos + len) {
-            // Split the span at the insertion point
-            int offset = position - currentPos;
-            Span second = span.split(offset);
-            // Insert new span(s) between the two parts
-            if (!text.isEmpty()) {
-                Span newSpan(text, style);
-                m_spans.insert(i + 1, newSpan);
-                // If second part is not empty, insert it after newSpan
-                if (second.length() > 0) {
-                    m_spans.insert(i + 2, second);
-                }
-            } else {
-                // If text empty, just split (maybe not needed)
-                if (second.length() > 0) {
-                    m_spans.insert(i + 1, second);
-                }
-            }
-            mergeAdjacentSpans();
-            emit textChanged();
-            return;
-        }
-        currentPos += len;
+    qDebug() << "ParagraphBlock::insert called, position:" << position << ", text:" << text;
+    
+    // 暂时简化实现：只使用单个 span
+    QString currentText = this->text();
+    QString newText = currentText.left(position) + text + currentText.mid(position);
+    qDebug() << "  Current text:" << currentText << ", new text:" << newText;
+    
+    m_spans.clear();
+    if (!newText.isEmpty()) {
+        m_spans.append(Span(newText, style));
     }
-    // If position is at end, append a new span
-    if (position >= currentPos) {
-        m_spans.append(Span(text, style));
-        emit textChanged();
-    }
+    
+    emit textChanged();
 }
 
 void ParagraphBlock::remove(int position, int length)
@@ -83,28 +62,18 @@ void ParagraphBlock::remove(int position, int length)
     if (length <= 0)
         return;
 
-    // Simple implementation: remove characters from spans
-    // This is a simplified version; a full implementation would need to handle span splitting and merging.
-    int currentPos = 0;
-    for (int i = 0; i < m_spans.size(); ++i) {
-        Span &span = m_spans[i];
-        int len = span.length();
-        if (position < currentPos + len) {
-            int offset = position - currentPos;
-            int removeLen = qMin(length, len - offset);
-            span.remove(offset, removeLen);
-            length -= removeLen;
-            position += removeLen;
-            if (span.length() == 0) {
-                m_spans.removeAt(i);
-                --i;
-            }
-            if (length == 0)
-                break;
-        }
-        currentPos += len;
+    qDebug() << "ParagraphBlock::remove called, position:" << position << ", length:" << length;
+    
+    // 暂时简化实现：只使用单个 span
+    QString currentText = this->text();
+    QString newText = currentText.left(position) + currentText.mid(position + length);
+    qDebug() << "  Current text:" << currentText << ", new text:" << newText;
+    
+    m_spans.clear();
+    if (!newText.isEmpty()) {
+        m_spans.append(Span(newText, CharacterStyle()));
     }
-    mergeAdjacentSpans();
+    
     emit textChanged();
 }
 

@@ -32,6 +32,9 @@ public:
     // Rebuild the entire scene from the document.
     void rebuildFromDocument();
 
+    // Update all text items content without rebuilding.
+    void updateAllTextItems();
+
     // Update cursor position (world coordinates).
     void updateCursor(const QPointF &pos, qreal height);
 

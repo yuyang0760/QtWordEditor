@@ -1,0 +1,53 @@
+#ifndef DOCUMENTSCENE_H
+#define DOCUMENTSCENE_H
+
+#include <QGraphicsScene>
+#include <QHash>
+#include "core/Global.h"
+
+namespace QtWordEditor {
+
+class Document;
+class Block;
+class BaseBlockItem;
+class CursorItem;
+class SelectionItem;
+
+/**
+ * @brief The DocumentScene class manages the graphical representation of a document.
+ */
+class DocumentScene : public QGraphicsScene
+{
+    Q_OBJECT
+public:
+    explicit DocumentScene(QObject *parent = nullptr);
+    ~DocumentScene() override;
+
+    void setDocument(Document *document);
+    Document *document() const;
+
+    // Rebuild the entire scene from the document.
+    void rebuildFromDocument();
+
+    // Update cursor position (world coordinates).
+    void updateCursor(const QPointF &pos, qreal height);
+
+    // Update selection rectangles.
+    void updateSelection(const QList<QRectF> &rects);
+    void clearSelection();
+
+public slots:
+    void onBlockAdded(int globalIndex);
+    void onBlockRemoved(int globalIndex);
+    void onLayoutChanged();
+
+private:
+    Document *m_document;
+    QHash<Block*, BaseBlockItem*> m_blockItems;
+    CursorItem *m_cursorItem;
+    SelectionItem *m_selectionItem;
+};
+
+} // namespace QtWordEditor
+
+#endif // DOCUMENTSCENE_H

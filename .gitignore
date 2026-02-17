@@ -1,0 +1,71 @@
+# 编译产物
+build/
+install/
+out/
+*.exe
+*.dll
+*.so
+*.dylib
+*.app
+*.bundle
+
+# Qt临时文件
+*.moc
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.autosave
+*.user
+*.user.*
+
+# 调试文件
+*.pdb
+*.ilk
+*.dSYM
+*.debug
+core.*
+vcore.*
+
+# IDE配置
+.vs/
+.vscode/
+.idea/
+.clangd/
+.cmake/
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# 平台相关
+Thumbs.db
+.DS_Store
+*.lnk
+*.desktop
+
+# 日志与缓存
+*.log
+*.cache
+temp/
+tmp/
+
+# 文档生成
+docs/api/html/
+docs/api/latex/
+docs/api/xml/
+
+# 打包产物
+dist/*.exe
+dist/*.msi
+dist/*.dmg
+dist/*.deb
+dist/*.rpm
+dist/*.zip
+dist/*.tar.gz

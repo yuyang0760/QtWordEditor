@@ -15,6 +15,7 @@ class BaseBlockItem;
 class CursorItem;
 class SelectionItem;
 class PageItem;
+struct CursorPosition;
 
 /**
  * @brief The DocumentScene class manages the graphical representation of a document.
@@ -46,6 +47,9 @@ public:
     void clearPages();
     void addPage(Page *page);
     Page *pageAt(const QPointF &scenePos) const;
+    
+    // Cursor position from scene position
+    CursorPosition cursorPositionAt(const QPointF &scenePos) const;
 
 public slots:
     void onBlockAdded(int globalIndex);

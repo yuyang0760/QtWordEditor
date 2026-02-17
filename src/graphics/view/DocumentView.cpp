@@ -1,8 +1,11 @@
 #include "graphics/view/DocumentView.h"
 #include "graphics/scene/DocumentScene.h"
+#include "editcontrol/cursor/Cursor.h"
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QInputMethodEvent>
+#include <QInputMethod>
+#include <QGuiApplication>
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -11,6 +14,8 @@ DocumentView::DocumentView(QWidget *parent)
     : QGraphicsView(parent)
     , m_zoom(100.0)
     , m_lastMousePos(-1, -1)
+    , m_cursor(nullptr)
+    , m_cursorVisualPos(0, 0)
 {
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -18,6 +23,10 @@ DocumentView::DocumentView(QWidget *parent)
     setAlignment(Qt::AlignHCenter | Qt::AlignTop);
     setDragMode(QGraphicsView::NoDrag);
     setMouseTracking(true);
+    
+    // 启用输入法支持
+    setAttribute(Qt::WA_InputMethodEnabled, true);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 DocumentView::~DocumentView()
@@ -83,7 +92,8 @@ void DocumentView::keyReleaseEvent(QKeyEvent *event)
 
 void DocumentView::mousePressEvent(QMouseEvent *event)
 {
-    emit mousePressed(event);
+    QPointF scenePos = mapToScene(event->pos());
+    emit mousePressed(scenePos);
     QGraphicsView::mousePressEvent(event);
 }
 
@@ -135,6 +145,47 @@ void DocumentView::inputMethodEvent(QInputMethodEvent *event)
 {
     emit inputMethodReceived(event);
     QGraphicsView::inputMethodEvent(event);
+}
+
+void DocumentView::setCursor(Cursor *cursor)
+{
+    m_cursor = cursor;
+}
+
+void DocumentView::setCursorVisualPosition(const QPointF &pos)
+{
+    m_cursorVisualPos = pos;
+    QWidget::update();
+    if (QInputMethod *inputMethod = QGuiApplication::inputMethod()) {
+        inputMethod->update(Qt::ImCursorRectangle);
+    }
+}
+
+QVariant DocumentView::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    switch (query) {
+    case Qt::ImEnabled:
+        return true;
+    case Qt::ImCursorRectangle:
+    {
+        // 将场景坐标转换为视图坐标
+        QPoint viewPos = mapFromScene(m_cursorVisualPos);
+        // 返回一个合适大小的矩形，输入法候选框会显示在这个位置下方
+        return QRect(viewPos, QSize(1, 20));
+    }
+    case Qt::ImCursorPosition:
+        return 0;
+    case Qt::ImSurroundingText:
+        return QString();
+    case Qt::ImCurrentSelection:
+        return QString();
+    case Qt::ImMaximumTextLength:
+        return -1;
+    case Qt::ImAnchorPosition:
+        return 0;
+    default:
+        return QGraphicsView::inputMethodQuery(query);
+    }
 }
 
 } // namespace QtWordEditor

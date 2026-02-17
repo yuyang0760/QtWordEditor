@@ -114,8 +114,19 @@ bool EditEventHandler::handleMouseRelease(QMouseEvent *event)
 
 bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
 {
-    Q_UNUSED(event);
-    // TODO: handle input method events (for IME)
+    if (!m_document || !m_cursor)
+        return false;
+
+    qDebug() << "EditEventHandler::handleInputMethod called";
+    qDebug() << "  commitString:" << event->commitString();
+    qDebug() << "  preeditString:" << event->preeditString();
+    
+    if (!event->commitString().isEmpty()) {
+        CharacterStyle style;
+        m_cursor->insertText(event->commitString(), style);
+        return true;
+    }
+    
     return false;
 }
 

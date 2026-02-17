@@ -115,11 +115,19 @@ void MainWindow::setupUi()
     connect(m_view, &DocumentView::keyPressed,
             m_editEventHandler, &EditEventHandler::handleKeyPress);
     connect(m_view, &DocumentView::mousePressed,
-            m_editEventHandler, &EditEventHandler::handleMousePress);
+            this, [this](const QPointF &scenePos) {
+                CursorPosition pos = m_scene->cursorPositionAt(scenePos);
+                m_cursor->setPosition(pos);
+            });
     connect(m_view, &DocumentView::mouseMoved,
             m_editEventHandler, &EditEventHandler::handleMouseMove);
     connect(m_view, &DocumentView::mouseReleased,
             m_editEventHandler, &EditEventHandler::handleMouseRelease);
+    connect(m_view, &DocumentView::inputMethodReceived,
+            m_editEventHandler, &EditEventHandler::handleInputMethod);
+    
+    // 设置光标到 DocumentView
+    m_view->setCursor(m_cursor);
 
     connect(m_document, &Document::documentChanged,
             this, &MainWindow::updateWindowTitle);
@@ -159,6 +167,7 @@ void MainWindow::setupUi()
     m_currentCursorPos = m_cursor->position();
     QPointF initialPos = calculateCursorVisualPosition(m_currentCursorPos);
     m_scene->updateCursor(initialPos, 20.0);
+    m_view->setCursorVisualPosition(initialPos);
     
     // 初始化状态栏显示初始位置
     if (m_lastScenePos.isNull()) {
@@ -561,6 +570,7 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     QPointF visualPos = calculateCursorVisualPosition(pos);
     qreal cursorHeight = 20.0;
     m_scene->updateCursor(visualPos, cursorHeight);
+    m_view->setCursorVisualPosition(visualPos);
     
     // 同时更新状态栏，显示光标位置
     updateStatusBar(m_lastScenePos, m_lastViewPos);

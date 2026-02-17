@@ -7,6 +7,7 @@
 namespace QtWordEditor {
 
 class DocumentScene;
+class Cursor;
 
 /**
  * @brief The DocumentView class displays the document scene and handles zooming,
@@ -29,7 +30,7 @@ public:
 
 signals:
     void keyPressed(QKeyEvent *event);
-    void mousePressed(QMouseEvent *event);
+    void mousePressed(const QPointF &scenePos);
     void mouseMoved(QMouseEvent *event);
     void mouseReleased(QMouseEvent *event);
     void inputMethodReceived(QInputMethodEvent *event);
@@ -38,6 +39,9 @@ signals:
 
 public:
     void updateMousePosition();
+    
+    void setCursor(Cursor *cursor);
+    void setCursorVisualPosition(const QPointF &pos);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -49,10 +53,13 @@ protected:
     void inputMethodEvent(QInputMethodEvent *event) override;
     void scrollContentsBy(int dx, int dy) override;
     void resizeEvent(QResizeEvent *event) override;
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 
 private:
     qreal m_zoom;
     QPoint m_lastMousePos;
+    Cursor *m_cursor;
+    QPointF m_cursorVisualPos;
 };
 
 } // namespace QtWordEditor

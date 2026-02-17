@@ -4,11 +4,15 @@
 #include <QLibraryInfo>
 #include <QDir>
 #include <QStandardPaths>
+#include <QStyleFactory>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     QtWordEditor::Application app(argc, argv);
+    
+    // 启用 Fusion 样式
+    app.setStyle(QStyleFactory::create("Fusion"));
     
     // 加载翻译文件
     QTranslator translator;

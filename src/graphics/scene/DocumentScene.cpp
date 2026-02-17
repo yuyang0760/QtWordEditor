@@ -10,10 +10,12 @@
 #include "graphics/items/CursorItem.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
+#include "editcontrol/cursor/Cursor.h"
 #include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsTextItem>
 #include <QTextDocument>
+#include <QFontMetrics>
 
 namespace QtWordEditor {
 
@@ -224,6 +226,64 @@ Page *DocumentScene::pageAt(const QPointF &scenePos) const
         }
     }
     return nullptr;
+}
+
+CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
+{
+    CursorPosition pos;
+    pos.blockIndex = 0;
+    pos.offset = 0;
+    
+    if (!m_document) {
+        return pos;
+    }
+    
+    // 先找到所在的页
+    Page *page = pageAt(scenePos);
+    if (!page) {
+        return pos;
+    }
+    
+    // 简单计算：根据Y坐标计算块索引
+    qreal pageSpacing = 30.0;
+    qreal pageHeight = Constants::PAGE_HEIGHT;
+    int pageIndex = page->pageNumber() - 1;
+    qreal yOffset = pageIndex * (pageHeight + pageSpacing);
+    
+    qreal relativeY = scenePos.y() - yOffset - Constants::PAGE_MARGIN;
+    int blockIndex = qBound(0, qFloor(relativeY / 30.0), page->blockCount() - 1);
+    pos.blockIndex = blockIndex;
+    
+    // 计算字符偏移：根据X坐标
+    Block *block = page->block(blockIndex);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (paraBlock) {
+        qreal relativeX = scenePos.x() - Constants::PAGE_MARGIN;
+        
+        QString text = paraBlock->text();
+        QFont font;
+        font.setPointSize(12);
+        QFontMetrics fm(font);
+        
+        int offset = 0;
+        qreal currentWidth = 0;
+        
+        for (int i = 0; i < text.length(); ++i) {
+            qreal charWidth = fm.horizontalAdvance(text[i]);
+            if (currentWidth + charWidth / 2 > relativeX) {
+                break;
+            }
+            currentWidth += charWidth;
+            offset++;
+        }
+        
+        pos.offset = offset;
+    }
+    
+    qDebug() << "DocumentScene::cursorPositionAt:" << scenePos
+             << "→ block:" << pos.blockIndex << ", offset:" << pos.offset;
+    
+    return pos;
 }
 
 } // namespace QtWordEditor

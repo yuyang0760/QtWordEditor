@@ -53,11 +53,14 @@ private slots:
     void updateWindowTitle();
     void updateUI();
     void updateStatusBar(const QPointF &scenePos, const QPoint &viewPos);
+    void switchToChinese();
+    void switchToEnglish();
 
 private:
     void setupUi();
     void createActions();
     bool maybeSave();
+    void retranslateUi();
 
     Document *m_document;
     DocumentScene *m_scene;

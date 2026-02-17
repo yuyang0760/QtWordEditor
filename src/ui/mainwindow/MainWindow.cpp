@@ -1,4 +1,5 @@
 #include "ui/mainwindow/MainWindow.h"
+#include "app/Application.h"
 #include "core/document/Document.h"
 #include "core/document/Section.h"
 #include "core/document/ParagraphBlock.h"
@@ -212,6 +213,12 @@ void MainWindow::createActions()
     QAction *pageSetupAct = new QAction(tr("Page &Setup..."), this);
     connect(pageSetupAct, &QAction::triggered, this, &MainWindow::pageSetup);
 
+    QAction *chineseAct = new QAction(tr("&Chinese"), this);
+    connect(chineseAct, &QAction::triggered, this, &MainWindow::switchToChinese);
+
+    QAction *englishAct = new QAction(tr("&English"), this);
+    connect(englishAct, &QAction::triggered, this, &MainWindow::switchToEnglish);
+
     QAction *aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
@@ -244,6 +251,10 @@ void MainWindow::createActions()
     viewMenu->addAction(zoomInAct);
     viewMenu->addAction(zoomOutAct);
     viewMenu->addAction(zoomToFitAct);
+
+    QMenu *languageMenu = menuBar()->addMenu(tr("&Language"));
+    languageMenu->addAction(chineseAct);
+    languageMenu->addAction(englishAct);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
@@ -490,6 +501,32 @@ void MainWindow::pageSetup()
         qDebug() << "  Margins:" << newSetup.marginLeft << newSetup.marginRight << newSetup.marginTop << newSetup.marginBottom << "mm";
         qDebug() << "  Portrait:" << newSetup.portrait;
     }
+}
+
+void MainWindow::switchToChinese()
+{
+    Application *app = Application::instance();
+    if (app) {
+        app->switchLanguage("zh_CN");
+        retranslateUi();
+    }
+}
+
+void MainWindow::switchToEnglish()
+{
+    Application *app = Application::instance();
+    if (app) {
+        app->switchLanguage("en_US");
+        retranslateUi();
+    }
+}
+
+void MainWindow::retranslateUi()
+{
+    menuBar()->clear();
+    createActions();
+    updateWindowTitle();
+    statusBar()->showMessage(tr("Ready"));
 }
 
 } // namespace QtWordEditor

@@ -14,7 +14,6 @@ class Selection;
 class EditEventHandler;
 class FormatController;
 class StyleManager;
-class FormatToolBar;
 class RibbonBar;
 
 /**
@@ -65,7 +64,6 @@ private:
     EditEventHandler *m_editEventHandler;
     FormatController *m_formatController;
     StyleManager *m_styleManager;
-    FormatToolBar *m_formatToolBar;
     RibbonBar *m_ribbonBar;
 
     QString m_currentFile;

@@ -6,16 +6,29 @@
 #include <QToolButton>
 #include <QAction>
 #include <QDebug>
+#include <QFontComboBox>
+#include <QSpinBox>
+#include <QMenu>
+#include <QFrame>
 
 namespace QtWordEditor {
 
 class RibbonBarPrivate
 {
 public:
-    // Currently active tab index
     int currentTab = -1;
-    // Map from tab index to list of group names (for debugging)
     QHash<int, QStringList> tabGroups;
+    QWidget *currentContentWidget = nullptr;
+    
+    QFontComboBox *fontCombo = nullptr;
+    QSpinBox *fontSizeSpin = nullptr;
+    QAction *boldAction = nullptr;
+    QAction *italicAction = nullptr;
+    QAction *underlineAction = nullptr;
+    QAction *alignLeftAction = nullptr;
+    QAction *alignCenterAction = nullptr;
+    QAction *alignRightAction = nullptr;
+    QAction *alignJustifyAction = nullptr;
 };
 
 RibbonBar::RibbonBar(QWidget *parent)
@@ -24,8 +37,76 @@ RibbonBar::RibbonBar(QWidget *parent)
 {
     setDocumentMode(true);
     setTabPosition(QTabWidget::North);
-    // Create a default "Home" tab
-    addTab(tr("Home"));
+    
+    int homeIndex = addTab(tr("Home"));
+    
+    addGroup(tr("Font"));
+    
+    d->fontCombo = new QFontComboBox(this);
+    d->fontCombo->setMaximumWidth(180);
+    d->fontCombo->setMinimumHeight(30);
+    connect(d->fontCombo, &QFontComboBox::currentFontChanged,
+            this, &RibbonBar::fontChanged);
+    addWidget(d->fontCombo);
+    
+    d->fontSizeSpin = new QSpinBox(this);
+    d->fontSizeSpin->setRange(6, 72);
+    d->fontSizeSpin->setValue(12);
+    d->fontSizeSpin->setMaximumWidth(70);
+    d->fontSizeSpin->setMinimumHeight(30);
+    d->fontSizeSpin->setButtonSymbols(QSpinBox::UpDownArrows);
+    connect(d->fontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &RibbonBar::fontSizeChanged);
+    addWidget(d->fontSizeSpin);
+    
+    QFrame *separator1 = new QFrame(this);
+    separator1->setFrameShape(QFrame::VLine);
+    separator1->setFrameShadow(QFrame::Sunken);
+    addWidget(separator1);
+    
+    d->boldAction = new QAction(tr("B"), this);
+    d->boldAction->setCheckable(true);
+    connect(d->boldAction, &QAction::toggled,
+            this, &RibbonBar::boldChanged);
+    addAction(d->boldAction);
+    
+    d->italicAction = new QAction(tr("I"), this);
+    d->italicAction->setCheckable(true);
+    connect(d->italicAction, &QAction::toggled,
+            this, &RibbonBar::italicChanged);
+    addAction(d->italicAction);
+    
+    d->underlineAction = new QAction(tr("U"), this);
+    d->underlineAction->setCheckable(true);
+    connect(d->underlineAction, &QAction::toggled,
+            this, &RibbonBar::underlineChanged);
+    addAction(d->underlineAction);
+    
+    addGroup(tr("Paragraph"));
+    
+    d->alignLeftAction = new QAction(tr("Left"), this);
+    d->alignLeftAction->setCheckable(true);
+    connect(d->alignLeftAction, &QAction::toggled,
+            this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignLeft); });
+    addAction(d->alignLeftAction);
+    
+    d->alignCenterAction = new QAction(tr("Center"), this);
+    d->alignCenterAction->setCheckable(true);
+    connect(d->alignCenterAction, &QAction::toggled,
+            this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignCenter); });
+    addAction(d->alignCenterAction);
+    
+    d->alignRightAction = new QAction(tr("Right"), this);
+    d->alignRightAction->setCheckable(true);
+    connect(d->alignRightAction, &QAction::toggled,
+            this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignRight); });
+    addAction(d->alignRightAction);
+    
+    d->alignJustifyAction = new QAction(tr("Justify"), this);
+    d->alignJustifyAction->setCheckable(true);
+    connect(d->alignJustifyAction, &QAction::toggled,
+            this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignJustify); });
+    addAction(d->alignJustifyAction);
 }
 
 RibbonBar::~RibbonBar()
@@ -34,11 +115,10 @@ RibbonBar::~RibbonBar()
 
 int RibbonBar::addTab(const QString &title)
 {
-    // Create a container widget for the tab
     QWidget *tabWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(tabWidget);
-    layout->setContentsMargins(2, 2, 2, 2);
-    layout->setSpacing(4);
+    layout->setContentsMargins(10, 10, 10, 10);
+    layout->setSpacing(15);
     tabWidget->setLayout(layout);
 
     int index = QTabWidget::addTab(tabWidget, title);
@@ -59,58 +139,83 @@ void RibbonBar::addGroup(const QString &groupName)
     if (!tabLayout)
         return;
 
-    // Create a group container (horizontal layout with label)
     QWidget *groupWidget = new QWidget(tabWidget);
-    QHBoxLayout *groupLayout = new QHBoxLayout(groupWidget);
-    groupLayout->setContentsMargins(6, 6, 6, 6);
-    groupLayout->setSpacing(8);
+    QVBoxLayout *groupLayout = new QVBoxLayout(groupWidget);
+    groupLayout->setContentsMargins(0, 0, 0, 0);
+    groupLayout->setSpacing(4);
 
     QLabel *label = new QLabel(groupName, groupWidget);
-    label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet("font-weight: bold; color: #666;");
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    label->setStyleSheet("font-weight: 600; color: #666; font-size: 12px; padding-left: 2px;");
     groupLayout->addWidget(label);
 
-    // Add a stretch to push label to left
-    groupLayout->addStretch();
+    QWidget *contentWidget = new QWidget(groupWidget);
+    QHBoxLayout *contentLayout = new QHBoxLayout(contentWidget);
+    contentLayout->setContentsMargins(2, 4, 2, 4);
+    contentLayout->setSpacing(6);
+    contentLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    contentWidget->setLayout(contentLayout);
+    groupLayout->addWidget(contentWidget);
 
     tabLayout->addWidget(groupWidget);
 
-    // Store group name for debugging
+    d->currentContentWidget = contentWidget;
     d->tabGroups[d->currentTab].append(groupName);
 }
 
 void RibbonBar::addAction(QAction *action)
 {
-    if (d->currentTab < 0 || d->currentTab >= count())
+    if (!d->currentContentWidget)
         return;
 
-    QWidget *tabWidget = widget(d->currentTab);
-    if (!tabWidget)
+    QHBoxLayout *contentLayout = qobject_cast<QHBoxLayout*>(d->currentContentWidget->layout());
+    if (!contentLayout)
         return;
 
-    // Find the last group widget (simplified: assume last child is a group)
-    QLayout *tabLayout = tabWidget->layout();
-    if (!tabLayout || tabLayout->count() == 0)
-        return;
-
-    QWidget *lastGroup = tabLayout->itemAt(tabLayout->count() - 1)->widget();
-    if (!lastGroup)
-        return;
-
-    QLayout *groupLayout = lastGroup->layout();
-    if (!groupLayout)
-        return;
-
-    // Create a tool button for the action
-    QToolButton *button = new QToolButton(lastGroup);
+    QToolButton *button = new QToolButton(d->currentContentWidget);
     button->setDefaultAction(action);
-    button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    groupLayout->addWidget(button);
+    button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    button->setMinimumSize(45, 35);
+    button->setMaximumSize(60, 35);
+    button->setCheckable(action->isCheckable());
+    button->setStyleSheet(R"(
+        QToolButton {
+            border: 1px solid transparent;
+            border-radius: 3px;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QToolButton:hover {
+            border: 1px solid #b8d6fb;
+            background-color: #e5f3ff;
+        }
+        QToolButton:checked {
+            border: 1px solid #7aa7e2;
+            background-color: #cce8ff;
+        }
+        QToolButton:pressed {
+            border: 1px solid #5c99d2;
+            background-color: #b8d6fb;
+        }
+    )");
+    contentLayout->addWidget(button);
+}
+
+void RibbonBar::addWidget(QWidget *widget)
+{
+    if (!d->currentContentWidget)
+        return;
+
+    QHBoxLayout *contentLayout = qobject_cast<QHBoxLayout*>(d->currentContentWidget->layout());
+    if (!contentLayout)
+        return;
+
+    contentLayout->addWidget(widget);
 }
 
 void RibbonBar::updateFromSelection()
 {
-    // Placeholder: update button states based on current selection
     qDebug() << "RibbonBar::updateFromSelection() placeholder";
 }
 

@@ -9,7 +9,6 @@
 #include "editcontrol/handlers/EditEventHandler.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "core/styles/StyleManager.h"
-#include "ui/widgets/FormatToolBar.h"
 #include "ui/ribbon/RibbonBar.h"
 #include <QMenuBar>
 #include <QToolBar>
@@ -18,6 +17,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QCloseEvent>
+#include <QVBoxLayout>
+#include <QWidget>
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -32,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_editEventHandler(nullptr)
     , m_formatController(nullptr)
     , m_styleManager(nullptr)
-    , m_formatToolBar(nullptr)
     , m_ribbonBar(nullptr)
     , m_isModified(false)
 {
@@ -56,29 +56,35 @@ void MainWindow::setDocument(Document *document)
     if (m_document == document)
         return;
 
-    // Clean up old document
     if (m_document) {
-        // Disconnect signals
     }
 
     m_document = document;
     m_scene->setDocument(document);
-    // m_cursor and m_selection are created elsewhere and passed to controllers
     m_styleManager->setDocument(document);
-
-    // Update UI
-    // ...
 }
 
 void MainWindow::setupUi()
 {
-    // Create central widget and layout
+    resize(800, 600);
+
+    QWidget *centralContainer = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(centralContainer);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+    centralContainer->setLayout(mainLayout);
+    setCentralWidget(centralContainer);
+
+    m_ribbonBar = new RibbonBar(this);
+    m_ribbonBar->setMinimumHeight(120);
+    m_ribbonBar->setMaximumHeight(180);
+    mainLayout->addWidget(m_ribbonBar);
+
     m_view = new DocumentView(this);
     m_scene = new DocumentScene(this);
     m_view->setScene(m_scene);
-    setCentralWidget(m_view);
+    mainLayout->addWidget(m_view);
 
-    // Create core objects
     m_document = new Document(this);
     m_cursor = new Cursor(m_document, this);
     m_selection = new Selection(m_document, this);
@@ -86,10 +92,8 @@ void MainWindow::setupUi()
     m_formatController = new FormatController(m_document, m_selection, this);
     m_styleManager = new StyleManager(this);
 
-    // Connect signals
     connect(m_view, &DocumentView::keyPressed,
             m_editEventHandler, &EditEventHandler::handleKeyPress);
-    // Connect view's mouse events to event handler
     connect(m_view, &DocumentView::mousePressed,
             m_editEventHandler, &EditEventHandler::handleMousePress);
     connect(m_view, &DocumentView::mouseMoved,
@@ -97,29 +101,17 @@ void MainWindow::setupUi()
     connect(m_view, &DocumentView::mouseReleased,
             m_editEventHandler, &EditEventHandler::handleMouseRelease);
 
-    // Connect document modification signal to update window title
     connect(m_document, &Document::documentChanged,
             this, &MainWindow::updateWindowTitle);
 
-    // Connect cursor position changes to update UI
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateUI);
-
-    // Create toolbar and status bar
-    m_formatToolBar = new FormatToolBar(this);
-    addToolBar(Qt::TopToolBarArea, m_formatToolBar);
-
-    // Create ribbon bar (placeholder)
-    m_ribbonBar = new RibbonBar(this);
-    // For now, add ribbon as a top-level widget (could be integrated into main window layout)
-    // TODO: integrate ribbon properly
 
     statusBar()->showMessage(tr("Ready"));
 }
 
 void MainWindow::createActions()
 {
-    // File menu
     QAction *newAct = new QAction(tr("&New"), this);
     newAct->setShortcut(QKeySequence::New);
     connect(newAct, &QAction::triggered, this, &MainWindow::newDocument);
@@ -140,7 +132,6 @@ void MainWindow::createActions()
     exitAct->setShortcut(QKeySequence::Quit);
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
 
-    // Edit menu
     QAction *undoAct = new QAction(tr("&Undo"), this);
     undoAct->setShortcut(QKeySequence::Undo);
     connect(undoAct, &QAction::triggered, this, &MainWindow::undo);
@@ -161,27 +152,21 @@ void MainWindow::createActions()
     pasteAct->setShortcut(QKeySequence::Paste);
     connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
 
-    // Format menu
     QAction *fontAct = new QAction(tr("&Font..."), this);
     connect(fontAct, &QAction::triggered, this, [this]() {
-        // TODO: open font dialog and apply style
         qDebug() << "Font dialog placeholder";
     });
 
     QAction *paragraphAct = new QAction(tr("&Paragraph..."), this);
     connect(paragraphAct, &QAction::triggered, this, [this]() {
-        // TODO: open paragraph dialog and apply style
         qDebug() << "Paragraph dialog placeholder";
     });
 
-    // Insert menu
     QAction *imageAct = new QAction(tr("&Image..."), this);
     connect(imageAct, &QAction::triggered, this, [this]() {
-        // TODO: open insert image dialog
         qDebug() << "Insert image dialog placeholder";
     });
 
-    // View menu
     QAction *zoomInAct = new QAction(tr("Zoom &In"), this);
     zoomInAct->setShortcut(QKeySequence::ZoomIn);
     connect(zoomInAct, &QAction::triggered, this, &MainWindow::zoomIn);
@@ -193,11 +178,9 @@ void MainWindow::createActions()
     QAction *zoomToFitAct = new QAction(tr("Zoom to &Fit"), this);
     connect(zoomToFitAct, &QAction::triggered, this, &MainWindow::zoomToFit);
 
-    // Help menu
     QAction *aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
-    // Add actions to menus
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
@@ -265,8 +248,6 @@ void MainWindow::openDocument()
     if (fileName.isEmpty())
         return;
 
-    // TODO: load document via IO module
-    // For now, just create an empty document
     newDocument();
     m_currentFile = fileName;
     m_isModified = false;
@@ -277,7 +258,6 @@ bool MainWindow::saveDocument()
 {
     if (m_currentFile.isEmpty())
         return saveAsDocument();
-    // TODO: save via IO module
     m_isModified = false;
     statusBar()->showMessage(tr("Saved %1").arg(m_currentFile));
     return true;
@@ -313,17 +293,14 @@ void MainWindow::redo()
 
 void MainWindow::cut()
 {
-    // TODO: implement cut (copy + delete)
 }
 
 void MainWindow::copy()
 {
-    // TODO: implement copy to clipboard
 }
 
 void MainWindow::paste()
 {
-    // TODO: implement paste from clipboard
 }
 
 void MainWindow::zoomIn()
@@ -364,10 +341,6 @@ void MainWindow::updateWindowTitle()
 
 void MainWindow::updateUI()
 {
-    // Update toolbar and ribbon bar based on current selection
-    if (m_formatToolBar) {
-        m_formatToolBar->updateFromSelection();
-    }
     if (m_ribbonBar) {
         m_ribbonBar->updateFromSelection();
     }

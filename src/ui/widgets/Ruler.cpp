@@ -128,13 +128,13 @@ void Ruler::mousePressEvent(QMouseEvent *event)
         qreal firstLinePx = leftPx + d->firstLineIndent;
         qreal leftIndentPx = leftPx + d->leftIndent;
 
-        if (qAbs(event->x() - leftPx) < 5) {
+        if (qAbs(event->position().x() - leftPx) < 5) {
             d->draggingLeftMargin = true;
-        } else if (qAbs(event->x() - rightPx) < 5) {
+        } else if (qAbs(event->position().x() - rightPx) < 5) {
             d->draggingRightMargin = true;
-        } else if (qAbs(event->x() - firstLinePx) < 5) {
+        } else if (qAbs(event->position().x() - firstLinePx) < 5) {
             d->draggingFirstLine = true;
-        } else if (qAbs(event->x() - leftIndentPx) < 5) {
+        } else if (qAbs(event->position().x() - leftIndentPx) < 5) {
             d->draggingLeftIndent = true;
         }
     }
@@ -153,7 +153,7 @@ void Ruler::mouseMoveEvent(QMouseEvent *event)
         d->firstLineIndent = qMax(0.0, static_cast<double>(event->position().x() - d->leftMargin));
         update();
     } else if (d->draggingLeftIndent) {
-        d->leftIndent = qMax(0.0, event->x() - d->leftMargin);
+        d->leftIndent = qMax(0.0, static_cast<double>(event->position().x() - d->leftMargin));
         update();
     }
     QWidget::mouseMoveEvent(event);

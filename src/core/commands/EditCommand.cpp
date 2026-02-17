@@ -19,4 +19,12 @@ Document *EditCommand::document() const
     return m_document;
 }
 
+void EditCommand::undo()
+{
+}
+
+void EditCommand::redo()
+{
+}
+
 } // namespace QtWordEditor

@@ -3,6 +3,9 @@
 
 #include <QTabWidget>
 #include <QHash>
+#include <QAction>
+#include <QFontComboBox>
+#include <QSpinBox>
 #include "core/Global.h"
 
 namespace QtWordEditor {
@@ -22,17 +25,19 @@ public:
     explicit RibbonBar(QWidget *parent = nullptr);
     ~RibbonBar() override;
 
-    // Add a new tab with given title. Returns the tab index.
     int addTab(const QString &title);
-
-    // Add a group to the current tab. Groups are visual separators.
     void addGroup(const QString &groupName);
-
-    // Add an action to the current group.
     void addAction(QAction *action);
-
-    // Update UI state based on current document selection (e.g., bold button).
+    void addWidget(QWidget *widget);
     void updateFromSelection();
+
+signals:
+    void fontChanged(const QFont &font);
+    void fontSizeChanged(int size);
+    void boldChanged(bool bold);
+    void italicChanged(bool italic);
+    void underlineChanged(bool underline);
+    void alignmentChanged(Qt::Alignment alignment);
 
 private:
     QScopedPointer<RibbonBarPrivate> d;

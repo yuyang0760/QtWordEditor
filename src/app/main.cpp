@@ -1,5 +1,5 @@
 #include "app/Application.h"
-#include <QMessageBox>
+#include "ui/mainwindow/MainWindow.h"
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QDir>
@@ -34,18 +34,13 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        // 目前只显示应用启动消息
-        // 后续将在这里创建主窗口
-        QMessageBox::information(nullptr, 
-                                QObject::tr("QtWordEditor"),
-                                QObject::tr("Application started successfully.\n"
-                                          "Implementation of UI is pending."));
+        // 创建并显示主窗口
+        QtWordEditor::MainWindow mainWindow;
+        mainWindow.show();
 
         return app.exec();
     } catch (const std::exception &e) {
-        QMessageBox::critical(nullptr, 
-                             QObject::tr("Fatal Error"),
-                             QObject::tr("Unhandled exception: %1").arg(e.what()));
+        std::cerr << "Unhandled exception: " << e.what() << std::endl;
         return 1;
     }
 }

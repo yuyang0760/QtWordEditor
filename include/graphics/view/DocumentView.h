@@ -33,6 +33,11 @@ signals:
     void mouseMoved(QMouseEvent *event);
     void mouseReleased(QMouseEvent *event);
     void inputMethodReceived(QInputMethodEvent *event);
+    void mousePositionChanged(const QPointF &scenePos, const QPoint &viewPos);
+    void zoomChanged(qreal zoom);
+
+public:
+    void updateMousePosition();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -42,9 +47,12 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void inputMethodEvent(QInputMethodEvent *event) override;
+    void scrollContentsBy(int dx, int dy) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     qreal m_zoom;
+    QPoint m_lastMousePos;
 };
 
 } // namespace QtWordEditor

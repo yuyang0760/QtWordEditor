@@ -10,10 +10,14 @@ namespace QtWordEditor {
 DocumentView::DocumentView(QWidget *parent)
     : QGraphicsView(parent)
     , m_zoom(100.0)
+    , m_lastMousePos(-1, -1)
 {
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    setDragMode(QGraphicsView::NoDrag);
+    setMouseTracking(true);
 }
 
 DocumentView::~DocumentView()
@@ -37,6 +41,16 @@ void DocumentView::setZoom(qreal zoom)
     m_zoom = zoom;
     resetTransform();
     scale(m_zoom / 100.0, m_zoom / 100.0);
+    emit zoomChanged(m_zoom);
+    updateMousePosition();
+}
+
+void DocumentView::updateMousePosition()
+{
+    if (m_lastMousePos.x() >= 0 && m_lastMousePos.y() >= 0) {
+        QPointF scenePos = mapToScene(m_lastMousePos);
+        emit mousePositionChanged(scenePos, m_lastMousePos);
+    }
 }
 
 void DocumentView::zoomIn()
@@ -76,7 +90,25 @@ void DocumentView::mousePressEvent(QMouseEvent *event)
 void DocumentView::mouseMoveEvent(QMouseEvent *event)
 {
     emit mouseMoved(event);
+    
+    m_lastMousePos = event->pos();
+    QPointF scenePos = mapToScene(event->pos());
+    QPoint viewPos = event->pos();
+    emit mousePositionChanged(scenePos, viewPos);
+    
     QGraphicsView::mouseMoveEvent(event);
+}
+
+void DocumentView::scrollContentsBy(int dx, int dy)
+{
+    QGraphicsView::scrollContentsBy(dx, dy);
+    updateMousePosition();
+}
+
+void DocumentView::resizeEvent(QResizeEvent *event)
+{
+    QGraphicsView::resizeEvent(event);
+    updateMousePosition();
 }
 
 void DocumentView::mouseReleaseEvent(QMouseEvent *event)

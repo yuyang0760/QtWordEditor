@@ -3,15 +3,18 @@
 
 #include <QGraphicsScene>
 #include <QHash>
+#include <QList>
 #include "core/Global.h"
 
 namespace QtWordEditor {
 
 class Document;
 class Block;
+class Page;
 class BaseBlockItem;
 class CursorItem;
 class SelectionItem;
+class PageItem;
 
 /**
  * @brief The DocumentScene class manages the graphical representation of a document.
@@ -36,6 +39,11 @@ public:
     void updateSelection(const QList<QRectF> &rects);
     void clearSelection();
 
+    // Page management
+    void clearPages();
+    void addPage(Page *page);
+    Page *pageAt(const QPointF &scenePos) const;
+
 public slots:
     void onBlockAdded(int globalIndex);
     void onBlockRemoved(int globalIndex);
@@ -44,6 +52,7 @@ public slots:
 private:
     Document *m_document;
     QHash<Block*, BaseBlockItem*> m_blockItems;
+    QList<PageItem*> m_pageItems;
     CursorItem *m_cursorItem;
     SelectionItem *m_selectionItem;
 };

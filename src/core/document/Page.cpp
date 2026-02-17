@@ -20,6 +20,11 @@ int Page::pageNumber() const
     return m_pageNumber;
 }
 
+void Page::setPageNumber(int number)
+{
+    m_pageNumber = number;
+}
+
 QRectF Page::pageRect() const
 {
     return m_pageRect;

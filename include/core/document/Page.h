@@ -21,6 +21,7 @@ public:
     ~Page();
 
     int pageNumber() const;
+    void setPageNumber(int number);
     QRectF pageRect() const;
     QRectF contentRect() const;
 

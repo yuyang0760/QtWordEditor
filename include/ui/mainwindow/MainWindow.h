@@ -50,6 +50,7 @@ private slots:
     void zoomToFit();
     void updateWindowTitle();
     void updateUI();
+    void updateStatusBar(const QPointF &scenePos, const QPoint &viewPos);
 
 private:
     void setupUi();
@@ -68,6 +69,9 @@ private:
 
     QString m_currentFile;
     bool m_isModified;
+    qreal m_currentZoom;
+    QPointF m_lastScenePos;
+    QPoint m_lastViewPos;
 };
 
 } // namespace QtWordEditor

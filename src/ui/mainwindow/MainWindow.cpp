@@ -2,6 +2,9 @@
 #include "core/document/Document.h"
 #include "core/document/Section.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/Page.h"
+#include "core/layout/PageBuilder.h"
+#include "core/utils/Constants.h"
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -35,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_styleManager(nullptr)
     , m_ribbonBar(nullptr)
     , m_isModified(false)
+    , m_currentZoom(100.0)
 {
     setupUi();
     createActions();
@@ -76,14 +80,21 @@ void MainWindow::setupUi()
     setCentralWidget(centralContainer);
 
     m_ribbonBar = new RibbonBar(this);
-    m_ribbonBar->setMinimumHeight(120);
-    m_ribbonBar->setMaximumHeight(180);
+    m_ribbonBar->setFixedHeight(Constants::RIBBON_BAR_HEIGHT);
     mainLayout->addWidget(m_ribbonBar);
 
     m_view = new DocumentView(this);
     m_scene = new DocumentScene(this);
     m_view->setScene(m_scene);
-    mainLayout->addWidget(m_view);
+    
+    QWidget *viewContainer = new QWidget(this);
+    QVBoxLayout *viewLayout = new QVBoxLayout(viewContainer);
+    viewLayout->setContentsMargins(0, Constants::PAGE_TOP_SPACING, 0, 0);
+    viewLayout->setSpacing(0);
+    viewLayout->addWidget(m_view);
+    viewContainer->setLayout(viewLayout);
+    
+    mainLayout->addWidget(viewContainer);
 
     m_document = new Document(this);
     m_cursor = new Cursor(m_document, this);
@@ -106,6 +117,25 @@ void MainWindow::setupUi()
 
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateUI);
+
+    m_currentZoom = 100.0;
+    
+    connect(m_view, &DocumentView::mousePositionChanged,
+            this, [this](const QPointF &scenePos, const QPoint &viewPos) {
+                updateStatusBar(scenePos, viewPos);
+            });
+    
+    connect(m_view, &DocumentView::zoomChanged,
+            this, [this](qreal zoom) {
+                m_currentZoom = zoom;
+                if (m_lastScenePos.isNull()) {
+                    QPoint center = m_view->viewport()->rect().center();
+                    QPointF scenePos = m_view->mapToScene(center);
+                    updateStatusBar(scenePos, center);
+                } else {
+                    updateStatusBar(m_lastScenePos, m_lastViewPos);
+                }
+            });
 
     statusBar()->showMessage(tr("Ready"));
 }
@@ -232,6 +262,55 @@ void MainWindow::newDocument()
     if (maybeSave()) {
         delete m_document;
         m_document = new Document(this);
+        
+        Section *section = new Section(m_document);
+        m_document->addSection(section);
+        
+        ParagraphBlock *para1 = new ParagraphBlock(section);
+        para1->setText("欢迎使用 QtWordEditor!");
+        section->addBlock(para1);
+        
+        ParagraphBlock *para2 = new ParagraphBlock(section);
+        para2->setText("这是一个功能丰富的文字处理软件，使用 Qt 框架开发。");
+        section->addBlock(para2);
+        
+        ParagraphBlock *para3 = new ParagraphBlock(section);
+        para3->setText("主要功能包括：");
+        section->addBlock(para3);
+        
+        ParagraphBlock *para4 = new ParagraphBlock(section);
+        para4->setText("- 富文本编辑");
+        section->addBlock(para4);
+        
+        ParagraphBlock *para5 = new ParagraphBlock(section);
+        para5->setText("- 段落格式化");
+        section->addBlock(para5);
+        
+        ParagraphBlock *para6 = new ParagraphBlock(section);
+        para6->setText("- 多页文档支持");
+        section->addBlock(para6);
+        
+        qreal pageWidth = Constants::PAGE_WIDTH;
+        qreal pageHeight = Constants::PAGE_HEIGHT;
+        qreal margin = Constants::PAGE_MARGIN;
+        
+        m_scene->clearPages();
+        
+        for (int pageNum = 0; pageNum < 3; ++pageNum) {
+            PageBuilder builder(pageWidth, pageHeight, margin);
+            
+            for (int i = 0; i < section->blockCount(); ++i) {
+                Block *block = section->block(i);
+                block->setHeight(30.0);
+                builder.tryAddBlock(block);
+            }
+            
+            Page *page = builder.finishPage();
+            page->setPageNumber(pageNum + 1);
+            section->addPage(page);
+            m_scene->addPage(page);
+        }
+        
         setDocument(m_document);
         m_currentFile.clear();
         m_isModified = false;
@@ -343,6 +422,43 @@ void MainWindow::updateUI()
 {
     if (m_ribbonBar) {
         m_ribbonBar->updateFromSelection();
+    }
+}
+
+void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
+{
+    m_lastScenePos = scenePos;
+    m_lastViewPos = viewPos;
+    
+    Page *page = m_scene->pageAt(scenePos);
+    
+    if (page) {
+        qreal pageSpacing = 30.0;
+        qreal pageHeight = Constants::PAGE_HEIGHT;
+        int pageIndex = page->pageNumber() - 1;
+        qreal yOffset = pageIndex * (pageHeight + pageSpacing);
+        
+        qreal relativeX = scenePos.x();
+        qreal relativeY = scenePos.y() - yOffset;
+        
+        QString statusText = QString("缩放: %1%  |  页码: %2  |  场景坐标: (%3, %4)  |  相对坐标: (%5, %6)  |  视图坐标: (%7, %8)")
+            .arg(m_currentZoom, 0, 'f', 0)
+            .arg(page->pageNumber())
+            .arg(scenePos.x(), 0, 'f', 2)
+            .arg(scenePos.y(), 0, 'f', 2)
+            .arg(relativeX, 0, 'f', 2)
+            .arg(relativeY, 0, 'f', 2)
+            .arg(viewPos.x())
+            .arg(viewPos.y());
+        statusBar()->showMessage(statusText);
+    } else {
+        QString statusText = QString("缩放: %1%  |  场景坐标: (%2, %3)  |  视图坐标: (%4, %5)")
+            .arg(m_currentZoom, 0, 'f', 0)
+            .arg(scenePos.x(), 0, 'f', 2)
+            .arg(scenePos.y(), 0, 'f', 2)
+            .arg(viewPos.x())
+            .arg(viewPos.y());
+        statusBar()->showMessage(statusText);
     }
 }
 

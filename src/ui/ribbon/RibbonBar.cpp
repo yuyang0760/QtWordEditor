@@ -43,8 +43,9 @@ RibbonBar::RibbonBar(QWidget *parent)
     addGroup(tr("Font"));
     
     d->fontCombo = new QFontComboBox(this);
-    d->fontCombo->setMaximumWidth(180);
-    d->fontCombo->setMinimumHeight(30);
+    d->fontCombo->setMaximumWidth(140);
+    d->fontCombo->setMinimumHeight(24);
+    d->fontCombo->setMaximumHeight(24);
     connect(d->fontCombo, &QFontComboBox::currentFontChanged,
             this, &RibbonBar::fontChanged);
     addWidget(d->fontCombo);
@@ -52,8 +53,9 @@ RibbonBar::RibbonBar(QWidget *parent)
     d->fontSizeSpin = new QSpinBox(this);
     d->fontSizeSpin->setRange(6, 72);
     d->fontSizeSpin->setValue(12);
-    d->fontSizeSpin->setMaximumWidth(70);
-    d->fontSizeSpin->setMinimumHeight(30);
+    d->fontSizeSpin->setMaximumWidth(55);
+    d->fontSizeSpin->setMinimumHeight(24);
+    d->fontSizeSpin->setMaximumHeight(24);
     d->fontSizeSpin->setButtonSymbols(QSpinBox::UpDownArrows);
     connect(d->fontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &RibbonBar::fontSizeChanged);
@@ -116,9 +118,10 @@ RibbonBar::~RibbonBar()
 int RibbonBar::addTab(const QString &title)
 {
     QWidget *tabWidget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(tabWidget);
-    layout->setContentsMargins(10, 10, 10, 10);
-    layout->setSpacing(15);
+    QHBoxLayout *layout = new QHBoxLayout(tabWidget);
+    layout->setContentsMargins(6, 6, 6, 6);
+    layout->setSpacing(20);
+    layout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     tabWidget->setLayout(layout);
 
     int index = QTabWidget::addTab(tabWidget, title);
@@ -135,27 +138,31 @@ void RibbonBar::addGroup(const QString &groupName)
     if (!tabWidget || !tabWidget->layout())
         return;
 
-    QVBoxLayout *tabLayout = qobject_cast<QVBoxLayout*>(tabWidget->layout());
+    QHBoxLayout *tabLayout = qobject_cast<QHBoxLayout*>(tabWidget->layout());
     if (!tabLayout)
         return;
 
     QWidget *groupWidget = new QWidget(tabWidget);
     QVBoxLayout *groupLayout = new QVBoxLayout(groupWidget);
     groupLayout->setContentsMargins(0, 0, 0, 0);
-    groupLayout->setSpacing(4);
+    groupLayout->setSpacing(3);
+    groupLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     QLabel *label = new QLabel(groupName, groupWidget);
     label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    label->setStyleSheet("font-weight: 600; color: #666; font-size: 12px; padding-left: 2px;");
+    label->setStyleSheet("font-weight: 600; color: #666; font-size: 10px; padding-left: 2px;");
+    label->setMinimumHeight(16);
+    label->setMaximumHeight(16);
     groupLayout->addWidget(label);
 
     QWidget *contentWidget = new QWidget(groupWidget);
     QHBoxLayout *contentLayout = new QHBoxLayout(contentWidget);
-    contentLayout->setContentsMargins(2, 4, 2, 4);
-    contentLayout->setSpacing(6);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(3);
     contentLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     contentWidget->setLayout(contentLayout);
     groupLayout->addWidget(contentWidget);
+    groupLayout->addStretch(1);
 
     tabLayout->addWidget(groupWidget);
 
@@ -175,16 +182,16 @@ void RibbonBar::addAction(QAction *action)
     QToolButton *button = new QToolButton(d->currentContentWidget);
     button->setDefaultAction(action);
     button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    button->setMinimumSize(45, 35);
-    button->setMaximumSize(60, 35);
+    button->setMinimumSize(32, 24);
+    button->setMaximumSize(45, 24);
     button->setCheckable(action->isCheckable());
     button->setStyleSheet(R"(
         QToolButton {
             border: 1px solid transparent;
-            border-radius: 3px;
-            padding: 4px 8px;
+            border-radius: 2px;
+            padding: 2px 6px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
         }
         QToolButton:hover {
             border: 1px solid #b8d6fb;

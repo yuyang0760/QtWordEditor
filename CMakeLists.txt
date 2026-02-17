@@ -13,17 +13,39 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# Add subdirectories
-add_subdirectory(app)
-add_subdirectory(core)
-add_subdirectory(editcontrol)
-add_subdirectory(graphics)
-add_subdirectory(io)
-add_subdirectory(ui)
+# Collect all source files
+file(GLOB_RECURSE CORE_SOURCES "src/core/*.cpp")
+file(GLOB_RECURSE EDITCONTROL_SOURCES "src/editcontrol/*.cpp")
+file(GLOB_RECURSE GRAPHICS_SOURCES "src/graphics/*.cpp")
+file(GLOB_RECURSE IO_SOURCES "src/io/*.cpp")
+file(GLOB_RECURSE UI_SOURCES "src/ui/*.cpp")
+file(GLOB_RECURSE APP_SOURCES "src/app/*.cpp")
 
-# Link all libraries into the executable
+# Create libraries
+add_library(QtWordEditorCore STATIC ${CORE_SOURCES})
+add_library(QtWordEditorEditControl STATIC ${EDITCONTROL_SOURCES})
+add_library(QtWordEditorGraphics STATIC ${GRAPHICS_SOURCES})
+add_library(QtWordEditorIO STATIC ${IO_SOURCES})
+add_library(QtWordEditorUI STATIC ${UI_SOURCES})
+
+# Set include directories for libraries
+target_include_directories(QtWordEditorCore PUBLIC include)
+target_include_directories(QtWordEditorEditControl PUBLIC include)
+target_include_directories(QtWordEditorGraphics PUBLIC include)
+target_include_directories(QtWordEditorIO PUBLIC include)
+target_include_directories(QtWordEditorUI PUBLIC include)
+
+# Set library dependencies
+target_link_libraries(QtWordEditorCore PRIVATE Qt6::Core Qt6::Gui)
+target_link_libraries(QtWordEditorEditControl PRIVATE Qt6::Core Qt6::Gui QtWordEditorCore)
+target_link_libraries(QtWordEditorGraphics PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets QtWordEditorCore)
+target_link_libraries(QtWordEditorIO PRIVATE Qt6::Core Qt6::Gui Qt6::PrintSupport QtWordEditorCore)
+target_link_libraries(QtWordEditorUI PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::PrintSupport QtWordEditorCore QtWordEditorEditControl QtWordEditorGraphics)
+
+# Create main executable
 add_executable(QtWordEditor ${APP_SOURCES})
 
+# Link libraries to main executable
 target_link_libraries(QtWordEditor
     PRIVATE
     Qt6::Core
@@ -36,6 +58,9 @@ target_link_libraries(QtWordEditor
     QtWordEditorIO
     QtWordEditorUI
 )
+
+# Set include directories for main executable
+target_include_directories(QtWordEditor PRIVATE include)
 
 # Install target
 install(TARGETS QtWordEditor DESTINATION bin)

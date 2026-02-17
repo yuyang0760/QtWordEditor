@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "core/Global.h"
+#include "ui/dialogs/PageSetupDialog.h"
 
 namespace QtWordEditor {
 
@@ -48,6 +49,7 @@ private slots:
     void zoomIn();
     void zoomOut();
     void zoomToFit();
+    void pageSetup();
     void updateWindowTitle();
     void updateUI();
     void updateStatusBar(const QPointF &scenePos, const QPoint &viewPos);
@@ -72,6 +74,7 @@ private:
     qreal m_currentZoom;
     QPointF m_lastScenePos;
     QPoint m_lastViewPos;
+    PageSetup m_pageSetup;
 };
 
 } // namespace QtWordEditor

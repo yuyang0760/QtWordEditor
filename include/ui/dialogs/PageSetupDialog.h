@@ -17,6 +17,24 @@ struct PageSetup
     bool portrait = true;
 };
 
+enum class PageSizePreset {
+    A4,
+    A3,
+    A5,
+    Letter,
+    Legal,
+    Tabloid,
+    Custom
+};
+
+enum class MarginPreset {
+    Normal,
+    Narrow,
+    Moderate,
+    Wide,
+    Custom
+};
+
 /**
  * @brief The PageSetupDialog class provides a dialog for setting page dimensions and margins.
  */
@@ -32,6 +50,13 @@ public:
 
     // Get the selected setup.
     PageSetup selectedSetup() const;
+
+private slots:
+    void onPageSizePresetChanged(int index);
+    void onOrientationChanged();
+    void onMarginPresetChanged(int index);
+    void onCustomSizeChanged();
+    void onCustomMarginChanged();
 
 private:
     class Private;

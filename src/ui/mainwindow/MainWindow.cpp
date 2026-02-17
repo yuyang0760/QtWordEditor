@@ -13,6 +13,7 @@
 #include "editcontrol/formatting/FormatController.h"
 #include "core/styles/StyleManager.h"
 #include "ui/ribbon/RibbonBar.h"
+#include "ui/dialogs/PageSetupDialog.h"
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -208,6 +209,9 @@ void MainWindow::createActions()
     QAction *zoomToFitAct = new QAction(tr("Zoom to &Fit"), this);
     connect(zoomToFitAct, &QAction::triggered, this, &MainWindow::zoomToFit);
 
+    QAction *pageSetupAct = new QAction(tr("Page &Setup..."), this);
+    connect(pageSetupAct, &QAction::triggered, this, &MainWindow::pageSetup);
+
     QAction *aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
@@ -216,6 +220,8 @@ void MainWindow::createActions()
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(pageSetupAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
@@ -459,6 +465,30 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
             .arg(viewPos.x())
             .arg(viewPos.y());
         statusBar()->showMessage(statusText);
+    }
+}
+
+void MainWindow::pageSetup()
+{
+    PageSetup newSetup = PageSetupDialog::getPageSetup(m_pageSetup, this);
+    
+    bool changed = false;
+    if (!qFuzzyCompare(newSetup.pageWidth, m_pageSetup.pageWidth)) changed = true;
+    if (!qFuzzyCompare(newSetup.pageHeight, m_pageSetup.pageHeight)) changed = true;
+    if (!qFuzzyCompare(newSetup.marginLeft, m_pageSetup.marginLeft)) changed = true;
+    if (!qFuzzyCompare(newSetup.marginRight, m_pageSetup.marginRight)) changed = true;
+    if (!qFuzzyCompare(newSetup.marginTop, m_pageSetup.marginTop)) changed = true;
+    if (!qFuzzyCompare(newSetup.marginBottom, m_pageSetup.marginBottom)) changed = true;
+    if (newSetup.portrait != m_pageSetup.portrait) changed = true;
+    
+    if (changed) {
+        m_pageSetup = newSetup;
+        m_isModified = true;
+        updateWindowTitle();
+        qDebug() << "Page setup changed:";
+        qDebug() << "  Size:" << newSetup.pageWidth << "x" << newSetup.pageHeight << "mm";
+        qDebug() << "  Margins:" << newSetup.marginLeft << newSetup.marginRight << newSetup.marginTop << newSetup.marginBottom << "mm";
+        qDebug() << "  Portrait:" << newSetup.portrait;
     }
 }
 

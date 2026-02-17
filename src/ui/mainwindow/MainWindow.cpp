@@ -15,9 +15,14 @@
 #include "core/styles/StyleManager.h"
 #include "ui/ribbon/RibbonBar.h"
 #include "ui/dialogs/PageSetupDialog.h"
+#include "ui/widgets/DebugConsole.h"
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
+#include <QDockWidget>
+#include <QPlainTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -143,6 +148,9 @@ void MainWindow::setupUi()
 
     m_view->setFocus();
     m_view->activateWindow();
+    
+    // 创建调试控制台
+    setupDebugConsole();
     
     // 先创建新文档，这会调用 setDocument()
     newDocument();
@@ -593,6 +601,51 @@ QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
     
     qDebug() << "  Returning position:" << x << "," << y;
     return QPointF(x, y);
+}
+
+void MainWindow::setupDebugConsole()
+{
+    m_debugConsoleDock = new QDockWidget(tr("调试控制台"), this);
+    m_debugConsoleDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    
+    QWidget *dockContent = new QWidget(m_debugConsoleDock);
+    QVBoxLayout *dockLayout = new QVBoxLayout(dockContent);
+    dockLayout->setContentsMargins(4, 4, 4, 4);
+    dockLayout->setSpacing(4);
+    
+    m_debugConsoleTextEdit = new QPlainTextEdit(dockContent);
+    m_debugConsoleTextEdit->setReadOnly(true);
+    m_debugConsoleTextEdit->setMaximumBlockCount(1000);
+    QFont font("Consolas", 9);
+    m_debugConsoleTextEdit->setFont(font);
+    dockLayout->addWidget(m_debugConsoleTextEdit);
+    
+    QPushButton *clearButton = new QPushButton(tr("清空"), dockContent);
+    connect(clearButton, &QPushButton::clicked, this, [this]() {
+        m_debugConsoleTextEdit->clear();
+        DebugConsole::log(tr("调试控制台已清空"));
+    });
+    dockLayout->addWidget(clearButton);
+    
+    dockContent->setLayout(dockLayout);
+    m_debugConsoleDock->setWidget(dockContent);
+    
+    addDockWidget(Qt::BottomDockWidgetArea, m_debugConsoleDock);
+    
+    // 连接 DebugConsole 的信号到我们的槽
+    connect(DebugConsole::instance(), &DebugConsole::logMessage,
+            this, [this](const QString &message) {
+        m_debugConsoleTextEdit->appendPlainText(message);
+        QTextCursor cursor = m_debugConsoleTextEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        m_debugConsoleTextEdit->setTextCursor(cursor);
+    });
+    
+    // 安装消息处理器，捕获所有 qDebug() 输出
+    DebugConsole::installMessageHandler();
+    
+    // 发送欢迎消息
+    DebugConsole::log(tr("调试控制台初始化成功！"));
 }
 
 } // namespace QtWordEditor

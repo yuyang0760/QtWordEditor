@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDockWidget>
+#include <QPlainTextEdit>
 #include "core/Global.h"
 #include "ui/dialogs/PageSetupDialog.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -16,6 +18,7 @@ class EditEventHandler;
 class FormatController;
 class StyleManager;
 class RibbonBar;
+class DebugConsole;
 
 /**
  * @brief The MainWindow class is the application's main window.
@@ -61,6 +64,7 @@ private slots:
 
 private:
     void setupUi();
+    void setupDebugConsole();
     void createActions();
     bool maybeSave();
     void retranslateUi();
@@ -83,6 +87,9 @@ private:
     PageSetup m_pageSetup;
     
     CursorPosition m_currentCursorPos;
+    
+    QDockWidget *m_debugConsoleDock;
+    QPlainTextEdit *m_debugConsoleTextEdit;
 };
 
 } // namespace QtWordEditor

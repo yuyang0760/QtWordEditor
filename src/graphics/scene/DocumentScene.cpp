@@ -10,12 +10,19 @@
 #include "graphics/items/CursorItem.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
+#include "graphics/items/TextBlockItem.h"
 #include "editcontrol/cursor/Cursor.h"
 #include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsTextItem>
 #include <QTextDocument>
+#include <QTextCursor>
+#include <QTextBlock>
+#include <QTextOption>
+#include <QAbstractTextDocumentLayout>
 #include <QFontMetrics>
+#include <QTextLayout>
+#include <QTextLine>
 
 namespace QtWordEditor {
 
@@ -58,6 +65,7 @@ void DocumentScene::rebuildFromDocument()
     clear();
     m_blockItems.clear();
     m_pageItems.clear();
+    m_pageTextItems.clear();
     qDebug() << "DocumentScene::rebuildFromDocument()";
     qDebug() << "  m_document =" << m_document;
 
@@ -80,6 +88,9 @@ void DocumentScene::rebuildFromDocument()
 
                 addPage(page);
                 
+                // 初始化当前页的文本项列表
+                QVector<QGraphicsTextItem*> pageTextItems;
+                
                 for (int blockIdx = 0; blockIdx < page->blockCount(); ++blockIdx) {
                     Block *block = page->block(blockIdx);
                     qDebug() << "    Block" << blockIdx << "=" << block;
@@ -88,32 +99,30 @@ void DocumentScene::rebuildFromDocument()
 
                     ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
                     if (paraBlock) {
-                        qDebug() << ">>>>>>>>>> Adding QGraphicsTextItem for block, text:" << paraBlock->text();
+                        qDebug() << ">>>>>>>>>> Adding TextBlockItem for block, text:" << paraBlock->text();
                         
-                        QGraphicsTextItem *textItem = new QGraphicsTextItem();
-                        if (paraBlock->text().isEmpty()) {
-                            textItem->setPlainText("");
-                        } else {
-                            textItem->setPlainText(paraBlock->text());
-                        }
-                        QFont font;
-                        font.setPointSize(12);
-                        textItem->setFont(font);
+                        // 创建 TextBlockItem
+                        TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
                         
-                        // 禁用 QGraphicsTextItem 的默认文档边距
-                        textItem->document()->setDocumentMargin(0);
-                        
-                        // 让我们调整一下位置，确保文本和光标位置一致
-                        // QGraphicsTextItem 的原点默认在左上角
+                        // 设置位置
                         qreal textX = Constants::PAGE_MARGIN;
                         qreal textY = Constants::PAGE_MARGIN + blockIdx * 30;
-                        textItem->setPos(textX, textY);
-                        addItem(textItem);
+                        textBlockItem->setPos(textX, textY);
                         
-                        qDebug() << ">>>>>>>>>>      TextItem pos:" << textX << "," << textY;
-                        qDebug() << ">>>>>>>>>>      TextItem boundingRect:" << textItem->boundingRect();
+                        // 添加到场景
+                        addItem(textBlockItem);
+                        
+                        // 添加到 m_blockItems 和 m_pageTextItems
+                        m_blockItems.insert(block, textBlockItem);
+                        pageTextItems.append(textBlockItem->textItem());
+                        
+                        qDebug() << ">>>>>>>>>>      TextBlockItem pos:" << textX << "," << textY;
+                        qDebug() << ">>>>>>>>>>      TextItem boundingRect:" << textBlockItem->textItem()->boundingRect();
                     }
                 }
+                
+                // 将当前页的文本项列表添加到全局列表
+                m_pageTextItems.append(pageTextItems);
             }
         }
     }
@@ -254,36 +263,125 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
     int blockIndex = qBound(0, qFloor(relativeY / 30.0), page->blockCount() - 1);
     pos.blockIndex = blockIndex;
     
-    // 计算字符偏移：根据X坐标
-    Block *block = page->block(blockIndex);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (paraBlock) {
-        qreal relativeX = scenePos.x() - Constants::PAGE_MARGIN;
-        
-        QString text = paraBlock->text();
-        QFont font;
-        font.setPointSize(12);
-        QFontMetrics fm(font);
-        
-        int offset = 0;
-        qreal currentWidth = 0;
-        
-        for (int i = 0; i < text.length(); ++i) {
-            qreal charWidth = fm.horizontalAdvance(text[i]);
-            if (currentWidth + charWidth / 2 > relativeX) {
-                break;
-            }
-            currentWidth += charWidth;
-            offset++;
+    // 使用真实的 QGraphicsTextItem
+    if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
+        blockIndex >= 0 && blockIndex < m_pageTextItems[pageIndex].size()) {
+        QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIndex];
+        if (textItem) {
+            // 转换到 textItem 的局部坐标
+            QPointF itemPos = textItem->pos();
+            QPointF localPos = scenePos - itemPos;
+            
+            // 使用 hitTest 获取准确位置
+            pos.offset = textItem->document()->documentLayout()->hitTest(localPos, Qt::FuzzyHit);
         }
-        
-        pos.offset = offset;
     }
     
     qDebug() << "DocumentScene::cursorPositionAt:" << scenePos
              << "→ block:" << pos.blockIndex << ", offset:" << pos.offset;
     
     return pos;
+}
+
+QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) const
+{
+    QPointF result(0, 0);
+    qDebug() << "DocumentScene::calculateCursorVisualPosition called for pos:" << pos.blockIndex << "," << pos.offset;
+    
+    if (!m_document) {
+        qDebug() << "  m_document is null!";
+        return result;
+    }
+    
+    // 找到所在的页（简单假设：第0个section）
+    Section *section = m_document->section(0);
+    if (!section) {
+        qDebug() << "  section is null!";
+        return result;
+    }
+    
+    // 找到对应页的index：这里简化，假设每个section只有1页
+    int pageIndex = 0;
+    if (pageIndex < 0 || pageIndex >= section->pageCount()) {
+        qDebug() << "  pageIndex out of range!";
+        return result;
+    }
+    
+    Page *page = section->page(pageIndex);
+    if (!page) {
+        qDebug() << "  page is null!";
+        return result;
+    }
+    
+    // 获取真实的 QGraphicsTextItem
+    QGraphicsTextItem *textItem = nullptr;
+    if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
+        pos.blockIndex >= 0 && pos.blockIndex < m_pageTextItems[pageIndex].size()) {
+        textItem = m_pageTextItems[pageIndex][pos.blockIndex];
+    }
+    
+    if (!textItem) {
+        qDebug() << "  textItem is null! pageIndex:" << pageIndex 
+                 << "m_pageTextItems.size():" << m_pageTextItems.size()
+                 << "pos.blockIndex:" << pos.blockIndex;
+        if (pageIndex < m_pageTextItems.size()) {
+            qDebug() << "  m_pageTextItems[pageIndex].size():" << m_pageTextItems[pageIndex].size();
+        }
+        return result;
+    }
+    
+    QTextDocument *doc = textItem->document();
+    if (!doc) {
+        qDebug() << "  doc is null!";
+        return result;
+    }
+    
+    QString text = doc->toPlainText();
+    int charOffset = qMin(pos.offset, text.length());
+    
+    qDebug() << "  text:" << text << "charOffset:" << charOffset;
+    
+    // 使用 QTextCursor 和文档布局来计算光标位置
+    QTextCursor cursor(doc);
+    cursor.setPosition(charOffset);
+    
+    QTextBlock block = cursor.block();
+    QTextLayout *layout = block.layout();
+    
+    if (!layout) {
+        qDebug() << "  layout is null!";
+        return result;
+    }
+    
+    int positionInBlock = cursor.positionInBlock();
+    
+    qreal x = 0;
+    qreal y = 0;
+    
+    if (layout->lineCount() > 0) {
+        // 找到光标所在的行
+        for (int i = 0; i < layout->lineCount(); ++i) {
+            QTextLine line = layout->lineAt(i);
+            if (positionInBlock >= line.textStart() && positionInBlock <= line.textStart() + line.textLength()) {
+                y = line.y();
+                x = line.cursorToX(positionInBlock);
+                break;
+            }
+        }
+    }
+    
+    qDebug() << "  x:" << x << "y:" << y;
+    
+    // 获取 textItem 在场景中的位置（注意：它是 TextBlockItem 的子项！）
+    QPointF itemScenePos = textItem->scenePos();
+    qDebug() << "  textItem scene pos:" << itemScenePos;
+    
+    result.setX(itemScenePos.x() + x);
+    result.setY(itemScenePos.y() + y);
+    
+    qDebug() << "  Returning result:" << result;
+    
+    return result;
 }
 
 } // namespace QtWordEditor

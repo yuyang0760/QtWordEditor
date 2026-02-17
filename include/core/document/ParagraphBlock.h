@@ -42,6 +42,15 @@ public:
     int length() const override;
     bool isEmpty() const override;
     Block *clone() const override;
+    
+    // Helper: find span index and position within span for a global position
+    int findSpanIndex(int globalPosition, int *positionInSpan = nullptr) const;
+    
+    // Helper: get character style at a specific position
+    CharacterStyle styleAt(int position) const;
+    
+    // Helper: set character style for a range
+    void setStyle(int start, int length, const CharacterStyle &style);
 
 signals:
     void textChanged();

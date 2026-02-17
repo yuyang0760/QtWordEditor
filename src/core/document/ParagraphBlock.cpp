@@ -37,6 +37,131 @@ void ParagraphBlock::setText(const QString &text)
     emit textChanged();
 }
 
+int ParagraphBlock::findSpanIndex(int globalPosition, int *positionInSpan) const
+{
+    int currentPos = 0;
+    for (int i = 0; i < m_spans.size(); ++i) {
+        int spanLength = m_spans.at(i).length();
+        if (globalPosition <= currentPos + spanLength) {
+            if (positionInSpan) {
+                *positionInSpan = globalPosition - currentPos;
+            }
+            return i;
+        }
+        currentPos += spanLength;
+    }
+    if (positionInSpan) {
+        *positionInSpan = 0;
+    }
+    return m_spans.size() - 1;
+}
+
+CharacterStyle ParagraphBlock::styleAt(int position) const
+{
+    if (m_spans.isEmpty()) {
+        return CharacterStyle();
+    }
+    int spanIndex = findSpanIndex(position);
+    if (spanIndex >= 0 && spanIndex < m_spans.size()) {
+        return m_spans.at(spanIndex).style();
+    }
+    return CharacterStyle();
+}
+
+void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style)
+{
+    if (length <= 0 || m_spans.isEmpty()) {
+        return;
+    }
+    
+    int end = start + length;
+    int totalLength = this->length();
+    start = qBound(0, start, totalLength);
+    end = qBound(0, end, totalLength);
+    
+    if (start >= end) {
+        return;
+    }
+    
+    // 找到起始和结束的 span
+    int posInStartSpan = 0;
+    int startSpanIndex = findSpanIndex(start, &posInStartSpan);
+    
+    int posInEndSpan = 0;
+    int endSpanIndex = findSpanIndex(end, &posInEndSpan);
+    
+    // 如果在同一个 span 内
+    if (startSpanIndex == endSpanIndex) {
+        Span &span = m_spans[startSpanIndex];
+        QString text = span.text();
+        
+        // 分割成三个部分
+        QString before = text.left(posInStartSpan);
+        QString middle = text.mid(posInStartSpan, end - start);
+        QString after = text.mid(posInEndSpan);
+        
+        // 替换原来的 span
+        m_spans.removeAt(startSpanIndex);
+        
+        if (!before.isEmpty()) {
+            m_spans.insert(startSpanIndex, Span(before, span.style()));
+            startSpanIndex++;
+        }
+        
+        m_spans.insert(startSpanIndex, Span(middle, style));
+        startSpanIndex++;
+        
+        if (!after.isEmpty()) {
+            m_spans.insert(startSpanIndex, Span(after, span.style()));
+        }
+    } else {
+        // 处理起始 span
+        Span &startSpan = m_spans[startSpanIndex];
+        QString startText = startSpan.text();
+        QString beforeStart = startText.left(posInStartSpan);
+        QString afterStart = startText.mid(posInStartSpan);
+        
+        m_spans.removeAt(startSpanIndex);
+        
+        if (!beforeStart.isEmpty()) {
+            m_spans.insert(startSpanIndex, Span(beforeStart, startSpan.style()));
+            startSpanIndex++;
+        }
+        
+        m_spans.insert(startSpanIndex, Span(afterStart, style));
+        
+        // 处理中间的 span（完全包含在范围内的）
+        for (int i = startSpanIndex + 1; i < endSpanIndex; ++i) {
+            m_spans[i].setStyle(style);
+        }
+        
+        // 处理结束 span
+        int currentEndSpanIndex = endSpanIndex;
+        if (startSpanIndex < endSpanIndex) {
+            currentEndSpanIndex = endSpanIndex;
+        }
+        
+        Span &endSpan = m_spans[currentEndSpanIndex];
+        QString endText = endSpan.text();
+        QString beforeEnd = endText.left(posInEndSpan);
+        QString afterEnd = endText.mid(posInEndSpan);
+        
+        m_spans.removeAt(currentEndSpanIndex);
+        
+        if (!beforeEnd.isEmpty()) {
+            m_spans.insert(currentEndSpanIndex, Span(beforeEnd, style));
+            currentEndSpanIndex++;
+        }
+        
+        if (!afterEnd.isEmpty()) {
+            m_spans.insert(currentEndSpanIndex, Span(afterEnd, endSpan.style()));
+        }
+    }
+    
+    mergeAdjacentSpans();
+    emit textChanged();
+}
+
 void ParagraphBlock::insert(int position, const QString &text, const CharacterStyle &style)
 {
     if (text.isEmpty())
@@ -44,14 +169,56 @@ void ParagraphBlock::insert(int position, const QString &text, const CharacterSt
 
     qDebug() << "ParagraphBlock::insert called, position:" << position << ", text:" << text;
     
-    // 暂时简化实现：只使用单个 span
-    QString currentText = this->text();
-    QString newText = currentText.left(position) + text + currentText.mid(position);
-    qDebug() << "  Current text:" << currentText << ", new text:" << newText;
-    
-    m_spans.clear();
-    if (!newText.isEmpty()) {
-        m_spans.append(Span(newText, style));
+    if (m_spans.isEmpty()) {
+        m_spans.append(Span(text, style));
+    } else {
+        int posInSpan = 0;
+        int spanIndex = findSpanIndex(position, &posInSpan);
+        
+        if (spanIndex >= 0 && spanIndex < m_spans.size()) {
+            Span &span = m_spans[spanIndex];
+            QString spanText = span.text();
+            
+            if (posInSpan == 0) {
+                // 在 span 开头插入
+                if (span.style() == style) {
+                    // 样式相同，直接追加
+                    span.setText(text + spanText);
+                } else {
+                    // 样式不同，插入新 span
+                    m_spans.insert(spanIndex, Span(text, style));
+                }
+            } else if (posInSpan == spanText.length()) {
+                // 在 span 末尾插入
+                if (span.style() == style) {
+                    // 样式相同，直接追加
+                    span.append(text);
+                } else {
+                    // 样式不同，添加新 span
+                    m_spans.insert(spanIndex + 1, Span(text, style));
+                }
+            } else {
+                // 在 span 中间插入，需要分割
+                QString before = spanText.left(posInSpan);
+                QString after = spanText.mid(posInSpan);
+                
+                m_spans.removeAt(spanIndex);
+                
+                if (!before.isEmpty()) {
+                    m_spans.insert(spanIndex, Span(before, span.style()));
+                    spanIndex++;
+                }
+                
+                m_spans.insert(spanIndex, Span(text, style));
+                spanIndex++;
+                
+                if (!after.isEmpty()) {
+                    m_spans.insert(spanIndex, Span(after, span.style()));
+                }
+                
+                mergeAdjacentSpans();
+            }
+        }
     }
     
     emit textChanged();
@@ -64,14 +231,68 @@ void ParagraphBlock::remove(int position, int length)
 
     qDebug() << "ParagraphBlock::remove called, position:" << position << ", length:" << length;
     
-    // 暂时简化实现：只使用单个 span
-    QString currentText = this->text();
-    QString newText = currentText.left(position) + currentText.mid(position + length);
-    qDebug() << "  Current text:" << currentText << ", new text:" << newText;
+    int totalLength = this->length();
+    int end = position + length;
+    position = qBound(0, position, totalLength);
+    end = qBound(0, end, totalLength);
     
-    m_spans.clear();
-    if (!newText.isEmpty()) {
-        m_spans.append(Span(newText, CharacterStyle()));
+    if (position >= end) {
+        return;
+    }
+    
+    // 找到起始和结束的 span
+    int posInStartSpan = 0;
+    int startSpanIndex = findSpanIndex(position, &posInStartSpan);
+    
+    int posInEndSpan = 0;
+    int endSpanIndex = findSpanIndex(end, &posInEndSpan);
+    
+    if (startSpanIndex == endSpanIndex) {
+        // 在同一个 span 内
+        Span &span = m_spans[startSpanIndex];
+        QString text = span.text();
+        QString before = text.left(posInStartSpan);
+        QString after = text.mid(posInEndSpan);
+        
+        if (before.isEmpty() && after.isEmpty()) {
+            m_spans.removeAt(startSpanIndex);
+        } else {
+            span.setText(before + after);
+        }
+    } else {
+        // 处理起始 span
+        Span &startSpan = m_spans[startSpanIndex];
+        QString startText = startSpan.text();
+        QString beforeStart = startText.left(posInStartSpan);
+        
+        if (beforeStart.isEmpty()) {
+            m_spans.removeAt(startSpanIndex);
+            endSpanIndex--;
+        } else {
+            startSpan.setText(beforeStart);
+            startSpanIndex++;
+        }
+        
+        // 删除中间的 span
+        while (startSpanIndex < endSpanIndex) {
+            m_spans.removeAt(startSpanIndex);
+            endSpanIndex--;
+        }
+        
+        // 处理结束 span
+        if (startSpanIndex < m_spans.size()) {
+            Span &endSpan = m_spans[startSpanIndex];
+            QString endText = endSpan.text();
+            QString afterEnd = endText.mid(posInEndSpan);
+            
+            if (afterEnd.isEmpty()) {
+                m_spans.removeAt(startSpanIndex);
+            } else {
+                endSpan.setText(afterEnd);
+            }
+        }
+        
+        mergeAdjacentSpans();
     }
     
     emit textChanged();

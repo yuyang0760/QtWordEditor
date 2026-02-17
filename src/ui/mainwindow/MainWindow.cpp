@@ -31,6 +31,11 @@
 #include <QWidget>
 #include <QDebug>
 #include <QFontMetrics>
+#include <QTextDocument>
+#include <QTextCursor>
+#include <QTextBlock>
+#include <QTextOption>
+#include <QAbstractTextDocumentLayout>
 
 namespace QtWordEditor {
 
@@ -580,37 +585,14 @@ QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
 {
     qDebug() << "calculateCursorVisualPosition called, pos:" << pos.blockIndex << "," << pos.offset;
     
-    if (!m_document) {
-        qDebug() << "  m_document is null, returning (0,0)";
-        return QPointF(0, 0);
-    }
-
-    // 简单计算：固定的页面边距，加上块索引乘以 30 的行高
-    qreal x = Constants::PAGE_MARGIN;
-    qreal y = Constants::PAGE_MARGIN + pos.blockIndex * 30.0;
-
-    qDebug() << "  Base position (margin only):" << x << "," << y;
-
-    Block *block = m_document->block(pos.blockIndex);
-    if (block) {
-        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-        if (paraBlock) {
-            QString text = paraBlock->text();
-            int charOffset = qMin(pos.offset, text.length());
-            qDebug() << "  Paragraph block, text:" << text << ", charOffset:" << charOffset;
-
-            QFont font;
-            font.setPointSize(12);
-            QFontMetrics fm(font);
-
-            QString textBeforeCursor = text.left(charOffset);
-            x += fm.horizontalAdvance(textBeforeCursor);
-            qDebug() << "  Text before cursor:" << textBeforeCursor << ", width:" << fm.horizontalAdvance(textBeforeCursor);
-        }
+    if (m_scene) {
+        QPointF result = m_scene->calculateCursorVisualPosition(pos);
+        qDebug() << "  Returning position from scene:" << result;
+        return result;
     }
     
-    qDebug() << "  Returning position:" << x << "," << y;
-    return QPointF(x, y);
+    qDebug() << "  m_scene is null, returning (0,0)";
+    return QPointF(0, 0);
 }
 
 void MainWindow::setupDebugConsole()

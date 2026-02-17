@@ -5,14 +5,23 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QStyleFactory>
+#include <QDebug>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     QtWordEditor::Application app(argc, argv);
     
+    qDebug() << "Available styles:" << QStyleFactory::keys();
+    
     // 启用 Fusion 样式
-    app.setStyle(QStyleFactory::create("Fusion"));
+    QStyle *fusionStyle = QStyleFactory::create("Fusion");
+    if (fusionStyle) {
+        app.setStyle(fusionStyle);
+        qDebug() << "Fusion style applied successfully!";
+    } else {
+        qDebug() << "Failed to create Fusion style!";
+    }
     
     // 加载翻译文件
     QTranslator translator;

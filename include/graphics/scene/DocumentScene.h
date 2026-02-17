@@ -50,6 +50,9 @@ public:
     
     // Cursor position from scene position
     CursorPosition cursorPositionAt(const QPointF &scenePos) const;
+    
+    // Calculate visual cursor position from CursorPosition (using real QGraphicsTextItem)
+    QPointF calculateCursorVisualPosition(const CursorPosition &pos) const;
 
 public slots:
     void onBlockAdded(int globalIndex);
@@ -60,6 +63,7 @@ private:
     Document *m_document;
     QHash<Block*, BaseBlockItem*> m_blockItems;
     QList<PageItem*> m_pageItems;
+    QVector<QVector<QGraphicsTextItem*>> m_pageTextItems; // 存储每个页、块对应的 QGraphicsTextItem
     CursorItem *m_cursorItem;
     SelectionItem *m_selectionItem;
 };

@@ -1,4 +1,4 @@
-#include "include/core/document/ImageBlock.h"
+#include "core/document/ImageBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

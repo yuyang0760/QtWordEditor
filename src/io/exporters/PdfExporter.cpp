@@ -1,5 +1,5 @@
-#include "include/io/exporters/PdfExporter.h"
-#include "include/core/document/Document.h"
+#include "io/exporters/PdfExporter.h"
+#include "core/document/Document.h"
 
 namespace QtWordEditor {
 

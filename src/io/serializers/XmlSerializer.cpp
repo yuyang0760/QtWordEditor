@@ -1,5 +1,5 @@
-#include "include/io/serializers/XmlSerializer.h"
-#include "include/core/document/Document.h"
+#include "io/serializers/XmlSerializer.h"
+#include "core/document/Document.h"
 
 namespace QtWordEditor {
 

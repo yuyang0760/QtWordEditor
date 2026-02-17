@@ -1,4 +1,4 @@
-#include "include/ui/widgets/FormatToolBar.h"
+#include "ui/widgets/FormatToolBar.h"
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QToolButton>

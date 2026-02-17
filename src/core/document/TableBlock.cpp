@@ -1,4 +1,4 @@
-#include "include/core/document/TableBlock.h"
+#include "core/document/TableBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

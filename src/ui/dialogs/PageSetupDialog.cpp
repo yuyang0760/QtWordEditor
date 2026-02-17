@@ -1,4 +1,4 @@
-#include "include/ui/dialogs/PageSetupDialog.h"
+#include "ui/dialogs/PageSetupDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>

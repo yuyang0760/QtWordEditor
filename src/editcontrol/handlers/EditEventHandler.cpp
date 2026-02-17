@@ -1,7 +1,7 @@
-#include "include/editcontrol/handlers/EditEventHandler.h"
-#include "include/core/document/Document.h"
-#include "include/editcontrol/cursor/Cursor.h"
-#include "include/editcontrol/selection/Selection.h"
+#include "editcontrol/handlers/EditEventHandler.h"
+#include "core/document/Document.h"
+#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/selection/Selection.h"
 #include <QDebug>
 
 namespace QtWordEditor {

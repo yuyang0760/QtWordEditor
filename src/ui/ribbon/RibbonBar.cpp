@@ -1,10 +1,10 @@
-#include "include/ui/ribbon/RibbonBar.h"
-#include "include/widgets/QTabWidget.h"
-#include "include/widgets/QVBoxLayout.h"
-#include "include/widgets/QHBoxLayout.h"
-#include "include/widgets/QLabel.h"
-#include "include/widgets/QToolButton.h"
-#include "include/widgets/QAction.h"
+#include "ui/ribbon/RibbonBar.h"
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QToolButton>
+#include <QAction>
 #include <QDebug>
 
 namespace QtWordEditor {

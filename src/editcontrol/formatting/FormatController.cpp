@@ -1,7 +1,7 @@
-#include "include/editcontrol/formatting/FormatController.h"
-#include "include/core/document/Document.h"
-#include "include/editcontrol/selection/Selection.h"
-#include "include/core/commands/SetCharacterStyleCommand.h"
+#include "editcontrol/formatting/FormatController.h"
+#include "core/document/Document.h"
+#include "editcontrol/selection/Selection.h"
+#include "core/commands/SetCharacterStyleCommand.h"
 #include <QDebug>
 
 namespace QtWordEditor {

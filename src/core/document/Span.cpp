@@ -1,4 +1,4 @@
-#include "include/core/document/Span.h"
+#include "core/document/Span.h"
 #include <QDebug>
 
 namespace QtWordEditor {

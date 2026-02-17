@@ -1,8 +1,8 @@
-#include "include/editcontrol/cursor/Cursor.h"
-#include "include/core/document/Document.h"
-#include "include/core/document/Block.h"
-#include "include/core/commands/InsertTextCommand.h"
-#include "include/core/commands/RemoveTextCommand.h"
+#include "editcontrol/cursor/Cursor.h"
+#include "core/document/Document.h"
+#include "core/document/Block.h"
+#include "core/commands/InsertTextCommand.h"
+#include "core/commands/RemoveTextCommand.h"
 #include <QDebug>
 
 namespace QtWordEditor {

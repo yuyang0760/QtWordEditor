@@ -1,4 +1,4 @@
-#include "include/core/document/ParagraphStyle.h"
+#include "core/document/ParagraphStyle.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -7,7 +7,7 @@ class ParagraphStyleData : public QSharedData
 {
 public:
     ParagraphStyleData()
-        : m_alignment(ParagraphAlignment::AlignLeft)
+        : m_alignment(QtWordEditor::ParagraphAlignment::AlignLeft)
         , m_firstLineIndent(0.0)
         , m_leftIndent(0.0)
         , m_rightIndent(0.0)

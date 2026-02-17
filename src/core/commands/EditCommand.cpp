@@ -1,5 +1,5 @@
-#include "include/core/commands/EditCommand.h"
-#include "include/core/document/Document.h"
+#include "core/commands/EditCommand.h"
+#include "core/document/Document.h"
 
 
 namespace QtWordEditor {

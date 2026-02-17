@@ -1,4 +1,4 @@
-#include "include/ui/dialogs/FontDialog.h"
+#include "ui/dialogs/FontDialog.h"
 #include <QFontDialog>
 #include <QPushButton>
 #include <QColorDialog>

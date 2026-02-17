@@ -1,6 +1,6 @@
-#include "include/core/layout/PageBuilder.h"
-#include "include/core/document/Block.h"
-#include "include/core/document/Page.h"
+#include "core/layout/PageBuilder.h"
+#include "core/document/Block.h"
+#include "core/document/Page.h"
 #include <QDebug>
 
 namespace QtWordEditor {

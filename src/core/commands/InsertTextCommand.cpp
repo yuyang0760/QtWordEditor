@@ -1,6 +1,6 @@
-#include "include/core/commands/InsertTextCommand.h"
-#include "include/core/document/Document.h"
-#include "include/core/document/ParagraphBlock.h"
+#include "core/commands/InsertTextCommand.h"
+#include "core/document/Document.h"
+#include "core/document/ParagraphBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

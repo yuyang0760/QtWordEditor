@@ -1,6 +1,6 @@
-#include "include/core/document/Document.h"
-#include "include/core/document/Section.h"
-#include "include/core/document/Block.h"
+#include "core/document/Document.h"
+#include "core/document/Section.h"
+#include "core/document/Block.h"
 #include <QUndoStack>
 #include <QDebug>
 

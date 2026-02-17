@@ -1,4 +1,4 @@
-#include "include/core/utils/FontUtils.h"
+#include "core/utils/FontUtils.h"
 #include <QFontMetricsF>
 #include <QScreen>
 #include <QGuiApplication>

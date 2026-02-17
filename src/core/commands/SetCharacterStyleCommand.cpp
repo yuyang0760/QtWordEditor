@@ -1,6 +1,6 @@
-#include "include/core/commands/SetCharacterStyleCommand.h"
-#include "include/core/document/Document.h"
-#include "include/core/document/ParagraphBlock.h"
+#include "core/commands/SetCharacterStyleCommand.h"
+#include "core/document/Document.h"
+#include "core/document/ParagraphBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

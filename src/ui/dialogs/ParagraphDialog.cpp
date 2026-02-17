@@ -1,4 +1,4 @@
-#include "include/ui/dialogs/ParagraphDialog.h"
+#include "ui/dialogs/ParagraphDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>

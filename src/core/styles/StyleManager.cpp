@@ -1,5 +1,5 @@
-#include "include/core/styles/StyleManager.h"
-#include "include/core/document/Document.h"
+#include "core/styles/StyleManager.h"
+#include "core/document/Document.h"
 #include <QDebug>
 
 namespace QtWordEditor {

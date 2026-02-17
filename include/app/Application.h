@@ -6,7 +6,6 @@
 #include <QStringList>
 
 class QSettings;
-class QStringList;
 
 namespace QtWordEditor {
 

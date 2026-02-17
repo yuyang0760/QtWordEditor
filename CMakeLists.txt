@@ -5,7 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Find Qt6
+if(MSVC)
+    add_compile_options(/Zc:__cplusplus /permissive-)
+endif()
+
+# Find Qt6 - 使用MSVC版本
+set(CMAKE_PREFIX_PATH "E:/Qt/6.8.2/msvc2022_64")
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport)
 
 # Enable automatic moc, uic, rcc
@@ -13,13 +18,14 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# Collect all source files
+# Collect all source files and headers
 file(GLOB_RECURSE CORE_SOURCES "src/core/*.cpp")
 file(GLOB_RECURSE EDITCONTROL_SOURCES "src/editcontrol/*.cpp")
 file(GLOB_RECURSE GRAPHICS_SOURCES "src/graphics/*.cpp")
 file(GLOB_RECURSE IO_SOURCES "src/io/*.cpp")
 file(GLOB_RECURSE UI_SOURCES "src/ui/*.cpp")
 file(GLOB_RECURSE APP_SOURCES "src/app/*.cpp")
+file(GLOB_RECURSE APP_HEADERS "include/app/*.h")
 
 # Create libraries
 add_library(QtWordEditorCore STATIC ${CORE_SOURCES})
@@ -27,6 +33,15 @@ add_library(QtWordEditorEditControl STATIC ${EDITCONTROL_SOURCES})
 add_library(QtWordEditorGraphics STATIC ${GRAPHICS_SOURCES})
 add_library(QtWordEditorIO STATIC ${IO_SOURCES})
 add_library(QtWordEditorUI STATIC ${UI_SOURCES})
+
+# Set MSVC specific compile options for all targets
+if(MSVC)
+    target_compile_options(QtWordEditorCore PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditorEditControl PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditorGraphics PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditorIO PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditorUI PRIVATE /Zc:__cplusplus /permissive-)
+endif()
 
 # Set include directories for libraries
 target_include_directories(QtWordEditorCore PUBLIC include)
@@ -43,7 +58,12 @@ target_link_libraries(QtWordEditorIO PRIVATE Qt6::Core Qt6::Gui Qt6::PrintSuppor
 target_link_libraries(QtWordEditorUI PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::PrintSupport QtWordEditorCore QtWordEditorEditControl QtWordEditorGraphics)
 
 # Create main executable
-add_executable(QtWordEditor ${APP_SOURCES})
+add_executable(QtWordEditor ${APP_SOURCES} ${APP_HEADERS})
+
+# Set MSVC compile options for executable
+if(MSVC)
+    target_compile_options(QtWordEditor PRIVATE /Zc:__cplusplus /permissive-)
+endif()
 
 # Link libraries to main executable
 target_link_libraries(QtWordEditor

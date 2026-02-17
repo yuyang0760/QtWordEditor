@@ -1,5 +1,5 @@
-#include "include/core/document/Page.h"
-#include "include/core/document/Block.h"
+#include "core/document/Page.h"
+#include "core/document/Block.h"
 #include <QDebug>
 
 namespace QtWordEditor {

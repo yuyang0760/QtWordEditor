@@ -1,9 +1,9 @@
-#include "include/core/layout/LayoutEngine.h"
-#include "include/core/document/Document.h"
-#include "include/core/document/Section.h"
-#include "include/core/document/Block.h"
-#include "include/core/document/ParagraphBlock.h"
-#include "include/core/utils/FontUtils.h"
+#include "core/layout/LayoutEngine.h"
+#include "core/document/Document.h"
+#include "core/document/Section.h"
+#include "core/document/Block.h"
+#include "core/document/ParagraphBlock.h"
+#include "core/utils/FontUtils.h"
 #include <QDebug>
 
 namespace QtWordEditor {

@@ -1,4 +1,4 @@
-#include "include/core/document/ParagraphBlock.h"
+#include "core/document/ParagraphBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

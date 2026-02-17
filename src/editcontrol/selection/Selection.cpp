@@ -1,7 +1,7 @@
-#include "include/editcontrol/selection/Selection.h"
-#include "include/core/document/Document.h"
-#include "include/core/document/Block.h"
-#include "include/core/document/ParagraphBlock.h"
+#include "editcontrol/selection/Selection.h"
+#include "core/document/Document.h"
+#include "core/document/Block.h"
+#include "core/document/ParagraphBlock.h"
 #include <QDebug>
 
 namespace QtWordEditor {

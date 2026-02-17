@@ -1,4 +1,4 @@
-#include "include/ui/dialogs/InsertImageDialog.h"
+#include "ui/dialogs/InsertImageDialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>

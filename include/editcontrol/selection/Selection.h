@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QRectF>
-#include "include/core/Global.h"
+#include "core/Global.h"
 
 namespace QtWordEditor {
 

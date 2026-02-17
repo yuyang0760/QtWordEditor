@@ -7,6 +7,13 @@
 
 namespace QtWordEditor {
 
+enum class ParagraphAlignment {
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    AlignJustify
+};
+
 class ParagraphStyleData;
 
 /**

@@ -3,10 +3,7 @@
 
 #include <QtCore/QtGlobal>
 
-#ifdef QWORD_EDITOR_LIBRARY
-#  define QWORD_EXPORT Q_DECL_EXPORT
-#else
-#  define QWORD_EXPORT Q_DECL_IMPORT
-#endif
+// 对于静态库，不需要导出/导入宏
+#define QWORD_EXPORT
 
 #endif // QWORD_CORE_GLOBAL_H

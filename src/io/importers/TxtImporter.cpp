@@ -1,5 +1,5 @@
-#include "include/io/importers/TxtImporter.h"
-#include "include/core/document/Document.h"
+#include "io/importers/TxtImporter.h"
+#include "core/document/Document.h"
 
 namespace QtWordEditor {
 

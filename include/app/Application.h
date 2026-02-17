@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QScopedPointer>
 #include <QStringList>
+#include <QTranslator>
 
 class QSettings;
 
@@ -68,6 +69,16 @@ public:
      * @brief Get the maximum number of recent files.
      */
     int maxRecentFiles() const;
+    
+    /**
+     * @brief Load application translations.
+     */
+    void loadTranslations();
+    
+    /**
+     * @brief Switch to a different language.
+     */
+    void switchLanguage(const QString &language);
 
 private:
     QScopedPointer<ApplicationPrivate> d_ptr;
@@ -75,6 +86,7 @@ private:
 
     QStringList m_recentFiles;
     int m_maxRecentFiles = 10;
+    QTranslator *m_translator = nullptr;
 };
 
 } // namespace QtWordEditor

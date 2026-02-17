@@ -1,7 +1,12 @@
 # 编译产物
 build/
 build2/
+build_mingw/
 install/
+cmake-build-debug/
+cmake-build-release/
+.idea/
+.vscode/
 out/
 *.exe
 *.dll

@@ -9,9 +9,8 @@ if(MSVC)
     add_compile_options(/Zc:__cplusplus /permissive-)
 endif()
 
-# Find Qt6 - 使用MSVC版本
-set(CMAKE_PREFIX_PATH "E:/Qt/6.8.2/msvc2022_64")
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport)
+# Find Qt6
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport LinguistTools)
 
 # Enable automatic moc, uic, rcc
 set(CMAKE_AUTOMOC ON)
@@ -20,19 +19,24 @@ set(CMAKE_AUTORCC ON)
 
 # Collect all source files and headers
 file(GLOB_RECURSE CORE_SOURCES "src/core/*.cpp")
+file(GLOB_RECURSE CORE_HEADERS "include/core/*.h")
 file(GLOB_RECURSE EDITCONTROL_SOURCES "src/editcontrol/*.cpp")
+file(GLOB_RECURSE EDITCONTROL_HEADERS "include/editcontrol/*.h")
 file(GLOB_RECURSE GRAPHICS_SOURCES "src/graphics/*.cpp")
+file(GLOB_RECURSE GRAPHICS_HEADERS "include/graphics/*.h")
 file(GLOB_RECURSE IO_SOURCES "src/io/*.cpp")
+file(GLOB_RECURSE IO_HEADERS "include/io/*.h")
 file(GLOB_RECURSE UI_SOURCES "src/ui/*.cpp")
+file(GLOB_RECURSE UI_HEADERS "include/ui/*.h")
 file(GLOB_RECURSE APP_SOURCES "src/app/*.cpp")
 file(GLOB_RECURSE APP_HEADERS "include/app/*.h")
 
 # Create libraries
-add_library(QtWordEditorCore STATIC ${CORE_SOURCES})
-add_library(QtWordEditorEditControl STATIC ${EDITCONTROL_SOURCES})
-add_library(QtWordEditorGraphics STATIC ${GRAPHICS_SOURCES})
-add_library(QtWordEditorIO STATIC ${IO_SOURCES})
-add_library(QtWordEditorUI STATIC ${UI_SOURCES})
+add_library(QtWordEditorCore STATIC ${CORE_SOURCES} ${CORE_HEADERS})
+add_library(QtWordEditorEditControl STATIC ${EDITCONTROL_SOURCES} ${EDITCONTROL_HEADERS})
+add_library(QtWordEditorGraphics STATIC ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS})
+add_library(QtWordEditorIO STATIC ${IO_SOURCES} ${IO_HEADERS})
+add_library(QtWordEditorUI STATIC ${UI_SOURCES} ${UI_HEADERS})
 
 # Set MSVC specific compile options for all targets
 if(MSVC)
@@ -60,6 +64,11 @@ target_link_libraries(QtWordEditorUI PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6
 # Create main executable
 add_executable(QtWordEditor ${APP_SOURCES} ${APP_HEADERS})
 
+# Add translation files to executable
+if(TRANSLATION_FILES)
+    target_sources(QtWordEditor PRIVATE ${QM_FILES})
+endif()
+
 # Set MSVC compile options for executable
 if(MSVC)
     target_compile_options(QtWordEditor PRIVATE /Zc:__cplusplus /permissive-)
@@ -81,6 +90,18 @@ target_link_libraries(QtWordEditor
 
 # Set include directories for main executable
 target_include_directories(QtWordEditor PRIVATE include)
+
+# Translation files
+set(TRANSLATIONS_DIR "${CMAKE_SOURCE_DIR}/translations")
+file(GLOB TRANSLATION_FILES "${TRANSLATIONS_DIR}/*.ts")
+
+if(TRANSLATION_FILES)
+    qt6_add_translation(QM_FILES ${TRANSLATION_FILES} OPTIONS -silent)
+    add_custom_target(translations ALL DEPENDS ${QM_FILES})
+    
+    # Install translation files
+    install(FILES ${QM_FILES} DESTINATION translations)
+endif()
 
 # Install target
 install(TARGETS QtWordEditor DESTINATION bin)

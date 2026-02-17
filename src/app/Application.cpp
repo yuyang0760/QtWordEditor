@@ -3,6 +3,10 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QDir>
+#include <QTranslator>
+#include <QLibraryInfo>
+#include <QStandardPaths>
+#include <QLocale>
 
 namespace QtWordEditor {
 
@@ -33,7 +37,7 @@ bool Application::init()
 {
     try {
         loadSettings();
-        // Additional initialization (translations, plugins, etc.) can be added here.
+        loadTranslations();
         return true;
     } catch (const std::exception &e) {
         QMessageBox::critical(nullptr, tr("Initialization Error"),
@@ -63,6 +67,62 @@ void Application::saveSettings()
 Application *Application::instance()
 {
     return static_cast<Application*>(QCoreApplication::instance());
+}
+
+void Application::loadTranslations()
+{
+    // 移除旧的翻译器
+    if (m_translator) {
+        removeTranslator(m_translator);
+        delete m_translator;
+        m_translator = nullptr;
+    }
+    
+    // 创建新的翻译器
+    m_translator = new QTranslator(this);
+    
+    // 获取系统语言
+    QString locale = QLocale::system().name();
+    
+    // 尝试从应用程序目录加载翻译
+    QString translationsPath = QDir(applicationDirPath()).absoluteFilePath("translations");
+    if (m_translator->load(QString("QtWordEditor_%1").arg(locale), translationsPath)) {
+        installTranslator(m_translator);
+        return;
+    }
+    
+    // 如果失败，尝试从资源文件加载（如果有的话）
+    if (m_translator->load(QString(":/translations/QtWordEditor_%1.qm").arg(locale))) {
+        installTranslator(m_translator);
+        return;
+    }
+    
+    // 如果还是失败，删除翻译器
+    delete m_translator;
+    m_translator = nullptr;
+}
+
+void Application::switchLanguage(const QString &language)
+{
+    // 移除当前翻译器
+    if (m_translator) {
+        removeTranslator(m_translator);
+        delete m_translator;
+        m_translator = nullptr;
+    }
+    
+    // 创建新的翻译器
+    m_translator = new QTranslator(this);
+    
+    // 加载指定语言的翻译
+    QString translationsPath = QDir(applicationDirPath()).absoluteFilePath("translations");
+    if (m_translator->load(QString("QtWordEditor_%1").arg(language), translationsPath)) {
+        installTranslator(m_translator);
+    } else {
+        // 如果加载失败，也删除翻译器
+        delete m_translator;
+        m_translator = nullptr;
+    }
 }
 
 } // namespace QtWordEditor

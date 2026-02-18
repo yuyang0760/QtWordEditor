@@ -12,6 +12,7 @@ namespace QtWordEditor {
 class Document;
 class Cursor;
 class Selection;
+class DocumentScene;
 
 /**
  * @brief The EditEventHandler class processes user input events and translates them
@@ -27,15 +28,26 @@ public:
 
     // Event handlers
     bool handleKeyPress(QKeyEvent *event);
-    bool handleMousePress(QMouseEvent *event);
-    bool handleMouseMove(QMouseEvent *event);
-    bool handleMouseRelease(QMouseEvent *event);
+    bool handleMousePress(const QPointF &scenePos);
+    bool handleMouseMove(const QPointF &scenePos);
+    bool handleMouseRelease(const QPointF &scenePos);
     bool handleInputMethod(QInputMethodEvent *event);
+
+    // 设置场景指针
+    void setScene(DocumentScene *scene);
+
+signals:
+    // 选择发生变化时发出信号，用于更新选择显示
+    void selectionNeedsUpdate();
 
 private:
     Document *m_document;
     Cursor *m_cursor;
     Selection *m_selection;
+    DocumentScene *m_scene;
+    bool m_isSelecting;  // 是否正在选择文本
+    int m_selectionStartBlock;  // 选择起始块索引
+    int m_selectionStartOffset;  // 选择起始偏移量
 };
 
 } // namespace QtWordEditor

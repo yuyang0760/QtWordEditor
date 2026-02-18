@@ -2,6 +2,7 @@
 #include "core/document/Document.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
+#include "graphics/scene/DocumentScene.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -12,11 +13,20 @@ EditEventHandler::EditEventHandler(Document *document, Cursor *cursor, Selection
     , m_document(document)
     , m_cursor(cursor)
     , m_selection(selection)
+    , m_scene(nullptr)
+    , m_isSelecting(false)
+    , m_selectionStartBlock(0)
+    , m_selectionStartOffset(0)
 {
 }
 
 EditEventHandler::~EditEventHandler()
 {
+}
+
+void EditEventHandler::setScene(DocumentScene *scene)
+{
+    m_scene = scene;
 }
 
 bool EditEventHandler::handleKeyPress(QKeyEvent *event)
@@ -93,23 +103,71 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
     return handled;
 }
 
-bool EditEventHandler::handleMousePress(QMouseEvent *event)
+bool EditEventHandler::handleMousePress(const QPointF &scenePos)
 {
-    Q_UNUSED(event);
-    // TODO: implement mouse selection
-    return false;
+    if (!m_scene || !m_cursor || !m_selection)
+        return false;
+
+    qDebug() << "EditEventHandler::handleMousePress at:" << scenePos;
+
+    // 获取光标位置
+    CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
+
+    // 设置光标位置
+    m_cursor->setPosition(cursorPos);
+
+    // 开始选择
+    m_isSelecting = true;
+    m_selectionStartBlock = cursorPos.blockIndex;
+    m_selectionStartOffset = cursorPos.offset;
+
+    // 清除之前的选择
+    m_selection->clear();
+
+    // 发送信号更新选择显示
+    emit selectionNeedsUpdate();
+
+    return true;
 }
 
-bool EditEventHandler::handleMouseMove(QMouseEvent *event)
+bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
 {
-    Q_UNUSED(event);
-    return false;
+    if (!m_scene || !m_cursor || !m_selection || !m_isSelecting)
+        return false;
+
+    qDebug() << "EditEventHandler::handleMouseMove at:" << scenePos;
+
+    // 获取光标位置
+    CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
+
+    // 更新选择范围
+    m_selection->setRange(
+        m_selectionStartBlock,
+        m_selectionStartOffset,
+        cursorPos.blockIndex,
+        cursorPos.offset
+    );
+
+    // 更新光标位置（到选择的终点）
+    m_cursor->setPosition(cursorPos);
+
+    // 发送信号更新选择显示
+    emit selectionNeedsUpdate();
+
+    return true;
 }
 
-bool EditEventHandler::handleMouseRelease(QMouseEvent *event)
+bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
 {
-    Q_UNUSED(event);
-    return false;
+    if (!m_scene || !m_cursor || !m_selection)
+        return false;
+
+    qDebug() << "EditEventHandler::handleMouseRelease at:" << scenePos;
+
+    // 结束选择
+    m_isSelecting = false;
+
+    return true;
 }
 
 bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)

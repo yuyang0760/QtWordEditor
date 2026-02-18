@@ -131,19 +131,34 @@ void MainWindow::setupUi()
     m_formatController = new FormatController(m_document, m_selection, this);
     m_styleManager = new StyleManager(this);
 
+    // 设置场景到 EditEventHandler
+    m_editEventHandler->setScene(m_scene);
+    
     connect(m_view, &DocumentView::keyPressed,
             m_editEventHandler, &EditEventHandler::handleKeyPress);
+    
+    // 连接鼠标事件
     connect(m_view, &DocumentView::mousePressed,
-            this, [this](const QPointF &scenePos) {
-                CursorPosition pos = m_scene->cursorPositionAt(scenePos);
-                m_cursor->setPosition(pos);
-            });
+            m_editEventHandler, &EditEventHandler::handleMousePress);
     connect(m_view, &DocumentView::mouseMoved,
             m_editEventHandler, &EditEventHandler::handleMouseMove);
     connect(m_view, &DocumentView::mouseReleased,
             m_editEventHandler, &EditEventHandler::handleMouseRelease);
     connect(m_view, &DocumentView::inputMethodReceived,
             m_editEventHandler, &EditEventHandler::handleInputMethod);
+    
+    // 连接选择更新信号
+    connect(m_editEventHandler, &EditEventHandler::selectionNeedsUpdate,
+            this, [this]() {
+                if (m_selection && m_scene) {
+                    if (m_selection->isEmpty()) {
+                        m_scene->clearSelection();
+                    } else {
+                        QList<QRectF> rects = m_scene->calculateSelectionRects(m_selection->range());
+                        m_scene->updateSelection(rects);
+                    }
+                }
+            });
     
     // 设置光标到 DocumentView
     m_view->setCursor(m_cursor);

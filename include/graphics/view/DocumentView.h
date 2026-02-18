@@ -68,11 +68,11 @@ signals:
     /** @brief 鼠标按下时发出的信号 */
     void mousePressed(const QPointF &scenePos);
     
-    /** @brief 鼠标移动时发出的信号 */
-    void mouseMoved(QMouseEvent *event);
+    /** @brief 鼠标移动时发出的信号（场景坐标） */
+    void mouseMoved(const QPointF &scenePos);
     
-    /** @brief 鼠标释放时发出的信号 */
-    void mouseReleased(QMouseEvent *event);
+    /** @brief 鼠标释放时发出的信号（场景坐标） */
+    void mouseReleased(const QPointF &scenePos);
     
     /** @brief 输入法事件接收时发出的信号 */
     void inputMethodReceived(QInputMethodEvent *event);

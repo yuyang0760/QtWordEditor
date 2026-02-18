@@ -99,10 +99,10 @@ void DocumentView::mousePressEvent(QMouseEvent *event)
 
 void DocumentView::mouseMoveEvent(QMouseEvent *event)
 {
-    emit mouseMoved(event);
+    QPointF scenePos = mapToScene(event->pos());
+    emit mouseMoved(scenePos);
     
     m_lastMousePos = event->pos();
-    QPointF scenePos = mapToScene(event->pos());
     QPoint viewPos = event->pos();
     emit mousePositionChanged(scenePos, viewPos);
     
@@ -123,7 +123,8 @@ void DocumentView::resizeEvent(QResizeEvent *event)
 
 void DocumentView::mouseReleaseEvent(QMouseEvent *event)
 {
-    emit mouseReleased(event);
+    QPointF scenePos = mapToScene(event->pos());
+    emit mouseReleased(scenePos);
     QGraphicsView::mouseReleaseEvent(event);
 }
 

@@ -16,6 +16,7 @@ class CursorItem;
 class SelectionItem;
 class PageItem;
 struct CursorPosition;
+struct SelectionRange;
 
 /**
  * @brief 文档场景类，管理文档的图形表示
@@ -88,6 +89,13 @@ public:
      * @brief 清除选择区域
      */
     void clearSelection();
+
+    /**
+     * @brief 根据选择范围计算选择区域矩形列表
+     * @param range 选择范围
+     * @return 选择区域矩形列表
+     */
+    QList<QRectF> calculateSelectionRects(const SelectionRange &range) const;
 
     // ========== 页面管理方法 ==========
     

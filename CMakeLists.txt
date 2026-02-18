@@ -56,7 +56,7 @@ target_include_directories(QtWordEditorUI PUBLIC include)
 
 # Set library dependencies
 target_link_libraries(QtWordEditorCore PRIVATE Qt6::Core Qt6::Gui)
-target_link_libraries(QtWordEditorEditControl PRIVATE Qt6::Core Qt6::Gui QtWordEditorCore)
+target_link_libraries(QtWordEditorEditControl PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets QtWordEditorCore QtWordEditorGraphics)
 target_link_libraries(QtWordEditorGraphics PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets QtWordEditorCore)
 target_link_libraries(QtWordEditorIO PRIVATE Qt6::Core Qt6::Gui Qt6::PrintSupport QtWordEditorCore)
 target_link_libraries(QtWordEditorUI PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::PrintSupport QtWordEditorCore QtWordEditorEditControl QtWordEditorGraphics)

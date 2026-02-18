@@ -12,6 +12,7 @@
 #include "graphics/items/PageItem.h"
 #include "graphics/items/TextBlockItem.h"
 #include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/selection/Selection.h"
 #include <QDebug>
 #include <QGraphicsItem>
 #include <QGraphicsTextItem>
@@ -381,6 +382,123 @@ QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) 
     qDebug() << "  Returning result:" << result;
     
     return result;
+}
+
+QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range) const
+{
+    QList<QRectF> rects;
+    
+    if (!m_document) {
+        return rects;
+    }
+    
+    // 归一化选择范围
+    SelectionRange normalizedRange = range;
+    normalizedRange.normalize();
+    
+    qDebug() << "DocumentScene::calculateSelectionRects for range:"
+             << "startBlock:" << normalizedRange.startBlock
+             << "startOffset:" << normalizedRange.startOffset
+             << "endBlock:" << normalizedRange.endBlock
+             << "endOffset:" << normalizedRange.endOffset;
+    
+    // 简单假设只有一个section和一个page
+    Section *section = m_document->section(0);
+    if (!section) {
+        return rects;
+    }
+    
+    int pageIndex = 0;
+    
+    // 遍历选择范围内的所有块
+    for (int blockIdx = normalizedRange.startBlock; blockIdx <= normalizedRange.endBlock; ++blockIdx) {
+        // 检查是否超出范围
+        if (blockIdx < 0 || blockIdx >= section->blockCount()) {
+            continue;
+        }
+        
+        // 获取对应的QGraphicsTextItem
+        if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
+            blockIdx >= 0 && blockIdx < m_pageTextItems[pageIndex].size()) {
+            
+            QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIdx];
+            if (!textItem) {
+                continue;
+            }
+            
+            QTextDocument *doc = textItem->document();
+            if (!doc) {
+                continue;
+            }
+            
+            QString text = doc->toPlainText();
+            qDebug() << "  Block" << blockIdx << "text:" << text;
+            
+            // 确定当前块的选择起始和结束偏移
+            int startOffset = 0;
+            int endOffset = text.length();
+            
+            if (blockIdx == normalizedRange.startBlock) {
+                startOffset = qMin(normalizedRange.startOffset, text.length());
+            }
+            if (blockIdx == normalizedRange.endBlock) {
+                endOffset = qMin(normalizedRange.endOffset, text.length());
+            }
+            
+            qDebug() << "    startOffset:" << startOffset << "endOffset:" << endOffset;
+            
+            // 如果起始和结束相同，跳过
+            if (startOffset >= endOffset) {
+                continue;
+            }
+            
+            // 使用QTextCursor获取选择的字符范围
+            QTextCursor cursor(doc);
+            cursor.setPosition(startOffset);
+            cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
+            
+            // 获取选择区域
+            QTextBlock block = cursor.block();
+            
+            // 遍历选择范围内的所有行
+            QTextLayout *layout = block.layout();
+            if (!layout) {
+                continue;
+            }
+            
+            for (int i = 0; i < layout->lineCount(); ++i) {
+                QTextLine line = layout->lineAt(i);
+                int lineStart = line.textStart();
+                int lineEnd = line.textStart() + line.textLength();
+                
+                // 确定当前行与选择范围的重叠
+                int selStart = qMax(startOffset, lineStart);
+                int selEnd = qMin(endOffset, lineEnd);
+                
+                if (selStart < selEnd) {
+                    // 计算选择在该行的起始和结束位置
+                    qreal x1 = line.cursorToX(selStart);
+                    qreal x2 = line.cursorToX(selEnd);
+                    
+                    // 获取textItem在场景中的位置
+                    QPointF itemScenePos = textItem->scenePos();
+                    
+                    // 创建选择矩形
+                    QRectF rect(
+                        itemScenePos.x() + qMin(x1, x2),
+                        itemScenePos.y() + line.y(),
+                        qAbs(x2 - x1),
+                        line.height()
+                    );
+                    
+                    rects.append(rect);
+                    qDebug() << "    Added rect:" << rect;
+                }
+            }
+        }
+    }
+    
+    return rects;
 }
 
 } // namespace QtWordEditor

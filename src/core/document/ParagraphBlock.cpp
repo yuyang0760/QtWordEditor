@@ -196,7 +196,7 @@ void ParagraphBlock::insert(int position, const QString &text, const CharacterSt
     if (text.isEmpty())
         return;
 
-    qDebug() << "ParagraphBlock::insert - 插入文本，位置:" << position << "，文本:" << text;
+  //  QDebug() << "ParagraphBlock::insert - 插入文本，位置:" << position << "，文本:" << text;
     
     if (m_spans.isEmpty()) {
         m_spans.append(Span(text, style));
@@ -258,7 +258,7 @@ void ParagraphBlock::remove(int position, int length)
     if (length <= 0)
         return;
 
-    qDebug() << "ParagraphBlock::remove - 删除文本，位置:" << position << "，长度:" << length;
+  //  QDebug() << "ParagraphBlock::remove - 删除文本，位置:" << position << "，长度:" << length;
     
     int totalLength = this->length();
     int end = position + length;

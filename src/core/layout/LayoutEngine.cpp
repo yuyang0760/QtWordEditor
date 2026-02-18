@@ -37,7 +37,7 @@ void LayoutEngine::layout()
         return;
     }
     // Simplified: just emit signal
-    qDebug() << "LayoutEngine::layout() called (placeholder)";
+  //  QDebug() << "LayoutEngine::layout() called (placeholder)";
     emit layoutChanged();
 }
 

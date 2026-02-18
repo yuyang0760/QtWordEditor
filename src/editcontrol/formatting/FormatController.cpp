@@ -397,7 +397,7 @@ void FormatController::setCurrentInputStyle(const CharacterStyle &style)
 
 void FormatController::onCursorMoved()
 {
-    qDebug() << "FormatController::onCursorMoved() called";
+  //  QDebug() << "FormatController::onCursorMoved() called";
     
     // 光标移动时，退出覆盖模式，回到继承模式
     m_isInputStyleOverridden = false;
@@ -405,7 +405,7 @@ void FormatController::onCursorMoved()
     // 更新当前输入样式为光标前一个字符的样式
     m_currentInputStyle = getCurrentDisplayStyle();
     
-    qDebug() << "  isInputStyleOverridden reset to false, currentInputStyle updated";
+  //  QDebug() << "  isInputStyleOverridden reset to false, currentInputStyle updated";
 }
 
 } // namespace QtWordEditor

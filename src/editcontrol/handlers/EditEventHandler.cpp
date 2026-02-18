@@ -114,7 +114,7 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection)
         return false;
 
-    qDebug() << "EditEventHandler::handleMousePress at:" << scenePos;
+  //  QDebug() << "EditEventHandler::handleMousePress at:" << scenePos;
 
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
@@ -141,7 +141,7 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection || !m_isSelecting)
         return false;
 
-    qDebug() << "EditEventHandler::handleMouseMove at:" << scenePos;
+  //  QDebug() << "EditEventHandler::handleMouseMove at:" << scenePos;
 
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
@@ -168,7 +168,7 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection)
         return false;
 
-    qDebug() << "EditEventHandler::handleMouseRelease at:" << scenePos;
+  //  QDebug() << "EditEventHandler::handleMouseRelease at:" << scenePos;
 
     // 结束选择
     m_isSelecting = false;
@@ -181,9 +181,9 @@ bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
     if (!m_document || !m_cursor)
         return false;
 
-    qDebug() << "EditEventHandler::handleInputMethod called";
-    qDebug() << "  commitString:" << event->commitString();
-    qDebug() << "  preeditString:" << event->preeditString();
+  //  QDebug() << "EditEventHandler::handleInputMethod called";
+  //  QDebug() << "  commitString:" << event->commitString();
+  //  QDebug() << "  preeditString:" << event->preeditString();
     
     if (!event->commitString().isEmpty()) {
         CharacterStyle style;

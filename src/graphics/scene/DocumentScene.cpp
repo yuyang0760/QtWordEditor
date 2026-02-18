@@ -67,23 +67,23 @@ void DocumentScene::rebuildFromDocument()
     m_blockItems.clear();
     m_pageItems.clear();
     m_pageTextItems.clear();
-    qDebug() << "DocumentScene::rebuildFromDocument() - 开始重建场景";
-    qDebug() << "  文档指针:" << m_document;
+  //  QDebug() << "DocumentScene::rebuildFromDocument() - 开始重建场景";
+  //  QDebug() << "  文档指针:" << m_document;
 
     if (m_document) {
-        qDebug() << "  文档节数量:" << m_document->sectionCount();
+      //  QDebug() << "  文档节数量:" << m_document->sectionCount();
 
         for (int sectionIdx = 0; sectionIdx < m_document->sectionCount(); ++sectionIdx) {
             Section *section = m_document->section(sectionIdx);
-            qDebug() << "  节" << sectionIdx << "指针:" << section;
+          //  QDebug() << "  节" << sectionIdx << "指针:" << section;
             
             if (!section)
                 continue;
 
-            qDebug() << "  节页面数量:" << section->pageCount();
+          //  QDebug() << "  节页面数量:" << section->pageCount();
             for (int pageIdx = 0; pageIdx < section->pageCount(); ++pageIdx) {
                 Page *page = section->page(pageIdx);
-                qDebug() << "  页面" << pageIdx << "指针:" << page;
+              //  QDebug() << "  页面" << pageIdx << "指针:" << page;
                 if (!page)
                     continue;
 
@@ -94,13 +94,13 @@ void DocumentScene::rebuildFromDocument()
                 
                 for (int blockIdx = 0; blockIdx < page->blockCount(); ++blockIdx) {
                     Block *block = page->block(blockIdx);
-                    qDebug() << "    块" << blockIdx << "指针:" << block;
+                  //  QDebug() << "    块" << blockIdx << "指针:" << block;
                     if (!block)
                         continue;
 
                     ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
                     if (paraBlock) {
-                        qDebug() << ">>>>>>>>>> 添加文本块项，文本内容:" << paraBlock->text();
+                      //  QDebug() << ">>>>>>>>>> 添加文本块项，文本内容:" << paraBlock->text();
                         
                         // 创建 TextBlockItem
                         TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
@@ -117,8 +117,8 @@ void DocumentScene::rebuildFromDocument()
                         m_blockItems.insert(block, textBlockItem);
                         pageTextItems.append(textBlockItem->textItem());
                         
-                        qDebug() << ">>>>>>>>>>      文本块项位置:" << textX << "," << textY;
-                        qDebug() << ">>>>>>>>>>      文本项边界矩形:" << textBlockItem->textItem()->boundingRect();
+                      //  QDebug() << ">>>>>>>>>>      文本块项位置:" << textX << "," << textY;
+                      //  QDebug() << ">>>>>>>>>>      文本项边界矩形:" << textBlockItem->textItem()->boundingRect();
                     }
                 }
                 
@@ -132,20 +132,20 @@ void DocumentScene::rebuildFromDocument()
     if (tempCursor) {
         addItem(tempCursor);
         m_cursorItem = tempCursor;
-        qDebug() << "  恢复光标项";
+      //  QDebug() << "  恢复光标项";
     }
     if (tempSelection) {
         addItem(tempSelection);
         m_selectionItem = tempSelection;
-        qDebug() << "  恢复选择项";
+      //  QDebug() << "  恢复选择项";
     }
     
-    qDebug() << "DocumentScene::rebuildFromDocument() - 场景重建完成！";
+  //  QDebug() << "DocumentScene::rebuildFromDocument() - 场景重建完成！";
 }
 
 void DocumentScene::updateAllTextItems()
 {
-    qDebug() << "DocumentScene::updateAllTextItems() - 更新所有文本项";
+  //  QDebug() << "DocumentScene::updateAllTextItems() - 更新所有文本项";
     for (BaseBlockItem *item : m_blockItems) {
         if (item) {
             item->updateBlock();
@@ -187,14 +187,14 @@ void DocumentScene::addPage(Page *page)
     qreal totalHeight = yOffset + page->pageRect().height() + 50.0;
     setSceneRect(-50, -50, totalWidth + 100, totalHeight + 100);
     
-    qDebug() << "添加页面" << page->pageNumber() << "，Y坐标:" << yOffset;
+  //  QDebug() << "添加页面" << page->pageNumber() << "，Y坐标:" << yOffset;
 }
 
 void DocumentScene::updateCursor(const QPointF &pos, qreal height)
 {
-    qDebug() << "DocumentScene::updateCursor - 更新光标，位置:" << pos << "，高度:" << height;
+  //  QDebug() << "DocumentScene::updateCursor - 更新光标，位置:" << pos << "，高度:" << height;
     if (!m_cursorItem) {
-        qDebug() << "  创建新的光标项";
+      //  QDebug() << "  创建新的光标项";
         m_cursorItem = new CursorItem();
         addItem(m_cursorItem);
     }
@@ -287,8 +287,8 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
         }
     }
     
-    qDebug() << "DocumentScene::cursorPositionAt - 场景位置:" << scenePos
-             << "→ 块索引:" << pos.blockIndex << "，偏移:" << pos.offset;
+  //  QDebug() << "DocumentScene::cursorPositionAt - 场景位置:" << scenePos
+  //           << "→ 块索引:" << pos.blockIndex << "，偏移:" << pos.offset;
     
     return pos;
 }
@@ -296,30 +296,30 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
 QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) const
 {
     QPointF result(0, 0);
-    qDebug() << "DocumentScene::calculateCursorVisualPosition - 计算光标位置，块:" << pos.blockIndex << "，偏移:" << pos.offset;
+  //  QDebug() << "DocumentScene::calculateCursorVisualPosition - 计算光标位置，块:" << pos.blockIndex << "，偏移:" << pos.offset;
     
     if (!m_document) {
-        qDebug() << "  文档指针为空！";
+      //  QDebug() << "  文档指针为空！";
         return result;
     }
     
     // 找到所在的页（简单假设：第0个section）
     Section *section = m_document->section(0);
     if (!section) {
-        qDebug() << "  节指针为空！";
+      //  QDebug() << "  节指针为空！";
         return result;
     }
     
     // 找到对应页的index：这里简化，假设每个section只有1页
     int pageIndex = 0;
     if (pageIndex < 0 || pageIndex >= section->pageCount()) {
-        qDebug() << "  页面索引超出范围！";
+      //  QDebug() << "  页面索引超出范围！";
         return result;
     }
     
     Page *page = section->page(pageIndex);
     if (!page) {
-        qDebug() << "  页面指针为空！";
+      //  QDebug() << "  页面指针为空！";
         return result;
     }
     
@@ -331,25 +331,25 @@ QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) 
     }
     
     if (!textItem) {
-        qDebug() << "  文本项指针为空！页面索引:" << pageIndex 
-                 << "页面文本项列表大小:" << m_pageTextItems.size()
-                 << "块索引:" << pos.blockIndex;
+      //  QDebug() << "  文本项指针为空！页面索引:" << pageIndex 
+      //           << "页面文本项列表大小:" << m_pageTextItems.size()
+      //           << "块索引:" << pos.blockIndex;
         if (pageIndex < m_pageTextItems.size()) {
-            qDebug() << "  当前页面文本项数量:" << m_pageTextItems[pageIndex].size();
+          //  QDebug() << "  当前页面文本项数量:" << m_pageTextItems[pageIndex].size();
         }
         return result;
     }
     
     QTextDocument *doc = textItem->document();
     if (!doc) {
-        qDebug() << "  文档指针为空！";
+      //  QDebug() << "  文档指针为空！";
         return result;
     }
     
     QString text = doc->toPlainText();
     int charOffset = qMin(pos.offset, text.length());
     
-    qDebug() << "  文本内容:" << text << "字符偏移:" << charOffset;
+  //  QDebug() << "  文本内容:" << text << "字符偏移:" << charOffset;
     
     // 使用 QTextCursor 和文档布局来计算光标位置
     QTextCursor cursor(doc);
@@ -359,7 +359,7 @@ QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) 
     QTextLayout *layout = block.layout();
     
     if (!layout) {
-        qDebug() << "  布局指针为空！";
+      //  QDebug() << "  布局指针为空！";
         return result;
     }
     
@@ -380,16 +380,16 @@ QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) 
         }
     }
     
-    qDebug() << "  X坐标:" << x << "Y坐标:" << y;
+  //  QDebug() << "  X坐标:" << x << "Y坐标:" << y;
     
     // 获取 textItem 在场景中的位置（注意：它是 TextBlockItem 的子项！）
     QPointF itemScenePos = textItem->scenePos();
-    qDebug() << "  文本项场景坐标:" << itemScenePos;
+  //  QDebug() << "  文本项场景坐标:" << itemScenePos;
     
     result.setX(itemScenePos.x() + x);
     result.setY(itemScenePos.y() + y);
     
-    qDebug() << "  返回结果坐标:" << result;
+  //  QDebug() << "  返回结果坐标:" << result;
     
     return result;
 }
@@ -406,11 +406,11 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
     SelectionRange normalizedRange = range;
     normalizedRange.normalize();
     
-    qDebug() << "DocumentScene::calculateSelectionRects - 计算选择矩形，范围:"
-             << "起始块:" << normalizedRange.startBlock
-             << "起始偏移:" << normalizedRange.startOffset
-             << "结束块:" << normalizedRange.endBlock
-             << "结束偏移:" << normalizedRange.endOffset;
+  //  QDebug() << "DocumentScene::calculateSelectionRects - 计算选择矩形，范围:"
+             // << "起始块:" << normalizedRange.startBlock
+             // << "起始偏移:" << normalizedRange.startOffset
+             // << "结束块:" << normalizedRange.endBlock
+             // << "结束偏移:" << normalizedRange.endOffset;
     
     // 简单假设只有一个section和一个page
     Section *section = m_document->section(0);
@@ -442,7 +442,7 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
             }
             
             QString text = doc->toPlainText();
-            qDebug() << "  块" << blockIdx << "文本:" << text;
+          //  QDebug() << "  块" << blockIdx << "文本:" << text;
             
             // 确定当前块的选择起始和结束偏移
             int startOffset = 0;
@@ -455,7 +455,7 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
                 endOffset = qMin(normalizedRange.endOffset, text.length());
             }
             
-            qDebug() << "    起始偏移:" << startOffset << "结束偏移:" << endOffset;
+          //  QDebug() << "    起始偏移:" << startOffset << "结束偏移:" << endOffset;
             
             // 如果起始和结束相同，跳过
             if (startOffset >= endOffset) {
@@ -502,7 +502,7 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
                     );
                     
                     rects.append(rect);
-                    qDebug() << "    添加矩形:" << rect;
+                  //  QDebug() << "    添加矩形:" << rect;
                 }
             }
         }

@@ -123,15 +123,15 @@ void Application::loadTranslations()
     searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("../cmake-build-debug");
     
     for (const QString &path : searchPaths) {
-        qDebug() << "Trying to load translation from:" << path;
+      //  QDebug() << "Trying to load translation from:" << path;
         if (m_translator->load(QString("QtWordEditor_%1").arg(locale), path)) {
             installTranslator(m_translator);
-            qDebug() << "Successfully loaded translation:" << locale << "from" << path;
+          //  QDebug() << "Successfully loaded translation:" << locale << "from" << path;
             return;
         }
         if (m_translator->load(QString("QtWordEditor_%1.qm").arg(locale), path)) {
             installTranslator(m_translator);
-            qDebug() << "Successfully loaded translation (with .qm):" << locale << "from" << path;
+          //  QDebug() << "Successfully loaded translation (with .qm):" << locale << "from" << path;
             return;
         }
     }
@@ -139,12 +139,12 @@ void Application::loadTranslations()
     for (const QString &path : searchPaths) {
         if (m_translator->load("QtWordEditor", path)) {
             installTranslator(m_translator);
-            qDebug() << "Successfully loaded translation without locale from" << path;
+          //  QDebug() << "Successfully loaded translation without locale from" << path;
             return;
         }
     }
     
-    qDebug() << "Failed to load translation";
+  //  QDebug() << "Failed to load translation";
     delete m_translator;
     m_translator = nullptr;
 }
@@ -162,7 +162,7 @@ void Application::switchLanguage(const QString &language)
     }
     
     if (language == "en_US" || language == "en") {
-        qDebug() << "Switching to English";
+      //  QDebug() << "Switching to English";
         return;
     }
     
@@ -175,20 +175,20 @@ void Application::switchLanguage(const QString &language)
     searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("../cmake-build-debug");
     
     for (const QString &path : searchPaths) {
-        qDebug() << "Trying to load translation from:" << path;
+      //  QDebug() << "Trying to load translation from:" << path;
         if (m_translator->load(QString("QtWordEditor_%1").arg(language), path)) {
             installTranslator(m_translator);
-            qDebug() << "Successfully loaded translation:" << language << "from" << path;
+          //  QDebug() << "Successfully loaded translation:" << language << "from" << path;
             return;
         }
         if (m_translator->load(QString("QtWordEditor_%1.qm").arg(language), path)) {
             installTranslator(m_translator);
-            qDebug() << "Successfully loaded translation (with .qm):" << language << "from" << path;
+          //  QDebug() << "Successfully loaded translation (with .qm):" << language << "from" << path;
             return;
         }
     }
     
-    qDebug() << "Failed to load translation for" << language;
+  //  QDebug() << "Failed to load translation for" << language;
     delete m_translator;
     m_translator = nullptr;
 }

@@ -28,15 +28,15 @@ int main(int argc, char *argv[])
 {
     QtWordEditor::Application app(argc, argv);
     
-    qDebug() << "Available styles:" << QStyleFactory::keys();
+  //  QDebug() << "Available styles:" << QStyleFactory::keys();
     
     // Enable Fusion style for consistent look across platforms
     QStyle *fusionStyle = QStyleFactory::create("Fusion");
     if (fusionStyle) {
         app.setStyle(fusionStyle);
-        qDebug() << "Fusion style applied successfully!";
+      //  QDebug() << "Fusion style applied successfully!";
     } else {
-        qDebug() << "Failed to create Fusion style!";
+      //  QDebug() << "Failed to create Fusion style!";
     }
     
     // Load translation files

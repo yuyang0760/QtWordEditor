@@ -43,6 +43,12 @@ public:
     void updateBlock() override;
     
     /**
+     * @brief 更新块内容显示
+     * @param forceUpdate 是否强制更新，即使检测到内容没有变化
+     */
+    void updateBlock(bool forceUpdate);
+    
+    /**
      * @brief 获取内部的文本图形项
      * @return 指向QGraphicsTextItem的指针
      */

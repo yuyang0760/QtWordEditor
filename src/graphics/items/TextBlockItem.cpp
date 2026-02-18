@@ -120,22 +120,30 @@ void TextBlockItem::updateBoundingRect()
 
 void TextBlockItem::updateBlock()
 {
+    // 调用带强制更新参数的函数，默认为 false
+    updateBlock(false);
+}
+
+void TextBlockItem::updateBlock(bool forceUpdate)
+{
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
     if (!para)
         return;
 
     // 快速检查：先比较 span 数量，如果没变再比较内容
-    bool needsUpdate = false;
-    if (para->spanCount() != m_cachedSpans.size()) {
-        // qDebug() << "TextBlockItem::updateBlock - Span数量变化，需要更新";
-        needsUpdate = true;
-    } else {
-        // 逐个比较 span 是否相同
-        for (int i = 0; i < para->spanCount(); ++i) {
-            if (para->span(i) != m_cachedSpans[i]) {
-                // qDebug() << "TextBlockItem::updateBlock - Span内容变化，需要更新";
-                needsUpdate = true;
-                break;
+    bool needsUpdate = forceUpdate; // 如果强制更新，则直接设置为 true
+    if (!needsUpdate) {
+        if (para->spanCount() != m_cachedSpans.size()) {
+            // qDebug() << "TextBlockItem::updateBlock - Span数量变化，需要更新";
+            needsUpdate = true;
+        } else {
+            // 逐个比较 span 是否相同
+            for (int i = 0; i < para->spanCount(); ++i) {
+                if (para->span(i) != m_cachedSpans[i]) {
+                    // qDebug() << "TextBlockItem::updateBlock - Span内容变化，需要更新";
+                    needsUpdate = true;
+                    break;
+                }
             }
         }
     }
@@ -167,6 +175,8 @@ void TextBlockItem::applyRichTextFromBlock()
         Span span = para->span(i);
         m_cachedSpans.append(span);  // 保存到缓存
         
+        // 注意：目前由于 TextBlockItem 无法访问 StyleManager，我们只使用 span 的直接样式
+        // 如果需要完整支持命名样式，需要通过某种方式（例如从 DocumentScene 或其他地方）传递 StyleManager
         CharacterStyle style = span.style();
         
         QTextCharFormat format;

@@ -10,7 +10,6 @@
 #include "graphics/items/CursorItem.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
-#include "graphics/items/TextBlockItem.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include <QDebug>
@@ -161,6 +160,61 @@ void DocumentScene::updateSingleTextItem(Block *block)
     if (it != m_blockItems.end() && it.value()) {
         it.value()->updateBlock();
     }
+}
+
+void DocumentScene::updateTextItemsWithCharacterStyle(const QString &styleName)
+{
+    if (styleName.isEmpty()) {
+        return;
+    }
+    
+    // 遍历所有块，检查是否有使用该字符样式的 Span
+    for (auto it = m_blockItems.begin(); it != m_blockItems.end(); ++it) {
+        Block *block = it.key();
+        if (!block) {
+            continue;
+        }
+        
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock) {
+            continue;
+        }
+        
+        // 检查该段落是否有使用该样式的 Span
+        bool needsUpdate = false;
+        for (int i = 0; i < paraBlock->spanCount(); ++i) {
+            Span span = paraBlock->span(i);
+            if (span.styleName() == styleName) {
+                needsUpdate = true;
+                break;
+            }
+        }
+        
+        if (needsUpdate) {
+            // 更新该块，使用强制更新，确保样式变化被正确应用
+            BaseBlockItem *item = it.value();
+            if (item) {
+                // 如果是 TextBlockItem，我们可以使用强制更新
+                TextBlockItem *textItem = dynamic_cast<TextBlockItem*>(item);
+                if (textItem) {
+                    textItem->updateBlock(true);
+                } else {
+                    item->updateBlock();
+                }
+            }
+        }
+    }
+}
+
+void DocumentScene::updateTextItemsWithParagraphStyle(const QString &styleName)
+{
+    if (styleName.isEmpty()) {
+        return;
+    }
+    
+    // 目前 ParagraphBlock 没有存储样式名称，所以更新所有文本项
+    // 如果需要更精确的更新，可以在 ParagraphBlock 中添加样式名称字段
+    updateAllTextItems();
 }
 
 void DocumentScene::clearPages()

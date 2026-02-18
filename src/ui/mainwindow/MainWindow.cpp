@@ -62,7 +62,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi();
     createActions();
-    newDocument(); // start with an empty document
     updateWindowTitle();
 }
 
@@ -123,6 +122,7 @@ void MainWindow::setupUi()
     m_view = new DocumentView(this);
     m_scene = new DocumentScene(this);
     m_view->setScene(m_scene);
+    m_scene->setDocument(m_document);
     
     QWidget *viewContainer = new QWidget(this);
     QVBoxLayout *viewLayout = new QVBoxLayout(viewContainer);
@@ -133,12 +133,12 @@ void MainWindow::setupUi()
     
     mainLayout->addWidget(viewContainer);
 
-    // 连接样式变化信号
+    // 连接样式变化信号 - 优化：只更新受影响的文本块，不重建整个场景
     connect(m_styleManager, &StyleManager::characterStyleChanged,
             this, [this](const QString &styleName) {
-      //  QDebug() << "字符样式变化:" << styleName << "- 重建场景";
+      //  QDebug() << "字符样式变化:" << styleName << "- 更新受影响的文本块";
         if (m_scene) {
-            m_scene->rebuildFromDocument();
+            m_scene->updateTextItemsWithCharacterStyle(styleName);
         }
         // 刷新 RibbonBar 的样式列表
         if (m_ribbonBar) {
@@ -148,9 +148,9 @@ void MainWindow::setupUi()
 
     connect(m_styleManager, &StyleManager::paragraphStyleChanged,
             this, [this](const QString &styleName) {
-      //  QDebug() << "段落样式变化:" << styleName << "- 重建场景";
+      //  QDebug() << "段落样式变化:" << styleName << "- 更新受影响的文本块";
         if (m_scene) {
-            m_scene->rebuildFromDocument();
+            m_scene->updateTextItemsWithParagraphStyle(styleName);
         }
         // 刷新 RibbonBar 的样式列表
         if (m_ribbonBar) {
@@ -160,9 +160,9 @@ void MainWindow::setupUi()
 
     connect(m_styleManager, &StyleManager::stylesChanged,
             this, [this]() {
-      //  QDebug() << "样式变化 - 重建场景";
+      //  QDebug() << "样式变化 - 更新所有文本项（多个样式可能被修改）";
         if (m_scene) {
-            m_scene->rebuildFromDocument();
+            m_scene->updateAllTextItems();
         }
         // 刷新 RibbonBar 的样式列表
         if (m_ribbonBar) {

@@ -1,4 +1,5 @@
 #include "ui/ribbon/RibbonBar.h"
+#include "core/styles/StyleManager.h"
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -10,16 +11,20 @@
 #include <QSpinBox>
 #include <QMenu>
 #include <QFrame>
+#include <QComboBox>
 
 namespace QtWordEditor {
 
 class RibbonBarPrivate
 {
 public:
+    StyleManager *styleManager = nullptr;
     int currentTab = -1;
     QHash<int, QStringList> tabGroups;
     QWidget *currentContentWidget = nullptr;
     
+    QComboBox *paragraphStyleCombo = nullptr;
+    QComboBox *characterStyleCombo = nullptr;
     QFontComboBox *fontCombo = nullptr;
     QSpinBox *fontSizeSpin = nullptr;
     QAction *boldAction = nullptr;
@@ -29,18 +34,70 @@ public:
     QAction *alignCenterAction = nullptr;
     QAction *alignRightAction = nullptr;
     QAction *alignJustifyAction = nullptr;
+    QAction *styleManagerAction = nullptr;
 };
 
-RibbonBar::RibbonBar(QWidget *parent)
+RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
     : QTabWidget(parent)
     , d(new RibbonBarPrivate)
 {
+    d->styleManager = styleManager;
+    
     setDocumentMode(true);
     setTabPosition(QTabWidget::North);
     
-    int homeIndex = addTab(tr("Home"));
+    int homeIndex = addTab(tr("开始"));
     
-    addGroup(tr("Font"));
+    // 样式组
+    addGroup(tr("样式"));
+    
+    QLabel *paragraphStyleLabel = new QLabel(tr("段落:"), this);
+    addWidget(paragraphStyleLabel);
+    
+    d->paragraphStyleCombo = new QComboBox(this);
+    d->paragraphStyleCombo->setMaximumWidth(100);
+    d->paragraphStyleCombo->setMinimumHeight(24);
+    d->paragraphStyleCombo->setMaximumHeight(24);
+    connect(d->paragraphStyleCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        if (index >= 0) {
+            emit paragraphStyleChanged(d->paragraphStyleCombo->itemText(index));
+        }
+    });
+    addWidget(d->paragraphStyleCombo);
+    
+    QFrame *styleSeparator1 = new QFrame(this);
+    styleSeparator1->setFrameShape(QFrame::VLine);
+    styleSeparator1->setFrameShadow(QFrame::Sunken);
+    addWidget(styleSeparator1);
+    
+    QLabel *characterStyleLabel = new QLabel(tr("字符:"), this);
+    addWidget(characterStyleLabel);
+    
+    d->characterStyleCombo = new QComboBox(this);
+    d->characterStyleCombo->setMaximumWidth(100);
+    d->characterStyleCombo->setMinimumHeight(24);
+    d->characterStyleCombo->setMaximumHeight(24);
+    connect(d->characterStyleCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        if (index >= 0) {
+            emit characterStyleChanged(d->characterStyleCombo->itemText(index));
+        }
+    });
+    addWidget(d->characterStyleCombo);
+    
+    QFrame *styleSeparator2 = new QFrame(this);
+    styleSeparator2->setFrameShape(QFrame::VLine);
+    styleSeparator2->setFrameShadow(QFrame::Sunken);
+    addWidget(styleSeparator2);
+    
+    d->styleManagerAction = new QAction(tr("样式管理"), this);
+    connect(d->styleManagerAction, &QAction::triggered,
+            this, &RibbonBar::openStyleManagerRequested);
+    addAction(d->styleManagerAction);
+    
+    // 字体组
+    addGroup(tr("字体"));
     
     d->fontCombo = new QFontComboBox(this);
     d->fontCombo->setMaximumWidth(140);
@@ -84,31 +141,35 @@ RibbonBar::RibbonBar(QWidget *parent)
             this, &RibbonBar::underlineChanged);
     addAction(d->underlineAction);
     
-    addGroup(tr("Paragraph"));
+    // 段落组
+    addGroup(tr("段落"));
     
-    d->alignLeftAction = new QAction(tr("Left"), this);
+    d->alignLeftAction = new QAction(tr("左"), this);
     d->alignLeftAction->setCheckable(true);
     connect(d->alignLeftAction, &QAction::toggled,
             this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignLeft); });
     addAction(d->alignLeftAction);
     
-    d->alignCenterAction = new QAction(tr("Center"), this);
+    d->alignCenterAction = new QAction(tr("中"), this);
     d->alignCenterAction->setCheckable(true);
     connect(d->alignCenterAction, &QAction::toggled,
             this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignCenter); });
     addAction(d->alignCenterAction);
     
-    d->alignRightAction = new QAction(tr("Right"), this);
+    d->alignRightAction = new QAction(tr("右"), this);
     d->alignRightAction->setCheckable(true);
     connect(d->alignRightAction, &QAction::toggled,
             this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignRight); });
     addAction(d->alignRightAction);
     
-    d->alignJustifyAction = new QAction(tr("Justify"), this);
+    d->alignJustifyAction = new QAction(tr("两"), this);
     d->alignJustifyAction->setCheckable(true);
     connect(d->alignJustifyAction, &QAction::toggled,
             this, [this](bool checked) { if (checked) emit alignmentChanged(Qt::AlignJustify); });
     addAction(d->alignJustifyAction);
+    
+    // 初始化样式列表
+    refreshStyleLists();
 }
 
 RibbonBar::~RibbonBar()
@@ -221,9 +282,64 @@ void RibbonBar::addWidget(QWidget *widget)
     contentLayout->addWidget(widget);
 }
 
-void RibbonBar::updateFromSelection()
+void RibbonBar::updateFromSelection(const QString &characterStyleName,
+                                    const QString &paragraphStyleName)
 {
-    qDebug() << "RibbonBar::updateFromSelection() placeholder";
+    // 更新段落样式下拉框
+    int paraIndex = d->paragraphStyleCombo->findText(paragraphStyleName);
+    if (paraIndex >= 0) {
+        QSignalBlocker blocker(d->paragraphStyleCombo);
+        d->paragraphStyleCombo->setCurrentIndex(paraIndex);
+    } else {
+        QSignalBlocker blocker(d->paragraphStyleCombo);
+        d->paragraphStyleCombo->setCurrentIndex(-1);
+    }
+    
+    // 更新字符样式下拉框
+    int charIndex = d->characterStyleCombo->findText(characterStyleName);
+    if (charIndex >= 0) {
+        QSignalBlocker blocker(d->characterStyleCombo);
+        d->characterStyleCombo->setCurrentIndex(charIndex);
+    } else {
+        QSignalBlocker blocker(d->characterStyleCombo);
+        d->characterStyleCombo->setCurrentIndex(-1);
+    }
+}
+
+void RibbonBar::refreshStyleLists()
+{
+    if (!d->styleManager)
+        return;
+    
+    // 临时保存当前选中的样式
+    QString currentParaStyle = d->paragraphStyleCombo->currentText();
+    QString currentCharStyle = d->characterStyleCombo->currentText();
+    
+    // 更新段落样式列表
+    QSignalBlocker paraBlocker(d->paragraphStyleCombo);
+    d->paragraphStyleCombo->clear();
+    
+    QStringList paraStyles = d->styleManager->paragraphStyleNames();
+    d->paragraphStyleCombo->addItems(paraStyles);
+    
+    // 恢复之前选中的样式
+    int paraIndex = d->paragraphStyleCombo->findText(currentParaStyle);
+    if (paraIndex >= 0) {
+        d->paragraphStyleCombo->setCurrentIndex(paraIndex);
+    }
+    
+    // 更新字符样式列表
+    QSignalBlocker charBlocker(d->characterStyleCombo);
+    d->characterStyleCombo->clear();
+    
+    QStringList charStyles = d->styleManager->characterStyleNames();
+    d->characterStyleCombo->addItems(charStyles);
+    
+    // 恢复之前选中的样式
+    int charIndex = d->characterStyleCombo->findText(currentCharStyle);
+    if (charIndex >= 0) {
+        d->characterStyleCombo->setCurrentIndex(charIndex);
+    }
 }
 
 } // namespace QtWordEditor

@@ -7,6 +7,7 @@
 namespace QtWordEditor {
 
 class FormatToolBarPrivate;
+class StyleManager;
 
 /**
  * @brief 格式工具栏类，提供格式化控制的工具栏
@@ -16,7 +17,8 @@ class FormatToolBarPrivate;
  * 2. 字号调整
  * 3. 文本样式（粗体、斜体、下划线）
  * 4. 文本对齐方式
- * 5. 根据当前选择动态更新控件状态
+ * 5. 命名样式选择
+ * 6. 根据当前选择动态更新控件状态
  */
 class FormatToolBar : public QToolBar
 {
@@ -24,9 +26,10 @@ class FormatToolBar : public QToolBar
 public:
     /**
      * @brief 构造函数
+     * @param styleManager 样式管理器
      * @param parent 父窗口部件指针，默认为nullptr
      */
-    explicit FormatToolBar(QWidget *parent = nullptr);
+    explicit FormatToolBar(StyleManager *styleManager, QWidget *parent = nullptr);
     
     /**
      * @brief 析构函数
@@ -35,9 +38,18 @@ public:
 
     /**
      * @brief 根据当前选择更新控件状态
-     * 例如更新粗体按钮的状态
+     * 例如更新粗体按钮的状态和当前选中的样式名称
+     * @param characterStyleName 当前字符样式名称
+     * @param paragraphStyleName 当前段落样式名称
      */
-    void updateFromSelection();
+    void updateFromSelection(const QString &characterStyleName = QString(),
+                            const QString &paragraphStyleName = QString());
+
+    /**
+     * @brief 刷新样式列表
+     * 当样式发生变化时调用
+     */
+    void refreshStyleLists();
 
 public slots:
     /**
@@ -94,6 +106,15 @@ signals:
     
     /** @brief 对齐方式发生变化时发出的信号 */
     void alignmentChanged(Qt::Alignment alignment);
+    
+    /** @brief 字符样式发生变化时发出的信号 */
+    void characterStyleChanged(const QString &styleName);
+    
+    /** @brief 段落样式发生变化时发出的信号 */
+    void paragraphStyleChanged(const QString &styleName);
+    
+    /** @brief 请求打开样式管理对话框 */
+    void openStyleManagerRequested();
 
 private:
     QScopedPointer<FormatToolBarPrivate> d;  ///< 私有实现指针

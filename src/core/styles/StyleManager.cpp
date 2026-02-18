@@ -295,4 +295,24 @@ void StyleManager::applyParagraphStyle(const QString &styleName, const QList<int
     m_document->undoStack()->push(cmd);
 }
 
+void StyleManager::removeCharacterStyle(const QString &name)
+{
+    if (!m_characterStyles.contains(name))
+        return;
+    
+    m_characterStyles.remove(name);
+    emit stylesChanged();
+    emit characterStyleChanged(name);
+}
+
+void StyleManager::removeParagraphStyle(const QString &name)
+{
+    if (!m_paragraphStyles.contains(name))
+        return;
+    
+    m_paragraphStyles.remove(name);
+    emit stylesChanged();
+    emit paragraphStyleChanged(name);
+}
+
 } // namespace QtWordEditor

@@ -133,11 +133,15 @@ private slots:
     
     // ========== 光标相关槽函数 ==========
     
-    /**
-     * @brief 更新光标位置显示
+    /** @brief 更新光标位置显示
      * @param pos 新的光标位置
      */
     void updateCursorPosition(const CursorPosition &pos);
+    
+    /**
+     * @brief 更新样式状态显示
+     */
+    void updateStyleState();
     
     /**
      * @brief 计算光标的视觉位置

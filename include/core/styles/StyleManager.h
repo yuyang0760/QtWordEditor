@@ -117,6 +117,12 @@ public:
      * @return 父样式名称，如果没有则返回空字符串
      */
     QString characterStyleParent(const QString &styleName) const;
+    
+    /**
+     * @brief 删除字符样式
+     * @param name 要删除的样式名称
+     */
+    void removeCharacterStyle(const QString &name);
 
     // ========== 段落样式管理方法 ==========
     
@@ -168,6 +174,12 @@ public:
      * @return 父样式名称，如果没有则返回空字符串
      */
     QString paragraphStyleParent(const QString &styleName) const;
+    
+    /**
+     * @brief 删除段落样式
+     * @param name 要删除的样式名称
+     */
+    void removeParagraphStyle(const QString &name);
 
     // ========== 样式应用方法 ==========
     

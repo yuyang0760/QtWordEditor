@@ -18,6 +18,7 @@
 #include "core/styles/StyleManager.h"
 #include "ui/ribbon/RibbonBar.h"
 #include "ui/dialogs/PageSetupDialog.h"
+#include "ui/dialogs/StyleManagerDialog.h"
 #include "ui/widgets/DebugConsole.h"
 #include <QMenuBar>
 #include <QToolBar>
@@ -107,7 +108,14 @@ void MainWindow::setupUi()
     centralContainer->setLayout(mainLayout);
     setCentralWidget(centralContainer);
 
-    m_ribbonBar = new RibbonBar(this);
+    m_document = new Document(this);
+    m_cursor = new Cursor(m_document, this);
+    m_selection = new Selection(m_document, this);
+    m_styleManager = new StyleManager(this);
+    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
+    m_formatController = new FormatController(m_document, m_selection, m_styleManager, this);
+
+    m_ribbonBar = new RibbonBar(m_styleManager, this);
     m_ribbonBar->setFixedHeight(Constants::RIBBON_BAR_HEIGHT);
     mainLayout->addWidget(m_ribbonBar);
 
@@ -124,19 +132,16 @@ void MainWindow::setupUi()
     
     mainLayout->addWidget(viewContainer);
 
-    m_document = new Document(this);
-    m_cursor = new Cursor(m_document, this);
-    m_selection = new Selection(m_document, this);
-    m_styleManager = new StyleManager(this);
-    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
-    m_formatController = new FormatController(m_document, m_selection, m_styleManager, this);
-
     // 连接样式变化信号
     connect(m_styleManager, &StyleManager::characterStyleChanged,
             this, [this](const QString &styleName) {
         qDebug() << "Character style changed:" << styleName << "- rebuilding scene";
         if (m_scene) {
             m_scene->rebuildFromDocument();
+        }
+        // 刷新 RibbonBar 的样式列表
+        if (m_ribbonBar) {
+            m_ribbonBar->refreshStyleLists();
         }
     });
 
@@ -146,6 +151,10 @@ void MainWindow::setupUi()
         if (m_scene) {
             m_scene->rebuildFromDocument();
         }
+        // 刷新 RibbonBar 的样式列表
+        if (m_ribbonBar) {
+            m_ribbonBar->refreshStyleLists();
+        }
     });
 
     connect(m_styleManager, &StyleManager::stylesChanged,
@@ -153,6 +162,34 @@ void MainWindow::setupUi()
         qDebug() << "Styles changed - rebuilding scene";
         if (m_scene) {
             m_scene->rebuildFromDocument();
+        }
+        // 刷新 RibbonBar 的样式列表
+        if (m_ribbonBar) {
+            m_ribbonBar->refreshStyleLists();
+        }
+    });
+
+    // 连接 RibbonBar 样式选择信号
+    connect(m_ribbonBar, &RibbonBar::characterStyleChanged,
+            this, [this](const QString &styleName) {
+        qDebug() << "Character style selected from ribbon:" << styleName;
+        m_formatController->applyNamedCharacterStyle(styleName);
+    });
+
+    connect(m_ribbonBar, &RibbonBar::paragraphStyleChanged,
+            this, [this](const QString &styleName) {
+        qDebug() << "Paragraph style selected from ribbon:" << styleName;
+        m_formatController->applyNamedParagraphStyle(styleName);
+    });
+
+    connect(m_ribbonBar, &RibbonBar::openStyleManagerRequested,
+            this, [this]() {
+        qDebug() << "Open style manager requested";
+        StyleManagerDialog dialog(m_styleManager, this);
+        dialog.exec();
+        // 对话框关闭后刷新样式列表
+        if (m_ribbonBar) {
+            m_ribbonBar->refreshStyleLists();
         }
     });
 
@@ -708,6 +745,46 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     
     // 同时更新状态栏，显示光标位置
     updateStatusBar(m_lastScenePos, m_lastViewPos);
+    
+    // 更新样式状态显示
+    updateStyleState();
+}
+
+void MainWindow::updateStyleState()
+{
+    if (!m_ribbonBar || !m_document || m_document->sectionCount() == 0) {
+        return;
+    }
+    
+    Section *section = m_document->section(0);
+    if (!section || m_currentCursorPos.blockIndex < 0 || 
+        m_currentCursorPos.blockIndex >= section->blockCount()) {
+        return;
+    }
+    
+    Block *block = section->block(m_currentCursorPos.blockIndex);
+    if (!block) {
+        return;
+    }
+    
+    QString characterStyleName;
+    QString paragraphStyleName;
+    
+    // 获取字符样式名称
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (paraBlock) {
+        int spanIndex = paraBlock->findSpanIndex(m_currentCursorPos.offset);
+        if (spanIndex >= 0 && spanIndex < paraBlock->spanCount()) {
+            Span span = paraBlock->span(spanIndex);
+            characterStyleName = span.styleName();
+        }
+    }
+    
+    // TODO: 段落样式名称 - 需要 ParagraphBlock 支持命名样式
+    // 目前暂时留空，等后续完善
+    
+    // 更新 RibbonBar 的样式显示
+    m_ribbonBar->updateFromSelection(characterStyleName, paragraphStyleName);
 }
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)

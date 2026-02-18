@@ -5,11 +5,31 @@
 #include <QColor>
 #include <QSharedData>
 #include <QSharedDataPointer>
+#include <QFlags>
 #include "core/Global.h"
 
 namespace QtWordEditor {
 
 class CharacterStyleData;
+
+/**
+ * @brief 字符样式属性枚举
+ * 用于标记哪些属性已被显式设置
+ */
+enum class CharacterStyleProperty {
+    FontFamily     = 1 << 0,  ///< 字体族
+    FontSize       = 1 << 1,  ///< 字体大小
+    Bold           = 1 << 2,  ///< 粗体
+    Italic         = 1 << 3,  ///< 斜体
+    Underline      = 1 << 4,  ///< 下划线
+    StrikeOut      = 1 << 5,  ///< 删除线
+    TextColor      = 1 << 6,  ///< 文字颜色
+    BackgroundColor = 1 << 7, ///< 背景颜色
+    LetterSpacing  = 1 << 8   ///< 字符间距
+};
+
+Q_DECLARE_FLAGS(CharacterStylePropertyFlags, CharacterStyleProperty)
+Q_DECLARE_OPERATORS_FOR_FLAGS(CharacterStylePropertyFlags)
 
 /**
  * @brief 字符样式类，封装字符级别的格式化属性
@@ -181,6 +201,34 @@ public:
      * 将所有属性恢复为默认值
      */
     void reset();
+
+    // ========== 属性设置标记相关方法 ==========
+    
+    /**
+     * @brief 检查某个属性是否已被显式设置
+     * @param property 要检查的属性
+     * @return 如果属性已设置返回true，否则返回false
+     */
+    bool isPropertySet(CharacterStyleProperty property) const;
+    
+    /**
+     * @brief 清除某个属性的设置标记，将其恢复为默认值
+     * @param property 要清除的属性
+     */
+    void clearProperty(CharacterStyleProperty property);
+    
+    /**
+     * @brief 清除所有属性的设置标记，将所有属性恢复为默认值
+     */
+    void clearAllProperties();
+    
+    /**
+     * @brief 合并两个样式
+     * 只合并另一个样式中已显式设置的属性
+     * @param other 要合并的样式
+     * @return 合并后的新样式
+     */
+    CharacterStyle mergeWith(const CharacterStyle &other) const;
 
 private:
     QSharedDataPointer<CharacterStyleData> d;  ///< 隐式共享数据指针

@@ -14,6 +14,7 @@ public:
         , m_spaceBefore(0.0)
         , m_spaceAfter(0.0)
         , m_lineHeight(100)
+        , m_propertySetFlags()
     {
     }
 
@@ -26,6 +27,7 @@ public:
         , m_spaceBefore(other.m_spaceBefore)
         , m_spaceAfter(other.m_spaceAfter)
         , m_lineHeight(other.m_lineHeight)
+        , m_propertySetFlags(other.m_propertySetFlags)
     {
     }
 
@@ -38,6 +40,7 @@ public:
     qreal m_spaceBefore;
     qreal m_spaceAfter;
     int m_lineHeight;
+    ParagraphStylePropertyFlags m_propertySetFlags;  ///< 属性设置标记
 };
 
 ParagraphStyle::ParagraphStyle()
@@ -68,7 +71,10 @@ ParagraphAlignment ParagraphStyle::alignment() const
 
 void ParagraphStyle::setAlignment(ParagraphAlignment align)
 {
-    d->m_alignment = align;
+    if (d->m_alignment != align) {
+        d->m_alignment = align;
+        d->m_propertySetFlags |= ParagraphStyleProperty::Alignment;
+    }
 }
 
 qreal ParagraphStyle::firstLineIndent() const
@@ -78,7 +84,10 @@ qreal ParagraphStyle::firstLineIndent() const
 
 void ParagraphStyle::setFirstLineIndent(qreal indent)
 {
-    d->m_firstLineIndent = indent;
+    if (!qFuzzyCompare(d->m_firstLineIndent, indent)) {
+        d->m_firstLineIndent = indent;
+        d->m_propertySetFlags |= ParagraphStyleProperty::FirstLineIndent;
+    }
 }
 
 qreal ParagraphStyle::leftIndent() const
@@ -88,7 +97,10 @@ qreal ParagraphStyle::leftIndent() const
 
 void ParagraphStyle::setLeftIndent(qreal indent)
 {
-    d->m_leftIndent = indent;
+    if (!qFuzzyCompare(d->m_leftIndent, indent)) {
+        d->m_leftIndent = indent;
+        d->m_propertySetFlags |= ParagraphStyleProperty::LeftIndent;
+    }
 }
 
 qreal ParagraphStyle::rightIndent() const
@@ -98,7 +110,10 @@ qreal ParagraphStyle::rightIndent() const
 
 void ParagraphStyle::setRightIndent(qreal indent)
 {
-    d->m_rightIndent = indent;
+    if (!qFuzzyCompare(d->m_rightIndent, indent)) {
+        d->m_rightIndent = indent;
+        d->m_propertySetFlags |= ParagraphStyleProperty::RightIndent;
+    }
 }
 
 qreal ParagraphStyle::spaceBefore() const
@@ -108,7 +123,10 @@ qreal ParagraphStyle::spaceBefore() const
 
 void ParagraphStyle::setSpaceBefore(qreal space)
 {
-    d->m_spaceBefore = space;
+    if (!qFuzzyCompare(d->m_spaceBefore, space)) {
+        d->m_spaceBefore = space;
+        d->m_propertySetFlags |= ParagraphStyleProperty::SpaceBefore;
+    }
 }
 
 qreal ParagraphStyle::spaceAfter() const
@@ -118,7 +136,10 @@ qreal ParagraphStyle::spaceAfter() const
 
 void ParagraphStyle::setSpaceAfter(qreal space)
 {
-    d->m_spaceAfter = space;
+    if (!qFuzzyCompare(d->m_spaceAfter, space)) {
+        d->m_spaceAfter = space;
+        d->m_propertySetFlags |= ParagraphStyleProperty::SpaceAfter;
+    }
 }
 
 int ParagraphStyle::lineHeight() const
@@ -128,7 +149,10 @@ int ParagraphStyle::lineHeight() const
 
 void ParagraphStyle::setLineHeight(int percent)
 {
-    d->m_lineHeight = percent;
+    if (d->m_lineHeight != percent) {
+        d->m_lineHeight = percent;
+        d->m_propertySetFlags |= ParagraphStyleProperty::LineHeight;
+    }
 }
 
 bool ParagraphStyle::operator==(const ParagraphStyle &other) const
@@ -150,6 +174,77 @@ bool ParagraphStyle::operator!=(const ParagraphStyle &other) const
 void ParagraphStyle::reset()
 {
     d = new ParagraphStyleData;
+}
+
+bool ParagraphStyle::isPropertySet(ParagraphStyleProperty property) const
+{
+    return d->m_propertySetFlags.testFlag(property);
+}
+
+void ParagraphStyle::clearProperty(ParagraphStyleProperty property)
+{
+    // 清除属性标记
+    d->m_propertySetFlags &= ~ParagraphStylePropertyFlags(property);
+    
+    // 将属性恢复为默认值
+    switch (property) {
+        case ParagraphStyleProperty::Alignment:
+            d->m_alignment = ParagraphAlignment::AlignLeft;
+            break;
+        case ParagraphStyleProperty::FirstLineIndent:
+            d->m_firstLineIndent = 0.0;
+            break;
+        case ParagraphStyleProperty::LeftIndent:
+            d->m_leftIndent = 0.0;
+            break;
+        case ParagraphStyleProperty::RightIndent:
+            d->m_rightIndent = 0.0;
+            break;
+        case ParagraphStyleProperty::SpaceBefore:
+            d->m_spaceBefore = 0.0;
+            break;
+        case ParagraphStyleProperty::SpaceAfter:
+            d->m_spaceAfter = 0.0;
+            break;
+        case ParagraphStyleProperty::LineHeight:
+            d->m_lineHeight = 100;
+            break;
+    }
+}
+
+void ParagraphStyle::clearAllProperties()
+{
+    d = new ParagraphStyleData;
+}
+
+ParagraphStyle ParagraphStyle::mergeWith(const ParagraphStyle &other) const
+{
+    ParagraphStyle result = *this;
+    
+    // 只合并另一个样式中已显式设置的属性
+    if (other.isPropertySet(ParagraphStyleProperty::Alignment)) {
+        result.setAlignment(other.alignment());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::FirstLineIndent)) {
+        result.setFirstLineIndent(other.firstLineIndent());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::LeftIndent)) {
+        result.setLeftIndent(other.leftIndent());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::RightIndent)) {
+        result.setRightIndent(other.rightIndent());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::SpaceBefore)) {
+        result.setSpaceBefore(other.spaceBefore());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::SpaceAfter)) {
+        result.setSpaceAfter(other.spaceAfter());
+    }
+    if (other.isPropertySet(ParagraphStyleProperty::LineHeight)) {
+        result.setLineHeight(other.lineHeight());
+    }
+    
+    return result;
 }
 
 } // namespace QtWordEditor

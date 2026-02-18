@@ -1,5 +1,7 @@
 #include "core/styles/StyleManager.h"
 #include "core/document/Document.h"
+#include "core/commands/SetCharacterStyleCommand.h"
+#include "core/commands/SetParagraphStyleCommand.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -70,20 +72,44 @@ QStringList StyleManager::paragraphStyleNames() const
 
 void StyleManager::applyCharacterStyle(const QString &styleName, int blockIndex, int start, int end)
 {
-    Q_UNUSED(blockIndex);
-    Q_UNUSED(start);
-    Q_UNUSED(end);
+    // 检查样式是否存在
     if (!hasCharacterStyle(styleName))
         return;
-    // TODO: create a command and push onto undo stack
+    
+    // 检查文档是否有效
+    if (!m_document)
+        return;
+    
+    // 获取样式对象
+    CharacterStyle style = characterStyle(styleName);
+    
+    // 创建命令并推入撤销栈
+    SetCharacterStyleCommand *cmd = new SetCharacterStyleCommand(
+        m_document, blockIndex, start, end, style);
+    m_document->undoStack()->push(cmd);
 }
 
 void StyleManager::applyParagraphStyle(const QString &styleName, const QList<int> &blockIndices)
 {
-    Q_UNUSED(blockIndices);
+    // 检查样式是否存在
     if (!hasParagraphStyle(styleName))
         return;
-    // TODO: implement
+    
+    // 检查文档是否有效
+    if (!m_document)
+        return;
+    
+    // 检查块索引列表是否为空
+    if (blockIndices.isEmpty())
+        return;
+    
+    // 获取样式对象
+    ParagraphStyle style = paragraphStyle(styleName);
+    
+    // 创建命令并推入撤销栈
+    SetParagraphStyleCommand *cmd = new SetParagraphStyleCommand(
+        m_document, blockIndices, style);
+    m_document->undoStack()->push(cmd);
 }
 
 } // namespace QtWordEditor

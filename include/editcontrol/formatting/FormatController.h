@@ -10,7 +10,9 @@ namespace QtWordEditor {
 
 class Document;
 class Selection;
+class Cursor;
 class StyleManager;
+struct CursorPosition;
 
 /**
  * @brief 格式控制器类，提供高级格式化API接口
@@ -28,11 +30,13 @@ public:
     /**
      * @brief 构造函数
      * @param document 关联的文档对象
+     * @param cursor 可选的光标对象
      * @param selection 可选的选择区域对象
      * @param styleManager 可选的样式管理器对象
      * @param parent 父对象指针，默认为nullptr
      */
-    explicit FormatController(Document *document, Selection *selection = nullptr,
+    explicit FormatController(Document *document, Cursor *cursor = nullptr,
+                              Selection *selection = nullptr,
                               StyleManager *styleManager = nullptr,
                               QObject *parent = nullptr);
     
@@ -103,6 +107,35 @@ public:
      */
     CharacterStyle getCurrentCharacterStyle() const;
 
+    // ========== 样式获取方法（用于工具栏显示） ==========
+
+    /**
+     * @brief 获取当前应该在工具栏显示的样式
+     * 
+     * 逻辑：
+     * - 有选区：返回选区终点（Focus）的前一个字符的样式
+     * - 无选区：返回光标前一个字符的样式
+     * 
+     * @return 应该显示的字符样式
+     */
+    CharacterStyle getCurrentDisplayStyle() const;
+
+    /**
+     * @brief 获取选区的终点位置（Focus）
+     * 
+     * @return 选区终点的位置 {blockIndex, offset}
+     */
+    CursorPosition getSelectionEndPosition() const;
+
+    /**
+     * @brief 获取指定位置的字符样式
+     * 
+     * @param blockIndex 块索引
+     * @param offset 块内偏移量
+     * @return 该位置的字符样式
+     */
+    CharacterStyle getStyleAtPosition(int blockIndex, int offset) const;
+
     // ========== 段落格式化方法 ==========
     
     /**
@@ -167,6 +200,7 @@ public:
 
 private:
     Document *m_document;       ///< 关联的文档对象
+    Cursor *m_cursor;           ///< 关联的光标对象
     Selection *m_selection;     ///< 关联的选择区域对象
     StyleManager *m_styleManager; ///< 关联的样式管理器对象
 };

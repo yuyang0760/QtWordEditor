@@ -113,7 +113,7 @@ void MainWindow::setupUi()
     m_selection = new Selection(m_document, this);
     m_styleManager = new StyleManager(this);
     m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
-    m_formatController = new FormatController(m_document, m_selection, m_styleManager, this);
+    m_formatController = new FormatController(m_document, m_cursor, m_selection, m_styleManager, this);
 
     m_ribbonBar = new RibbonBar(m_styleManager, this);
     m_ribbonBar->setFixedHeight(Constants::RIBBON_BAR_HEIGHT);

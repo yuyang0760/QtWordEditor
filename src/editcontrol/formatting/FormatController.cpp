@@ -3,6 +3,7 @@
 #include "core/document/ParagraphBlock.h"
 #include "core/document/Section.h"
 #include "editcontrol/selection/Selection.h"
+#include "editcontrol/cursor/Cursor.h"
 #include "core/commands/SetCharacterStyleCommand.h"
 #include "core/commands/SetParagraphStyleCommand.h"
 #include "core/styles/StyleManager.h"
@@ -10,10 +11,12 @@
 
 namespace QtWordEditor {
 
-FormatController::FormatController(Document *document, Selection *selection,
+FormatController::FormatController(Document *document, Cursor *cursor,
+                                    Selection *selection,
                                     StyleManager *styleManager, QObject *parent)
     : QObject(parent)
     , m_document(document)
+    , m_cursor(cursor)
     , m_selection(selection)
     , m_styleManager(styleManager)
 {
@@ -277,6 +280,92 @@ ParagraphStyle FormatController::getCurrentParagraphStyle() const
     
     result = paraBlock->paragraphStyle();
     
+    return result;
+}
+
+CharacterStyle FormatController::getStyleAtPosition(int blockIndex, int offset) const
+{
+    CharacterStyle result;
+
+    if (!m_document)
+        return result;
+
+    // 获取指定块
+    Block *block = m_document->block(blockIndex);
+    if (!block)
+        return result;
+
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock)
+        return result;
+
+    // 验证偏移量的有效性
+    if (offset >= 0 && offset < paraBlock->length()) {
+        result = paraBlock->styleAt(offset);
+    }
+
+    return result;
+}
+
+CursorPosition FormatController::getSelectionEndPosition() const
+{
+    if (!m_selection)
+        return {-1, 0};
+
+    // 直接从 Selection 获取焦点位置（Focus）
+    return m_selection->focusPosition();
+}
+
+CharacterStyle FormatController::getCurrentDisplayStyle() const
+{
+    CharacterStyle result;
+
+    if (!m_document)
+        return result;
+
+    CursorPosition targetPos;
+
+    // 判断是否有选区
+    if (m_selection && !m_selection->isEmpty()) {
+        // 有选区：获取选区终点（Focus）位置
+        targetPos = m_selection->focusPosition();
+    } else {
+        // 无选区：获取光标位置
+        if (m_cursor) {
+            targetPos = m_cursor->position();
+        } else {
+            qWarning() << "FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象，无法获取光标位置";
+            return result;
+        }
+    }
+
+    // 计算目标位置：终点位置 - 1
+    int targetBlock = targetPos.blockIndex;
+    int targetOffset = targetPos.offset - 1;
+
+    // 处理边界情况：如果偏移量为 -1（即终点在块的开头）
+    if (targetOffset < 0) {
+        // 尝试找到前一个块
+        if (targetBlock > 0) {
+            targetBlock = targetBlock - 1;
+            Block *prevBlock = m_document->block(targetBlock);
+            if (prevBlock) {
+                ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
+                if (prevParaBlock) {
+                    targetOffset = prevParaBlock->length() - 1;
+                }
+            }
+        } else {
+            // 已经在文档开头，没有前一个字符，返回空样式
+            return result;
+        }
+    }
+
+    // 获取目标位置的样式
+    if (targetOffset >= 0) {
+        result = getStyleAtPosition(targetBlock, targetOffset);
+    }
+
     return result;
 }
 

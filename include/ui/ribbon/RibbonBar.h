@@ -7,6 +7,7 @@
 #include <QFontComboBox>
 #include <QSpinBox>
 #include "core/Global.h"
+#include "core/document/CharacterStyle.h"
 
 namespace QtWordEditor {
 
@@ -38,6 +39,12 @@ public:
      */
     void updateFromSelection(const QString &characterStyleName = QString(),
                             const QString &paragraphStyleName = QString());
+    
+    /**
+     * @brief 根据字符样式更新控件状态
+     * @param style 要显示的字符样式对象
+     */
+    void updateFromSelection(const CharacterStyle &style);
     
     /**
      * @brief 刷新样式列表

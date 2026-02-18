@@ -306,6 +306,50 @@ void RibbonBar::updateFromSelection(const QString &characterStyleName,
     }
 }
 
+void RibbonBar::updateFromSelection(const CharacterStyle &style)
+{
+    // 使用 QSignalBlocker 防止信号循环
+    QSignalBlocker fontBlocker(d->fontCombo);
+    QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
+    QSignalBlocker boldBlocker(d->boldAction);
+    QSignalBlocker italicBlocker(d->italicAction);
+    QSignalBlocker underlineBlocker(d->underlineAction);
+    
+    // 更新字体下拉框（同时检查字体族和字体大小属性）
+    if (style.isPropertySet(CharacterStyleProperty::FontFamily) || 
+        style.isPropertySet(CharacterStyleProperty::FontSize)) {
+        QFont font = style.font();
+        d->fontCombo->setCurrentFont(font);
+    }
+    
+    // 更新字号下拉框
+    if (style.isPropertySet(CharacterStyleProperty::FontSize)) {
+        int fontSize = style.fontSize();
+        d->fontSizeSpin->setValue(fontSize);
+    }
+    
+    // 更新粗体按钮
+    if (style.isPropertySet(CharacterStyleProperty::Bold)) {
+        bool bold = style.bold();
+        d->boldAction->setChecked(bold);
+    }
+    
+    // 更新斜体按钮
+    if (style.isPropertySet(CharacterStyleProperty::Italic)) {
+        bool italic = style.italic();
+        d->italicAction->setChecked(italic);
+    }
+    
+    // 更新下划线按钮
+    if (style.isPropertySet(CharacterStyleProperty::Underline)) {
+        bool underline = style.underline();
+        d->underlineAction->setChecked(underline);
+    }
+    
+    // 注意：我们仍然调用旧的 updateFromSelection 来更新样式名称下拉框
+    // 但由于我们现在没有样式名称，暂时不调用
+}
+
 void RibbonBar::refreshStyleLists()
 {
     if (!d->styleManager)

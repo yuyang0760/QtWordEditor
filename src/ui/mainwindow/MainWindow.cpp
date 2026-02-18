@@ -5,6 +5,7 @@
 #include "core/document/ParagraphBlock.h"
 #include "core/document/Span.h"
 #include "core/document/ImageBlock.h"
+#include "core/document/CharacterStyle.h"
 #include "core/document/TableBlock.h"
 #include "core/document/Page.h"
 #include "core/layout/PageBuilder.h"
@@ -230,6 +231,10 @@ void MainWindow::setupUi()
 
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
+    
+    // 连接选区变化信号到样式状态更新
+    connect(m_selection, &Selection::selectionChanged,
+            this, &MainWindow::updateStyleState);
 
     m_currentZoom = 100.0;
     
@@ -752,39 +757,15 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
 
 void MainWindow::updateStyleState()
 {
-    if (!m_ribbonBar || !m_document || m_document->sectionCount() == 0) {
+    if (!m_ribbonBar || !m_document || !m_formatController) {
         return;
     }
     
-    Section *section = m_document->section(0);
-    if (!section || m_currentCursorPos.blockIndex < 0 || 
-        m_currentCursorPos.blockIndex >= section->blockCount()) {
-        return;
-    }
-    
-    Block *block = section->block(m_currentCursorPos.blockIndex);
-    if (!block) {
-        return;
-    }
-    
-    QString characterStyleName;
-    QString paragraphStyleName;
-    
-    // 获取字符样式名称
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (paraBlock) {
-        int spanIndex = paraBlock->findSpanIndex(m_currentCursorPos.offset);
-        if (spanIndex >= 0 && spanIndex < paraBlock->spanCount()) {
-            Span span = paraBlock->span(spanIndex);
-            characterStyleName = span.styleName();
-        }
-    }
-    
-    // TODO: 段落样式名称 - 需要 ParagraphBlock 支持命名样式
-    // 目前暂时留空，等后续完善
+    // 使用新的 FormatController::getCurrentDisplayStyle() 方法获取应该显示的样式
+    CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
     // 更新 RibbonBar 的样式显示
-    m_ribbonBar->updateFromSelection(characterStyleName, paragraphStyleName);
+    m_ribbonBar->updateFromSelection(style);
 }
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)

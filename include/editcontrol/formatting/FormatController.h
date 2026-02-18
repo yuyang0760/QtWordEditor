@@ -10,6 +10,7 @@ namespace QtWordEditor {
 
 class Document;
 class Selection;
+class StyleManager;
 
 /**
  * @brief 格式控制器类，提供高级格式化API接口
@@ -28,9 +29,11 @@ public:
      * @brief 构造函数
      * @param document 关联的文档对象
      * @param selection 可选的选择区域对象
+     * @param styleManager 可选的样式管理器对象
      * @param parent 父对象指针，默认为nullptr
      */
     explicit FormatController(Document *document, Selection *selection = nullptr,
+                              StyleManager *styleManager = nullptr,
                               QObject *parent = nullptr);
     
     /**
@@ -41,10 +44,16 @@ public:
     // ========== 字符格式化方法 ==========
     
     /**
-     * @brief 应用完整的字符样式
+     * @brief 应用完整的字符样式（使用 mergeWith 合并）
      * @param style 要应用的字符样式对象
      */
     void applyCharacterStyle(const CharacterStyle &style);
+    
+    /**
+     * @brief 应用命名的字符样式
+     * @param styleName 样式名称
+     */
+    void applyNamedCharacterStyle(const QString &styleName);
     
     /**
      * @brief 设置字体
@@ -87,14 +96,26 @@ public:
      * @param color 新的背景颜色
      */
     void setBackgroundColor(const QColor &color);
+    
+    /**
+     * @brief 获取当前选区内的字符样式
+     * @return 选区内的字符样式
+     */
+    CharacterStyle getCurrentCharacterStyle() const;
 
     // ========== 段落格式化方法 ==========
     
     /**
-     * @brief 应用完整的段落样式
+     * @brief 应用完整的段落样式（使用 mergeWith 合并）
      * @param style 要应用的段落样式对象
      */
     void applyParagraphStyle(const ParagraphStyle &style);
+    
+    /**
+     * @brief 应用命名的段落样式
+     * @param styleName 样式名称
+     */
+    void applyNamedParagraphStyle(const QString &styleName);
     
     /**
      * @brief 设置段落对齐方式
@@ -137,10 +158,17 @@ public:
      * @param space 段后间距值
      */
     void setSpaceAfter(qreal space);
+    
+    /**
+     * @brief 获取当前选区内的段落样式
+     * @return 选区内的段落样式
+     */
+    ParagraphStyle getCurrentParagraphStyle() const;
 
 private:
-    Document *m_document;    ///< 关联的文档对象
-    Selection *m_selection;  ///< 关联的选择区域对象
+    Document *m_document;       ///< 关联的文档对象
+    Selection *m_selection;     ///< 关联的选择区域对象
+    StyleManager *m_styleManager; ///< 关联的样式管理器对象
 };
 
 } // namespace QtWordEditor

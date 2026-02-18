@@ -127,9 +127,9 @@ void MainWindow::setupUi()
     m_document = new Document(this);
     m_cursor = new Cursor(m_document, this);
     m_selection = new Selection(m_document, this);
-    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
-    m_formatController = new FormatController(m_document, m_selection, this);
     m_styleManager = new StyleManager(this);
+    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
+    m_formatController = new FormatController(m_document, m_selection, m_styleManager, this);
 
     // 连接样式变化信号
     connect(m_styleManager, &StyleManager::characterStyleChanged,

@@ -1,15 +1,21 @@
 #include "editcontrol/formatting/FormatController.h"
 #include "core/document/Document.h"
+#include "core/document/ParagraphBlock.h"
+#include "core/document/Section.h"
 #include "editcontrol/selection/Selection.h"
 #include "core/commands/SetCharacterStyleCommand.h"
+#include "core/commands/SetParagraphStyleCommand.h"
+#include "core/styles/StyleManager.h"
 #include <QDebug>
 
 namespace QtWordEditor {
 
-FormatController::FormatController(Document *document, Selection *selection, QObject *parent)
+FormatController::FormatController(Document *document, Selection *selection,
+                                    StyleManager *styleManager, QObject *parent)
     : QObject(parent)
     , m_document(document)
     , m_selection(selection)
+    , m_styleManager(styleManager)
 {
 }
 
@@ -19,10 +25,60 @@ FormatController::~FormatController()
 
 void FormatController::applyCharacterStyle(const CharacterStyle &style)
 {
-    if (!m_document)
+    if (!m_document || !m_selection)
         return;
-    // Apply to current selection or to the whole document?
-    // For now, placeholder
+    
+    SelectionRange range = m_selection->range();
+    if (range.isEmpty())
+        return;
+    
+    range.normalize();
+    
+    // 遍历选择范围内的每个块
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        if (!block)
+            continue;
+        
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock)
+            continue;
+        
+        // 计算当前块的起始和结束偏移量
+        int startOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
+        int endOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
+        
+        if (startOffset >= endOffset)
+            continue;
+        
+        // 对于选择范围内的每个位置，获取原样式并合并
+        // 这里我们创建一个合并后的样式，直接应用到整个范围
+        CharacterStyle mergedStyle;
+        
+        // 获取起始位置的当前样式作为基础
+        if (startOffset < paraBlock->length()) {
+            CharacterStyle currentStyle = paraBlock->styleAt(startOffset);
+            // 使用 mergeWith 合并，只覆盖显式设置的属性
+            mergedStyle = currentStyle.mergeWith(style);
+        } else {
+            mergedStyle = style;
+        }
+        
+        // 创建并推入命令
+        SetCharacterStyleCommand *cmd = new SetCharacterStyleCommand(
+            m_document, blockIndex, startOffset, endOffset, mergedStyle);
+        m_document->undoStack()->push(cmd);
+    }
+}
+
+void FormatController::applyNamedCharacterStyle(const QString &styleName)
+{
+    if (!m_styleManager || !m_styleManager->hasCharacterStyle(styleName))
+        return;
+    
+    // 获取解析继承后的样式
+    CharacterStyle style = m_styleManager->getResolvedCharacterStyle(styleName);
+    applyCharacterStyle(style);
 }
 
 void FormatController::setFont(const QFont &font)
@@ -74,10 +130,80 @@ void FormatController::setBackgroundColor(const QColor &color)
     applyCharacterStyle(style);
 }
 
+CharacterStyle FormatController::getCurrentCharacterStyle() const
+{
+    CharacterStyle result;
+    
+    if (!m_document || !m_selection)
+        return result;
+    
+    SelectionRange range = m_selection->range();
+    if (range.isEmpty())
+        return result;
+    
+    range.normalize();
+    
+    // 获取起始位置的样式
+    Block *block = m_document->block(range.startBlock);
+    if (!block)
+        return result;
+    
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock)
+        return result;
+    
+    if (range.startOffset < paraBlock->length()) {
+        result = paraBlock->styleAt(range.startOffset);
+    }
+    
+    return result;
+}
+
 void FormatController::applyParagraphStyle(const ParagraphStyle &style)
 {
-    Q_UNUSED(style);
-    // TODO: implement
+    if (!m_document || !m_selection)
+        return;
+    
+    SelectionRange range = m_selection->range();
+    if (range.isEmpty())
+        return;
+    
+    range.normalize();
+    
+    QList<int> blockIndices;
+    
+    // 收集选择范围内的所有块索引
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        if (!block)
+            continue;
+        
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock)
+            continue;
+        
+        blockIndices.append(blockIndex);
+    }
+    
+    if (blockIndices.isEmpty())
+        return;
+    
+    // 对于每个块，获取原样式并合并，然后创建命令
+    // 注意：SetParagraphStyleCommand 需要处理合并逻辑
+    // 这里我们先简化处理，直接应用样式
+    SetParagraphStyleCommand *cmd = new SetParagraphStyleCommand(
+        m_document, blockIndices, style);
+    m_document->undoStack()->push(cmd);
+}
+
+void FormatController::applyNamedParagraphStyle(const QString &styleName)
+{
+    if (!m_styleManager || !m_styleManager->hasParagraphStyle(styleName))
+        return;
+    
+    // 获取解析继承后的样式
+    ParagraphStyle style = m_styleManager->getResolvedParagraphStyle(styleName);
+    applyParagraphStyle(style);
 }
 
 void FormatController::setAlignment(QtWordEditor::ParagraphAlignment align)
@@ -127,6 +253,31 @@ void FormatController::setSpaceAfter(qreal space)
     ParagraphStyle style;
     style.setSpaceAfter(space);
     applyParagraphStyle(style);
+}
+
+ParagraphStyle FormatController::getCurrentParagraphStyle() const
+{
+    ParagraphStyle result;
+    
+    if (!m_document || !m_selection)
+        return result;
+    
+    SelectionRange range = m_selection->range();
+    if (range.isEmpty())
+        return result;
+    
+    // 获取起始块的段落样式
+    Block *block = m_document->block(range.startBlock);
+    if (!block)
+        return result;
+    
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock)
+        return result;
+    
+    result = paraBlock->paragraphStyle();
+    
+    return result;
 }
 
 } // namespace QtWordEditor

@@ -308,11 +308,6 @@ void RibbonBar::updateFromSelection(const QString &characterStyleName,
 
 void RibbonBar::updateFromSelection(const CharacterStyle &style)
 {
-    qDebug() << "RibbonBar::updateFromSelection called";
-    qDebug() << "  style.bold() =" << style.bold();
-    qDebug() << "  style.italic() =" << style.italic();
-    qDebug() << "  style.underline() =" << style.underline();
-    
     // 使用 QSignalBlocker 防止信号循环
     QSignalBlocker fontBlocker(d->fontCombo);
     QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
@@ -339,10 +334,6 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style)
     // 更新下划线按钮
     bool underline = style.underline();
     d->underlineAction->setChecked(underline);
-    
-    qDebug() << "  Updated bold action to:" << bold;
-    qDebug() << "  Updated italic action to:" << italic;
-    qDebug() << "  Updated underline action to:" << underline;
     
     // 注意：我们仍然调用旧的 updateFromSelection 来更新样式名称下拉框
     // 但由于我们现在没有样式名称，暂时不调用

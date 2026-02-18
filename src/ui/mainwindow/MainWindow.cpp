@@ -517,12 +517,10 @@ void MainWindow::newDocument()
             
             ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
             if (paraBlock) {
-                // 连接 textChanged 信号，当文本变化时重建场景
+                // 连接 textChanged 信号，当文本变化时仅更新文本项，不重建完整场景
                 connect(paraBlock, &ParagraphBlock::textChanged, this, [this]() {
-                    qDebug() << "ParagraphBlock textChanged, rebuilding scene";
-                    m_scene->rebuildFromDocument();
+                    m_scene->updateAllTextItems();
                 });
-                qDebug() << "  ParagraphBlock created, text =" << paraBlock->text();
             }
         }
         
@@ -831,19 +829,12 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
 
 void MainWindow::updateStyleState()
 {
-    qDebug() << "MainWindow::updateStyleState() called";
-    
     if (!m_ribbonBar || !m_document || !m_formatController) {
-        qDebug() << "  Missing m_ribbonBar or m_document or m_formatController";
         return;
     }
     
     // 使用新的 FormatController::getCurrentDisplayStyle() 方法获取应该显示的样式
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
-    
-    qDebug() << "  Updating ribbon bar with style: bold=" << style.bold() 
-             << ", italic=" << style.italic()
-             << ", underline=" << style.underline();
     
     // 更新 RibbonBar 的样式显示
     m_ribbonBar->updateFromSelection(style);

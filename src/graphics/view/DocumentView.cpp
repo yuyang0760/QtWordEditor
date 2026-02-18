@@ -18,7 +18,8 @@ DocumentView::DocumentView(QWidget *parent)
     , m_cursorVisualPos(0, 0)
 {
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    // 使用智能视口更新而不是全屏更新，提高性能
+    setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     setAlignment(Qt::AlignHCenter | Qt::AlignTop);
     setDragMode(QGraphicsView::NoDrag);

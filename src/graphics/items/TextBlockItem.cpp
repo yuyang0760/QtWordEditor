@@ -43,7 +43,7 @@ void TextBlockItem::initializeTextItem()
     m_textItem->document()->setDocumentMargin(0);
     
     // 验证边距是否正确设置
-    qDebug() << "TextBlockItem::initializeTextItem - documentMargin:" << m_textItem->document()->documentMargin();
+    // qDebug() << "TextBlockItem::initializeTextItem - documentMargin:" << m_textItem->document()->documentMargin();
     
     // 设置文本换行选项：按字符换行，不是单词边界
     QTextOption option = m_textItem->document()->defaultTextOption();
@@ -58,7 +58,7 @@ void TextBlockItem::initializeTextItem()
     
     // 内部 m_textItem 相对于 TextBlockItem 的位置是 (0,0)
     m_textItem->setPos(0, 0);
-    qDebug() << "TextBlockItem::initializeTextItem - m_textItem pos:" << m_textItem->pos();
+    // qDebug() << "TextBlockItem::initializeTextItem - m_textItem pos:" << m_textItem->pos();
 }
 
 QGraphicsTextItem *TextBlockItem::textItem() const
@@ -124,8 +124,24 @@ void TextBlockItem::updateBlock()
     if (!para)
         return;
 
-    applyRichTextFromBlock();
-    updateBoundingRect();
+    // 快速检查：先比较 span 数量，如果没变再比较内容
+    bool needsUpdate = false;
+    if (para->spanCount() != m_cachedSpans.size()) {
+        needsUpdate = true;
+    } else {
+        // 逐个比较 span 是否相同
+        for (int i = 0; i < para->spanCount(); ++i) {
+            if (para->span(i) != m_cachedSpans[i]) {
+                needsUpdate = true;
+                break;
+            }
+        }
+    }
+    
+    if (needsUpdate) {
+        applyRichTextFromBlock();
+        updateBoundingRect();
+    }
 }
 
 void TextBlockItem::applyRichTextFromBlock()
@@ -139,8 +155,13 @@ void TextBlockItem::applyRichTextFromBlock()
     cursor.select(QTextCursor::Document);
     cursor.removeSelectedText();
     
+    // 更新缓存
+    m_cachedSpans.clear();
+    
     for (int i = 0; i < para->spanCount(); ++i) {
         Span span = para->span(i);
+        m_cachedSpans.append(span);  // 保存到缓存
+        
         CharacterStyle style = span.style();
         
         QTextCharFormat format;

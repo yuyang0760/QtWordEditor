@@ -67,6 +67,12 @@ public:
      * 用于内容变化但布局未改变的情况
      */
     void updateAllTextItems();
+    
+    /**
+     * @brief 只更新单个文本块
+     * @param block 要更新的块
+     */
+    void updateSingleTextItem(Block *block);
 
     // ========== 光标相关方法 ==========
     

@@ -4,7 +4,9 @@
 #include "BaseBlockItem.h"
 #include <QGraphicsTextItem>
 #include <QFont>
+#include <QList>
 #include "core/Global.h"
+#include "core/document/Span.h"
 
 namespace QtWordEditor {
 
@@ -106,6 +108,9 @@ private:
     
     QGraphicsTextItem *m_textItem;  ///< 内部文本图形项
     qreal m_textWidth;              ///< 文本显示宽度
+    
+    // 缓存上次渲染的内容，避免不必要的重建
+    QList<Span> m_cachedSpans;      ///< 上次渲染的 Span 列表
 };
 
 } // namespace QtWordEditor

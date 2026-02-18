@@ -517,9 +517,9 @@ void MainWindow::newDocument()
             
             ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
             if (paraBlock) {
-                // 连接 textChanged 信号，当文本变化时仅更新文本项，不重建完整场景
-                connect(paraBlock, &ParagraphBlock::textChanged, this, [this]() {
-                    m_scene->updateAllTextItems();
+                // 连接 textChanged 信号，只更新当前修改的块而不是全部
+                connect(paraBlock, &ParagraphBlock::textChanged, this, [this, block]() {
+                    m_scene->updateSingleTextItem(block);
                 });
             }
         }

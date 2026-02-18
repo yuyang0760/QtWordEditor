@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(MSVC)
-    add_compile_options(/Zc:__cplusplus /permissive-)
+    add_compile_options(/Zc:__cplusplus /permissive- /FS)
 endif()
 
 # Find Qt6
@@ -40,11 +40,11 @@ add_library(QtWordEditorUI STATIC ${UI_SOURCES} ${UI_HEADERS})
 
 # Set MSVC specific compile options for all targets
 if(MSVC)
-    target_compile_options(QtWordEditorCore PRIVATE /Zc:__cplusplus /permissive-)
-    target_compile_options(QtWordEditorEditControl PRIVATE /Zc:__cplusplus /permissive-)
-    target_compile_options(QtWordEditorGraphics PRIVATE /Zc:__cplusplus /permissive-)
-    target_compile_options(QtWordEditorIO PRIVATE /Zc:__cplusplus /permissive-)
-    target_compile_options(QtWordEditorUI PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditorCore PRIVATE /Zc:__cplusplus /permissive- /FS)
+    target_compile_options(QtWordEditorEditControl PRIVATE /Zc:__cplusplus /permissive- /FS)
+    target_compile_options(QtWordEditorGraphics PRIVATE /Zc:__cplusplus /permissive- /FS)
+    target_compile_options(QtWordEditorIO PRIVATE /Zc:__cplusplus /permissive- /FS)
+    target_compile_options(QtWordEditorUI PRIVATE /Zc:__cplusplus /permissive- /FS)
 endif()
 
 # Set include directories for libraries
@@ -71,7 +71,7 @@ endif()
 
 # Set MSVC compile options for executable
 if(MSVC)
-    target_compile_options(QtWordEditor PRIVATE /Zc:__cplusplus /permissive-)
+    target_compile_options(QtWordEditor PRIVATE /Zc:__cplusplus /permissive- /FS)
 endif()
 
 # Link libraries to main executable

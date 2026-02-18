@@ -30,7 +30,11 @@ void Selection::setRange(const SelectionRange &range)
 
 void Selection::setRange(int block1, int offset1, int block2, int offset2)
 {
-    SelectionRange range{block1, offset1, block2, offset2};
+    SelectionRange range;
+    range.anchorBlock = block1;
+    range.anchorOffset = offset1;
+    range.focusBlock = block2;
+    range.focusOffset = offset2;
     range.normalize();
     setRange(range);
 }
@@ -66,10 +70,10 @@ void Selection::extend(int block, int offset)
         // We need the cursor position; for now, assume block 0 offset 0
         setRange(0, 0, block, offset);
     } else {
-        // Extend the existing selection
+        // Extend the existing selection: 只更新 focus 位置，保留 anchor 不变
         SelectionRange &first = m_ranges.first();
-        first.endBlock = block;
-        first.endOffset = offset;
+        first.focusBlock = block;
+        first.focusOffset = offset;
         first.normalize();
         emit selectionChanged();
     }
@@ -100,6 +104,20 @@ QString Selection::selectedText() const
         }
     }
     return result;
+}
+
+CursorPosition Selection::focusPosition() const
+{
+    if (m_ranges.isEmpty())
+        return {-1, 0};
+    return m_ranges.first().focusPosition();
+}
+
+CursorPosition Selection::anchorPosition() const
+{
+    if (m_ranges.isEmpty())
+        return {-1, 0};
+    return m_ranges.first().anchorPosition();
 }
 
 } // namespace QtWordEditor

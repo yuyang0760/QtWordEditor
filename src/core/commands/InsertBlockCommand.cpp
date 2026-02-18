@@ -1,10 +1,25 @@
+
+/**
+ * @file InsertBlockCommand.cpp
+ * @brief InsertBlockCommand类的实现
+ *
+ * 本文件实现了InsertBlockCommand类，用于在文档中插入新的块，
+ * 支持撤销和重做操作。
+ */
+
 #include "core/commands/InsertBlockCommand.h"
 #include "core/document/Document.h"
 #include "core/document/Section.h"
-#include <QDebug>
+#include &lt;QDebug&gt;
 
 namespace QtWordEditor {
 
+/**
+ * @brief 构造InsertBlockCommand对象
+ * @param document 要操作的文档
+ * @param index 插入位置的全局索引
+ * @param block 要插入的块对象
+ */
 InsertBlockCommand::InsertBlockCommand(Document *document, int index, Block *block)
     : EditCommand(document, QString())
     , m_index(index)
@@ -13,46 +28,56 @@ InsertBlockCommand::InsertBlockCommand(Document *document, int index, Block *blo
     setText(QObject::tr("Insert block"));
 }
 
+/**
+ * @brief 销毁InsertBlockCommand对象
+ *
+ * 注意：该类拥有m_block的所有权，会在析构时删除它
+ */
 InsertBlockCommand::~InsertBlockCommand()
 {
     if (m_block)
         delete m_block;
 }
 
+/**
+ * @brief 执行插入块操作（重做）
+ *
+ * 将块插入到文档中。如果文档没有章节，会先创建一个默认章节。
+ */
 void InsertBlockCommand::redo()
 {
     if (!m_block) {
-        qWarning() << "Block is null";
+        qWarning() &lt;&lt; "Block is null";
         return;
     }
-    // Simplified: assume document has at least one section
-    if (document()->sectionCount() == 0) {
-        // Create a default section
+    if (document()-&gt;sectionCount() == 0) {
         Section *sec = new Section(document());
-        document()->addSection(sec);
+        document()-&gt;addSection(sec);
     }
-    Section *section = document()->section(0);
-    // Convert global index to section local index (simplified)
-    // For now, just insert at the end of the section
-    section->addBlock(m_block);
-    m_block->setParent(section);
-    // TODO: update global index mapping
+    Section *section = document()-&gt;section(0);
+    section-&gt;addBlock(m_block);
+    m_block-&gt;setParent(section);
 }
 
+/**
+ * @brief 撤销插入块操作
+ *
+ * 从文档中移除之前插入的块
+ */
 void InsertBlockCommand::undo()
 {
     if (!m_block)
         return;
-    Section *section = document()->section(0);
+    Section *section = document()-&gt;section(0);
     if (!section)
         return;
-    // Find the block in the section and remove it
-    for (int i = 0; i < section->blockCount(); ++i) {
-        if (section->block(i) == m_block) {
-            section->removeBlock(i);
+    for (int i = 0; i &lt; section-&gt;blockCount(); ++i) {
+        if (section-&gt;block(i) == m_block) {
+            section-&gt;removeBlock(i);
             break;
         }
     }
 }
 
 } // namespace QtWordEditor
+

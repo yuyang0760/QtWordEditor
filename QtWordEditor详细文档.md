@@ -597,27 +597,120 @@ static BaseBlockItem *createItem(Block *block, QGraphicsItem *parent = nullptr);
 
 ### Cursor 类 (`include/editcontrol/cursor/Cursor.h`)
 
-光标类。
+光标类，管理文档中的插入点位置和选择。
+
+#### CursorPosition 结构体
+```cpp
+struct CursorPosition
+{
+    int blockIndex = -1;    ///< 块索引
+    int offset = 0;         ///< 块内的字符偏移量
+    
+    bool operator==(const CursorPosition &other) const;
+    bool operator!=(const CursorPosition &other) const;
+};
+```
 
 #### 成员变量
 | 变量 | 类型 | 说明 |
 |------|------|------|
-| `m_position` | `int` | 位置 |
-| `m_anchor` | `int` | 锚点 |
+| `m_document` | `Document*` | 关联的文档 |
+| `m_position` | `CursorPosition` | 当前光标位置 |
 
 #### 公共方法
 ```cpp
-int position() const;
-void setPosition(int pos);
-int anchor() const;
-void setAnchor(int anchor);
-bool hasSelection() const;
-void clearSelection();
+// ========== 位置查询方法 ==========
+/**
+ * @brief 获取当前光标位置
+ * @return 当前光标位置结构体
+ */
+CursorPosition position() const;
+
+/**
+ * @brief 设置光标位置
+ * @param blockIndex 块索引
+ * @param offset 块内偏移量
+ */
+void setPosition(int blockIndex, int offset);
+
+/**
+ * @brief 设置光标位置
+ * @param pos 光标位置结构体
+ */
+void setPosition(const CursorPosition &pos);
+
+// ========== 光标移动方法 ==========
+/**
+ * @brief 向左移动光标
+ * 移动到前一个字符位置
+ */
+void moveLeft();
+
+/**
+ * @brief 向右移动光标
+ * 移动到后一个字符位置
+ */
+void moveRight();
+
+/**
+ * @brief 向上移动光标
+ * 移动到上一行相同水平位置
+ */
+void moveUp();
+
+/**
+ * @brief 向下移动光标
+ * 移动到下一行相同水平位置
+ */
+void moveDown();
+
+/**
+ * @brief 移动到行首
+ */
+void moveToStartOfLine();
+
+/**
+ * @brief 移动到行尾
+ */
+void moveToEndOfLine();
+
+/**
+ * @brief 移动到文档开头
+ */
+void moveToStartOfDocument();
+
+/**
+ * @brief 移动到文档结尾
+ */
+void moveToEndOfDocument();
+
+// ========== 编辑操作方法（会创建相应命令）==========
+
+/**
+ * @brief 在光标位置插入文本
+ * @param text 要插入的文本
+ * @param style 文本的字符样式
+ */
+void insertText(const QString &text, const CharacterStyle &style);
+
+/**
+ * @brief 删除光标前一个字符
+ */
+void deletePreviousChar();
+
+/**
+ * @brief 删除光标后一个字符
+ */
+void deleteNextChar();
 ```
 
 #### 信号
 ```cpp
-void positionChanged();
+/**
+ * @brief 光标位置发生变化时发出的信号
+ * @param pos 新的光标位置
+ */
+void positionChanged(const CursorPosition &pos);
 ```
 
 ### Selection 类 (`include/editcontrol/selection/Selection.h`)
@@ -643,11 +736,90 @@ bool contains(int pos) const;
 
 ### EditEventHandler 类 (`include/editcontrol/handlers/EditEventHandler.h`)
 
-编辑事件处理器。
+编辑事件处理器，将用户输入事件转换为具体的编辑操作。
+
+#### 成员变量
+| 变量 | 类型 | 说明 |
+|------|------|------|
+| `m_document` | `Document*` | 关联的文档 |
+| `m_cursor` | `Cursor*` | 光标控制器 |
+| `m_selection` | `Selection*` | 选择控制器 |
+
+#### 公共方法
+```cpp
+/**
+ * @brief 处理键盘按下事件
+ * @param event 键盘事件对象
+ * @return 是否处理了该事件
+ */
+bool handleKeyPress(QKeyEvent *event);
+
+/**
+ * @brief 处理鼠标按下事件
+ * @param event 鼠标事件对象
+ * @return 是否处理了该事件
+ */
+bool handleMousePress(QMouseEvent *event);
+
+/**
+ * @brief 处理鼠标移动事件
+ * @param event 鼠标事件对象
+ * @return 是否处理了该事件
+ */
+bool handleMouseMove(QMouseEvent *event);
+
+/**
+ * @brief 处理鼠标释放事件
+ * @param event 鼠标事件对象
+ * @return 是否处理了该事件
+ */
+bool handleMouseRelease(QMouseEvent *event);
+
+/**
+ * @brief 处理输入法事件
+ * @param event 输入法事件对象
+ * @return 是否处理了该事件
+ */
+bool handleInputMethod(QInputMethodEvent *event);
+```
+
+#### 实现要点
+- 支持方向键移动光标
+- 支持 Backspace/Delete 删除文本
+- 支持普通字符输入
+- 支持输入法输入（中文等）
+- 通过 Undo/Redo 命令系统执行编辑操作
 
 ### FormatController 类 (`include/editcontrol/formatting/FormatController.h`)
 
-格式化控制器。
+格式化控制器，管理字符和段落样式的应用。
+
+#### 成员变量
+| 变量 | 类型 | 说明 |
+|------|------|------|
+| `m_document` | `Document*` | 关联的文档 |
+| `m_selection` | `Selection*` | 选择控制器 |
+
+#### 公共方法
+```cpp
+// 字符样式设置
+void setBold(bool bold);
+void setItalic(bool italic);
+void setUnderline(bool underline);
+void setFontFamily(const QString &family);
+void setFontSize(int size);
+void setTextColor(const QColor &color);
+
+// 段落样式设置
+void setAlignment(ParagraphAlignment align);
+void setLineSpacing(int percent);
+void setFirstLineIndent(qreal indent);
+void setLeftIndent(qreal indent);
+
+// 样式获取
+CharacterStyle currentCharacterStyle() const;
+ParagraphStyle currentParagraphStyle() const;
+```
 
 ---
 
@@ -655,7 +827,85 @@ bool contains(int pos) const;
 
 ### MainWindow 类 (`include/ui/mainwindow/MainWindow.h`)
 
-主窗口类。
+主窗口类，应用程序的主要用户界面。
+
+#### 成员变量
+| 变量 | 类型 | 说明 |
+|------|------|------|
+| `m_document` | `Document*` | 当前文档 |
+| `m_scene` | `DocumentScene*` | 文档场景 |
+| `m_view` | `DocumentView*` | 文档视图 |
+| `m_cursor` | `Cursor*` | 光标控制器 |
+| `m_selection` | `Selection*` | 选择控制器 |
+| `m_editEventHandler` | `EditEventHandler*` | 编辑事件处理器 |
+| `m_formatController` | `FormatController*` | 格式控制器 |
+| `m_styleManager` | `StyleManager*` | 样式管理器 |
+| `m_ribbonBar` | `RibbonBar*` | Ribbon 栏 |
+| `m_currentFile` | `QString` | 当前文件 |
+| `m_isModified` | `bool` | 是否已修改 |
+| `m_currentZoom` | `qreal` | 当前缩放 |
+| `m_lastScenePos` | `QPointF` | 上次场景位置 |
+| `m_lastViewPos` | `QPoint` | 上次视图位置 |
+| `m_pageSetup` | `PageSetup` | 页面设置 |
+| `m_currentCursorPos` | `CursorPosition` | 当前光标位置 |
+| `m_debugConsoleDock` | `QDockWidget*` | 调试控制台停靠窗口 |
+| `m_debugConsoleTextEdit` | `QPlainTextEdit*` | 调试控制台文本编辑器 |
+
+#### 公共方法
+```cpp
+explicit MainWindow(QWidget *parent = nullptr);
+
+Document *document() const;
+void setDocument(Document *document);
+```
+
+#### 私有槽
+```cpp
+// 文件操作
+void newDocument();
+void openDocument();
+bool saveDocument();
+bool saveAsDocument();
+void about();
+
+// 编辑操作
+void undo();
+void redo();
+void cut();
+void copy();
+void paste();
+
+// 视图操作
+void zoomIn();
+void zoomOut();
+void zoomToFit();
+void pageSetup();
+
+// 界面更新
+void updateWindowTitle();
+void updateUI();
+void updateStatusBar(const QPointF &scenePos, const QPoint &viewPos);
+void updateCursorPosition(const CursorPosition &pos);
+
+// 语言切换
+void switchToChinese();
+void switchToEnglish();
+```
+
+#### 保护方法
+```cpp
+void closeEvent(QCloseEvent *event) override;
+```
+
+#### 私有方法
+```cpp
+void setupUi();
+void createActions();
+bool maybeSave();
+void retranslateUi();
+QPointF calculateCursorVisualPosition(const CursorPosition &pos);
+void setupDebugConsole();
+```
 
 #### 成员变量
 | 变量 | 类型 | 说明 |
@@ -956,15 +1206,182 @@ add_executable(QtWordEditor ${APP_SOURCES} ${APP_HEADERS})
 }
 ```
 
----
+## 核心技术实现细节
 
-## 命令模式 (Command Pattern)
+### 文本布局系统
+
+QtWordEditor 使用 Qt 的 QTextLayout 系统实现精确的文本布局：
+
+#### QTextLayout 在项目中的应用
+
+1. **光标位置计算**
+```cpp
+// DocumentScene::calculateCursorVisualPosition()
+QTextCursor cursor(doc);
+cursor.setPosition(charOffset);
+
+QTextBlock block = cursor.block();
+QTextLayout *layout = block.layout();
+
+// 计算光标在行中的X坐标
+qreal x = line.cursorToX(positionInBlock);
+// 获取行的Y坐标
+qreal y = line.y();
+```
+
+2. **点击定位**
+```cpp
+// DocumentScene::cursorPositionAt()
+int offset = textItem->document()->documentLayout()->hitTest(
+    localPos, Qt::FuzzyHit);
+```
+
+3. **块高度计算**
+```cpp
+// LayoutEngine::calculateBlockHeight()
+QTextLayout textLayout(text);
+textLayout.setAdditionalFormats(formatRanges);
+textLayout.setTextOption(option);
+
+textLayout.beginLayout();
+qreal y = 0;
+while (true) {
+    QTextLine line = textLayout.createLine();
+    if (!line.isValid())
+        break;
+    line.setLineWidth(maxWidth - leftIndent - rightIndent);
+    y += line.height() + style.lineSpacing();
+}
+textLayout.endLayout();
+```
+
+### 坐标系统转换
+
+项目实现了5层坐标系统的精确转换：
+
+```
+屏幕坐标 → 视图坐标 → 场景坐标 → 页面坐标 → 块坐标
+```
+
+#### 关键转换方法
+```cpp
+// DocumentView 中的坐标转换
+QPointF scenePos = mapToScene(viewPos);  // 视图→场景
+
+// DocumentScene 中的位置计算
+Page *page = pageAt(scenePos);           // 找到所在页面
+QPointF relativePos = scenePos - pageItem->pos();  // 页面相对坐标
+```
+
+### Undo/Redo 系统
+
+基于 Qt 的 QUndoStack 实现完整的撤销重做功能：
+
+#### 命令执行流程
+```
+用户操作 → Cursor 方法 → 创建 Command → Push 到 UndoStack → 执行 redo()
+
+撤销: UndoStack::undo() → 执行 undo() 方法
+重做: UndoStack::redo() → 执行 redo() 方法
+```
+
+#### 命令合并优化
+```cpp
+// 连续的字符输入可以合并为一个命令
+void InsertTextCommand::mergeWith(const QUndoCommand *command)
+{
+    const InsertTextCommand *other = static_cast<const InsertTextCommand*>(command);
+    if (m_blockIndex == other->m_blockIndex && 
+        m_offset + m_text.length() == other->m_offset) {
+        m_text += other->m_text;
+        return true;
+    }
+    return false;
+}
+```
+
+### 样式系统
+
+支持字符样式和段落样式的完整实现：
+
+#### 字符样式继承
+```cpp
+// CharacterStyle 使用隐式共享（copy-on-write）
+class CharacterStyle {
+private:
+    struct CharacterStyleData : public QSharedData {
+        QFont font;
+        QColor textColor;
+        QColor backgroundColor;
+        // ... 其他属性
+    };
+    QSharedDataPointer<CharacterStyleData> d;
+};
+```
+
+#### 样式应用优先级
+1. 直接字符样式（最高优先级）
+2. 段落默认样式
+3. 文档默认样式
+4. 系统默认样式（最低优先级）
+
+### 性能优化策略
+
+1. **增量布局**：只重新计算受影响的块
+2. **缓存机制**：缓存块高度和位置信息
+3. **懒加载**：延迟创建图形项直到需要显示
+4. **批量更新**：合并多个小更新为一次大更新
 
 项目使用命令模式实现撤销/重做功能。
 
 ### 命令基类 (`include/core/commands/EditCommand.h`)
 
-所有命令继承自 QUndoCommand。
+所有命令继承自 QUndoCommand，实现撤销/重做功能。
+
+#### 命令层次结构
+```
+QUndoCommand
+├── InsertBlockCommand    - 插入块命令
+├── RemoveBlockCommand    - 删除块命令
+├── InsertTextCommand     - 插入文本命令
+├── RemoveTextCommand     - 删除文本命令
+├── SetCharacterStyleCommand - 设置字符样式命令
+└── SetParagraphStyleCommand - 设置段落样式命令
+```
+
+#### InsertTextCommand 示例
+```cpp
+class InsertTextCommand : public QUndoCommand
+{
+public:
+    InsertTextCommand(Document *document, int blockIndex, int offset,
+                     const QString &text, const CharacterStyle &style);
+    
+    void undo() override;
+    void redo() override;
+    
+private:
+    Document *m_document;
+    int m_blockIndex;
+    int m_offset;
+    QString m_text;
+    CharacterStyle m_style;
+};
+```
+
+#### 使用方式
+```cpp
+// 在 Cursor::insertText() 中
+QUndoStack *stack = m_document->undoStack();
+if (stack) {
+    InsertTextCommand *cmd = new InsertTextCommand(
+        m_document, m_position.blockIndex, m_position.offset, text, style);
+    stack->push(cmd);
+    // 更新光标位置
+    m_position.offset += text.length();
+    emit positionChanged(m_position);
+}
+```
 
 ### 具体命令
 - `InsertBlockCommand` - 插入块
@@ -982,18 +1399,192 @@ add_executable(QtWordEditor ${APP_SOURCES} ${APP_HEADERS})
 状态栏实时显示以下信息：
 
 ```
-缩放: 100%  |  页码: 1  |  场景坐标: (100.50, 200.30)  |  相对坐标: (100.50, 200.30)  |  视图坐标: (150, 250)
+光标: 块0, 偏移5  |  缩放: 100%  |  页码: 1  |  场景坐标: (100.50, 200.30)  |  相对坐标: (100.50, 200.30)  |  视图坐标: (150, 250)
 ```
 
 | 信息 | 说明 |
 |------|------|
+| 光标 | 当前光标位置（块索引和偏移量） |
 | 缩放 | 当前缩放百分比 |
 | 页码 | 当前鼠标所在页码 |
 | 场景坐标 | 相对于整个场景的绝对坐标 |
 | 相对坐标 | 相对于当前页面的坐标 |
 | 视图坐标 | 相对于视图控件的坐标 |
 
+#### 实现方式
+```cpp
+void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
+{
+    Page *page = m_scene->pageAt(scenePos);
+    
+    QString cursorInfo = QString("光标: 块%1, 偏移%2")
+        .arg(m_currentCursorPos.blockIndex)
+        .arg(m_currentCursorPos.offset);
+    
+    if (page) {
+        // 计算相对坐标
+        qreal pageSpacing = 30.0;
+        qreal pageHeight = Constants::PAGE_HEIGHT;
+        int pageIndex = page->pageNumber() - 1;
+        qreal yOffset = pageIndex * (pageHeight + pageSpacing);
+        
+        qreal relativeX = scenePos.x();
+        qreal relativeY = scenePos.y() - yOffset;
+        
+        QString statusText = QString("%1  |  缩放: %2%  |  页码: %3  |  场景坐标: (%4, %5)  |  相对坐标: (%6, %7)  |  视图坐标: (%8, %9)")
+            .arg(cursorInfo)
+            .arg(m_currentZoom, 0, 'f', 0)
+            .arg(page->pageNumber())
+            .arg(scenePos.x(), 0, 'f', 2)
+            .arg(scenePos.y(), 0, 'f', 2)
+            .arg(relativeX, 0, 'f', 2)
+            .arg(relativeY, 0, 'f', 2)
+            .arg(viewPos.x())
+            .arg(viewPos.y());
+        statusBar()->showMessage(statusText);
+    }
+}
+```
+
 ---
+
+## 技术架构总结
+
+### 系统架构图
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    用户界面层                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
+│  │ MainWindow  │  │ RibbonBar   │  │ Dialogs     │    │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘    │
+└─────────┼─────────────────┼─────────────────┼───────────┘
+          │                 │                 │
+          ▼                 ▼                 ▼
+┌─────────────────────────────────────────────────────────┐
+│                    控制层                                │
+│  ┌─────────────────┐  ┌─────────────────┐              │
+│  │ EditEventHandler│  │ FormatController│              │
+│  └────────┬────────┘  └────────┬────────┘              │
+│           │                    │                         │
+│           ▼                    ▼                         │
+│  ┌──────────────────────────────────────┐              │
+│  │              Cursor                  │              │
+│  └──────────────────────────────────────┘              │
+└─────────────────────┼───────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│                    模型层                                │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │                    Document                      │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────────────┐  │   │
+│  │  │Section 1│  │Section 2│  │ Undo/Redo Stack │  │   │
+│  │  └────┬────┘  └────┬────┘  └─────────────────┘  │   │
+│  │       │            │                             │   │
+│  │  ┌────▼────┐  ┌────▼────┐                        │   │
+│  │  │ Block 1 │  │ Block 2 │                        │   │
+│  │  └─────────┘  └─────────┘                        │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────┼───────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│                    布局层                                │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │                 LayoutEngine                     │   │
+│  │  - calculateBlockHeight()                        │   │
+│  │  - 分页算法                                       │   │
+│  │  - 坐标计算                                       │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────┼───────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────┐
+│                    渲染层                                │
+│  ┌─────────────────┐  ┌─────────────────┐              │
+│  │ DocumentScene   │  │ DocumentView    │              │
+│  │ (QGraphicsScene)│  │ (QGraphicsView) │              │
+│  └──────┬──────────┘  └────────┬────────┘              │
+│         │                      │                         │
+│  ┌──────▼──────────────────────▼──────┐                 │
+│  │         Graphics Items              │                 │
+│  │  - PageItem                         │                 │
+│  │  - TextBlockItem                    │                 │
+│  │  - CursorItem                       │                 │
+│  │  - SelectionItem                    │                 │
+│  └─────────────────────────────────────┘                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 数据流向
+
+1. **输入处理流程**：
+```
+用户输入 → DocumentView → EditEventHandler → Cursor → Command → Document
+     ↑                                                    ↓
+     └────────────── 视图更新 ← LayoutEngine ←─────────────┘
+```
+
+2. **显示更新流程**：
+```
+Document 变化 → LayoutEngine 重新布局 → DocumentScene 重建 → Graphics Items 更新
+```
+
+### 关键设计模式
+
+1. **命令模式**：实现 Undo/Redo 功能
+2. **观察者模式**：信号槽机制实现组件间通信
+3. **工厂模式**：BlockItemFactory 创建不同类型块项
+4. **单例模式**：Application 类管理全局状态
+5. **享元模式**：CharacterStyle 使用隐式共享减少内存占用
+
+### 性能优化要点
+
+1. **增量更新**：只重新计算和渲染变化的部分
+2. **对象池**：重用 QGraphicsItem 对象
+3. **延迟加载**：只在需要时创建图形项
+4. **批处理**：合并多个小操作为一次大更新
+5. **空间分区**：使用 Qt Graphics View 的内置优化
+
+---
+
+## 开发指南
+
+### 代码规范
+
+1. **命名约定**：
+   - 类名：PascalCase（如 `DocumentScene`）
+   - 方法名：camelCase（如 `calculateHeight`）
+   - 成员变量：m_前缀 + camelCase（如 `m_document`）
+   - 常量：UPPER_SNAKE_CASE（如 `PAGE_WIDTH`）
+
+2. **注释规范**：
+   - 使用 Doxygen 风格注释
+   - 所有公共接口必须有详细注释
+   - 复杂算法需要添加实现说明
+
+3. **内存管理**：
+   - 使用 Qt 的父子对象系统自动管理内存
+   - 避免手动 delete，使用 deleteLater()
+   - 注意循环引用问题
+
+### 扩展建议
+
+1. **添加新块类型**：
+   - 继承 Block 基类
+   - 实现对应的 Graphics Item
+   - 在 BlockItemFactory 中注册
+
+2. **添加新命令**：
+   - 继承 QUndoCommand
+   - 实现 undo() 和 redo() 方法
+   - 在适当位置创建并执行命令
+
+3. **性能优化**：
+   - 使用 profiler 分析热点
+   - 考虑多线程布局计算
+   - 实现更智能的缓存策略
 
 ## 总结
 

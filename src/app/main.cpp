@@ -1,59 +1,76 @@
+
+/**
+ * @file main.cpp
+ * @brief Application entry point for QtWordEditor
+ *
+ * This file contains the main() function which initializes the application,
+ * sets up translations, applies styles, creates the main window, and starts
+ * the event loop.
+ */
+
 #include "app/Application.h"
 #include "ui/mainwindow/MainWindow.h"
-#include <QTranslator>
-#include <QLibraryInfo>
-#include <QDir>
-#include <QStandardPaths>
-#include <QStyleFactory>
-#include <QDebug>
-#include <iostream>
+#include &lt;QTranslator&gt;
+#include &lt;QLibraryInfo&gt;
+#include &lt;QDir&gt;
+#include &lt;QStandardPaths&gt;
+#include &lt;QStyleFactory&gt;
+#include &lt;QDebug&gt;
+#include &lt;iostream&gt;
 
+/**
+ * @brief Main entry point of the application
+ * @param argc Number of command line arguments
+ * @param argv Command line arguments
+ * @return Exit code (0 for success, 1 for failure)
+ */
 int main(int argc, char *argv[])
 {
     QtWordEditor::Application app(argc, argv);
     
-    qDebug() << "Available styles:" << QStyleFactory::keys();
+    qDebug() &lt;&lt; "Available styles:" &lt;&lt; QStyleFactory::keys();
     
-    // 启用 Fusion 样式
+    // Enable Fusion style for consistent look across platforms
     QStyle *fusionStyle = QStyleFactory::create("Fusion");
     if (fusionStyle) {
         app.setStyle(fusionStyle);
-        qDebug() << "Fusion style applied successfully!";
+        qDebug() &lt;&lt; "Fusion style applied successfully!";
     } else {
-        qDebug() << "Failed to create Fusion style!";
+        qDebug() &lt;&lt; "Failed to create Fusion style!";
     }
     
-    // 加载翻译文件
+    // Load translation files
     QTranslator translator;
     QTranslator qtTranslator;
     
-    // 获取系统语言
+    // Get system language
     QString locale = QLocale::system().name();
     
-    // 加载Qt内置翻译
+    // Load Qt built-in translations
     if (qtTranslator.load("qt_" + locale, QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
-        app.installTranslator(&qtTranslator);
+        app.installTranslator(&amp;qtTranslator);
     }
     
-    // 加载应用程序翻译
+    // Load application translations
     QString translationsPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("translations");
     if (translator.load("QtWordEditor_" + locale, translationsPath)) {
-        app.installTranslator(&translator);
+        app.installTranslator(&amp;translator);
     }
     
-    // 全局异常处理
+    // Global exception handling
     try {
         if (!app.init()) {
             return 1;
         }
 
-        // 创建并显示主窗口
+        // Create and show main window
         QtWordEditor::MainWindow mainWindow;
         mainWindow.show();
 
         return app.exec();
-    } catch (const std::exception &e) {
-        std::cerr << "Unhandled exception: " << e.what() << std::endl;
+    } catch (const std::exception &amp;e) {
+        std::cerr &lt;&lt; "Unhandled exception: " &lt;&lt; e.what() &lt;&lt; std::endl;
         return 1;
     }
 }
+

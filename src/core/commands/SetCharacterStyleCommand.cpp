@@ -40,14 +40,8 @@ void SetCharacterStyleCommand::redo()
         m_oldSpans.append(para->span(i));
     }
 
-    // Apply new style to the range (simplified: assume single span)
-    // TODO: implement proper style application across multiple spans
-    // For now, just set the style of the whole block (placeholder)
-    for (int i = 0; i < para->spanCount(); ++i) {
-        Span span = para->span(i);
-        span.setStyle(m_newStyle);
-        para->setSpan(i, span);
-    }
+    // 使用 ParagraphBlock 的 setStyle 方法正确地应用样式到指定范围
+    para->setStyle(m_start, m_end - m_start, m_newStyle);
 }
 
 void SetCharacterStyleCommand::undo()

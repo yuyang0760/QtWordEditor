@@ -51,6 +51,9 @@ public:
     
     // Helper: set character style for a range
     void setStyle(int start, int length, const CharacterStyle &style);
+    
+    // Helper: get character at a specific position
+    QChar characterAt(int position) const;
 
 signals:
     void textChanged();

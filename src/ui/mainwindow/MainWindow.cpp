@@ -113,8 +113,8 @@ void MainWindow::setupUi()
     m_cursor = new Cursor(m_document, this);
     m_selection = new Selection(m_document, this);
     m_styleManager = new StyleManager(this);
-    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, this);
     m_formatController = new FormatController(m_document, m_cursor, m_selection, m_styleManager, this);
+    m_editEventHandler = new EditEventHandler(m_document, m_cursor, m_selection, m_formatController, this);
 
     m_ribbonBar = new RibbonBar(m_styleManager, this);
     m_ribbonBar->setFixedHeight(Constants::RIBBON_BAR_HEIGHT);
@@ -170,11 +170,83 @@ void MainWindow::setupUi()
         }
     });
 
+    // 连接 RibbonBar 样式按钮信号
+    connect(m_ribbonBar, &RibbonBar::fontChanged,
+            this, [this](const QFont &font) {
+        qDebug() << "Font changed from ribbon:" << font;
+        CharacterStyle style;
+        style.setFont(font);
+        if (m_selection->isEmpty()) {
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->setFont(font);
+        }
+        updateStyleState();
+    });
+
+    connect(m_ribbonBar, &RibbonBar::fontSizeChanged,
+            this, [this](int size) {
+        qDebug() << "Font size changed from ribbon:" << size;
+        CharacterStyle style;
+        style.setFontSize(size);
+        if (m_selection->isEmpty()) {
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->setFontSize(size);
+        }
+        updateStyleState();
+    });
+
+    connect(m_ribbonBar, &RibbonBar::boldChanged,
+            this, [this](bool bold) {
+        qDebug() << "Bold changed from ribbon:" << bold;
+        CharacterStyle style;
+        style.setBold(bold);
+        if (m_selection->isEmpty()) {
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->setBold(bold);
+        }
+        updateStyleState();
+    });
+
+    connect(m_ribbonBar, &RibbonBar::italicChanged,
+            this, [this](bool italic) {
+        qDebug() << "Italic changed from ribbon:" << italic;
+        CharacterStyle style;
+        style.setItalic(italic);
+        if (m_selection->isEmpty()) {
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->setItalic(italic);
+        }
+        updateStyleState();
+    });
+
+    connect(m_ribbonBar, &RibbonBar::underlineChanged,
+            this, [this](bool underline) {
+        qDebug() << "Underline changed from ribbon:" << underline;
+        CharacterStyle style;
+        style.setUnderline(underline);
+        if (m_selection->isEmpty()) {
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->setUnderline(underline);
+        }
+        updateStyleState();
+    });
+
     // 连接 RibbonBar 样式选择信号
     connect(m_ribbonBar, &RibbonBar::characterStyleChanged,
             this, [this](const QString &styleName) {
         qDebug() << "Character style selected from ribbon:" << styleName;
-        m_formatController->applyNamedCharacterStyle(styleName);
+        if (m_selection->isEmpty() && m_styleManager && m_styleManager->hasCharacterStyle(styleName)) {
+            CharacterStyle style = m_styleManager->getResolvedCharacterStyle(styleName);
+            m_formatController->setCurrentInputStyle(style);
+        } else {
+            m_formatController->applyNamedCharacterStyle(styleName);
+        }
+        updateStyleState();
     });
 
     connect(m_ribbonBar, &RibbonBar::paragraphStyleChanged,
@@ -229,6 +301,8 @@ void MainWindow::setupUi()
     connect(m_document, &Document::documentChanged,
             this, &MainWindow::updateWindowTitle);
 
+    connect(m_cursor, &Cursor::positionChanged,
+            m_formatController, &FormatController::onCursorMoved);
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
     
@@ -616,8 +690,8 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
                             .arg(posInSpan);
                         
                         // 获取字符信息
-                        if (m_currentCursorPos.offset >= 0 && m_currentCursorPos.offset < paraBlock->text().length()) {
-                            QChar ch = paraBlock->text().at(m_currentCursorPos.offset);
+                        QChar ch = paraBlock->characterAt(m_currentCursorPos.offset);
+                        if (!ch.isNull()) {
                             characterInfo = QString("'%1' (0x%2)")
                                 .arg(ch.isPrint() ? ch : '?')
                                 .arg(ch.unicode(), 4, 16, QChar('0'));
@@ -757,12 +831,19 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
 
 void MainWindow::updateStyleState()
 {
+    qDebug() << "MainWindow::updateStyleState() called";
+    
     if (!m_ribbonBar || !m_document || !m_formatController) {
+        qDebug() << "  Missing m_ribbonBar or m_document or m_formatController";
         return;
     }
     
     // 使用新的 FormatController::getCurrentDisplayStyle() 方法获取应该显示的样式
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
+    
+    qDebug() << "  Updating ribbon bar with style: bold=" << style.bold() 
+             << ", italic=" << style.italic()
+             << ", underline=" << style.underline();
     
     // 更新 RibbonBar 的样式显示
     m_ribbonBar->updateFromSelection(style);

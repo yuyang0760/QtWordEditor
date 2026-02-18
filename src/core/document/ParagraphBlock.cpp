@@ -39,10 +39,20 @@ void ParagraphBlock::setText(const QString &text)
 
 int ParagraphBlock::findSpanIndex(int globalPosition, int *positionInSpan) const
 {
+    int totalLength = this->length();
+    
+    // 特殊处理：如果位置等于总长度（文档末尾）
+    if (globalPosition == totalLength && !m_spans.isEmpty()) {
+        if (positionInSpan) {
+            *positionInSpan = m_spans.last().length();
+        }
+        return m_spans.size() - 1;
+    }
+    
     int currentPos = 0;
     for (int i = 0; i < m_spans.size(); ++i) {
         int spanLength = m_spans.at(i).length();
-        if (globalPosition <= currentPos + spanLength) {
+        if (globalPosition < currentPos + spanLength) { // 使用 < 判断位置是否在当前 span 内
             if (positionInSpan) {
                 *positionInSpan = globalPosition - currentPos;
             }
@@ -66,6 +76,25 @@ CharacterStyle ParagraphBlock::styleAt(int position) const
         return m_spans.at(spanIndex).style();
     }
     return CharacterStyle();
+}
+
+QChar ParagraphBlock::characterAt(int position) const
+{
+    if (position < 0 || position >= this->length()) {
+        return QChar();
+    }
+    
+    int currentPos = 0;
+    for (const Span &span : m_spans) {
+        int spanLength = span.length();
+        if (position < currentPos + spanLength) {
+            int posInSpan = position - currentPos;
+            return span.text().at(posInSpan);
+        }
+        currentPos += spanLength;
+    }
+    
+    return QChar();
 }
 
 void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style)

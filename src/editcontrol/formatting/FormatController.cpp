@@ -19,6 +19,7 @@ FormatController::FormatController(Document *document, Cursor *cursor,
     , m_cursor(cursor)
     , m_selection(selection)
     , m_styleManager(styleManager)
+    , m_isInputStyleOverridden(false)
 {
 }
 
@@ -318,6 +319,8 @@ CursorPosition FormatController::getSelectionEndPosition() const
 
 CharacterStyle FormatController::getCurrentDisplayStyle() const
 {
+    qDebug() << "FormatController::getCurrentDisplayStyle() called";
+    
     CharacterStyle result;
 
     if (!m_document)
@@ -327,12 +330,16 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
 
     // 判断是否有选区
     if (m_selection && !m_selection->isEmpty()) {
+        qDebug() << "  Selection is NOT empty, getting focus position";
         // 有选区：获取选区终点（Focus）位置
         targetPos = m_selection->focusPosition();
     } else {
+        qDebug() << "  Selection is empty, getting cursor position";
         // 无选区：获取光标位置
         if (m_cursor) {
             targetPos = m_cursor->position();
+            qDebug() << "  Current cursor position: block=" << targetPos.blockIndex 
+                     << ", offset=" << targetPos.offset;
         } else {
             qWarning() << "FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象，无法获取光标位置";
             return result;
@@ -342,9 +349,31 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     // 计算目标位置：终点位置 - 1
     int targetBlock = targetPos.blockIndex;
     int targetOffset = targetPos.offset - 1;
+    qDebug() << "  Target position: block=" << targetBlock << ", offset=" << targetOffset;
+    
+    // 添加调试输出：获取目标块的文本并打印出来
+    if (targetBlock >= 0) {
+        Block *block = m_document->block(targetBlock); // 这里使用全局索引！
+        if (block) {
+            ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                QString text = paraBlock->text();
+                qDebug() << "  Paragraph text: [" << text << "] (length=" << text.length() << ")";
+                if (targetOffset >= 0 && targetOffset < text.length()) {
+                    QChar ch = text.at(targetOffset);
+                    qDebug() << "  Character at offset " << targetOffset << ": '" 
+                             << (ch.isPrint() ? ch : '?') 
+                             << "' (0x" << QString::number(ch.unicode(), 16) << ")";
+                } else {
+                    qDebug() << "  Target offset is out of bounds: " << targetOffset;
+                }
+            }
+        }
+    }
 
     // 处理边界情况：如果偏移量为 -1（即终点在块的开头）
     if (targetOffset < 0) {
+        qDebug() << "  targetOffset < 0, checking previous block";
         // 尝试找到前一个块
         if (targetBlock > 0) {
             targetBlock = targetBlock - 1;
@@ -353,9 +382,12 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                 ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
                 if (prevParaBlock) {
                     targetOffset = prevParaBlock->length() - 1;
+                    qDebug() << "  Using end of previous block: block=" << targetBlock 
+                             << ", offset=" << targetOffset;
                 }
             }
         } else {
+            qDebug() << "  Already at document start, returning empty style";
             // 已经在文档开头，没有前一个字符，返回空样式
             return result;
         }
@@ -364,9 +396,50 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     // 获取目标位置的样式
     if (targetOffset >= 0) {
         result = getStyleAtPosition(targetBlock, targetOffset);
+        qDebug() << "  Got style at position: bold=" << result.bold()
+                 << ", italic=" << result.italic()
+                 << ", underline=" << result.underline();
     }
 
     return result;
+}
+
+CharacterStyle FormatController::getCurrentInputStyle() const
+{
+    if (m_isInputStyleOverridden) {
+        // 覆盖模式：返回用户设置的样式
+        return m_currentInputStyle;
+    } else {
+        // 继承模式：返回光标前一个字符的样式
+        return getCurrentDisplayStyle();
+    }
+}
+
+void FormatController::setCurrentInputStyle(const CharacterStyle &style)
+{
+    // 用户通过工具栏设置样式，进入覆盖模式
+    m_isInputStyleOverridden = true;
+    
+    // 合并样式：如果用户只设置了部分属性（如只设置粗体），
+    // 则保留其他属性的当前值
+    if (m_isInputStyleOverridden) {
+        m_currentInputStyle = m_currentInputStyle.mergeWith(style);
+    } else {
+        m_currentInputStyle = getCurrentDisplayStyle().mergeWith(style);
+    }
+}
+
+void FormatController::onCursorMoved()
+{
+    qDebug() << "FormatController::onCursorMoved() called";
+    
+    // 光标移动时，退出覆盖模式，回到继承模式
+    m_isInputStyleOverridden = false;
+    
+    // 更新当前输入样式为光标前一个字符的样式
+    m_currentInputStyle = getCurrentDisplayStyle();
+    
+    qDebug() << "  isInputStyleOverridden reset to false, currentInputStyle updated";
 }
 
 } // namespace QtWordEditor

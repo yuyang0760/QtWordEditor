@@ -2,17 +2,20 @@
 #include "core/document/Document.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
+#include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
 #include <QDebug>
 
 namespace QtWordEditor {
 
 EditEventHandler::EditEventHandler(Document *document, Cursor *cursor, Selection *selection,
+                                   FormatController *formatController,
                                    QObject *parent)
     : QObject(parent)
     , m_document(document)
     , m_cursor(cursor)
     , m_selection(selection)
+    , m_formatController(formatController)
     , m_scene(nullptr)
     , m_isSelecting(false)
     , m_selectionStartBlock(0)
@@ -93,7 +96,10 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
     default:
         // Typed character
         if (!event->text().isEmpty()) {
-            CharacterStyle style; // default style
+            CharacterStyle style;
+            if (m_formatController) {
+                style = m_formatController->getCurrentInputStyle();
+            }
             m_cursor->insertText(event->text(), style);
             handled = true;
         }
@@ -181,6 +187,9 @@ bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
     
     if (!event->commitString().isEmpty()) {
         CharacterStyle style;
+        if (m_formatController) {
+            style = m_formatController->getCurrentInputStyle();
+        }
         m_cursor->insertText(event->commitString(), style);
         return true;
     }

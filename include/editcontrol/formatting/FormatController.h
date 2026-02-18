@@ -198,11 +198,32 @@ public:
      */
     ParagraphStyle getCurrentParagraphStyle() const;
 
+    // ========== 当前输入样式方法 ==========
+
+    /**
+     * @brief 获取当前输入样式（用于打字时使用）
+     * @return 当前应该使用的输入样式
+     */
+    CharacterStyle getCurrentInputStyle() const;
+
+    /**
+     * @brief 设置当前输入样式（用户通过工具栏手动设置样式时调用）
+     * @param style 用户设置的样式
+     */
+    void setCurrentInputStyle(const CharacterStyle &style);
+
+    /**
+     * @brief 光标移动时调用，更新当前输入样式（继承模式）
+     */
+    void onCursorMoved();
+
 private:
     Document *m_document;       ///< 关联的文档对象
     Cursor *m_cursor;           ///< 关联的光标对象
     Selection *m_selection;     ///< 关联的选择区域对象
     StyleManager *m_styleManager; ///< 关联的样式管理器对象
+    CharacterStyle m_currentInputStyle;  ///< 当前输入样式
+    bool m_isInputStyleOverridden;       ///< 是否处于覆盖模式（用户手动设置过样式）
 };
 
 } // namespace QtWordEditor

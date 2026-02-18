@@ -892,13 +892,26 @@ void MainWindow::setupDebugConsole()
     
     addDockWidget(Qt::RightDockWidgetArea, m_debugConsoleDock);
     
-    // 连接 DebugConsole 的信号到我们的槽
-    connect(DebugConsole::instance(), &DebugConsole::logMessage,
-            this, [this](const QString &message) {
-        m_debugConsoleTextEdit->appendPlainText(message);
+    // 连接 DebugConsole 的信号到我们的槽（支持彩色的新信号）
+    connect(DebugConsole::instance(), QOverload<const LogMessage&>::of(&DebugConsole::logMessage),
+            this, [this](const LogMessage &msg) {
         QTextCursor cursor = m_debugConsoleTextEdit->textCursor();
         cursor.movePosition(QTextCursor::End);
+        
+        QTextCharFormat format;
+        format.setForeground(QBrush(msg.color));
+        
+        cursor.setCharFormat(format);
+        cursor.insertText(msg.text + "\n");
+        
         m_debugConsoleTextEdit->setTextCursor(cursor);
+    });
+    
+    // 同时连接旧的信号以保持兼容（可选）
+    connect(DebugConsole::instance(), QOverload<const QString&>::of(&DebugConsole::logMessage),
+            this, [this](const QString &message) {
+        // 我们已经通过新信号处理了，这里可以留空
+        Q_UNUSED(message);
     });
     
     // 安装消息处理器，捕获所有 qDebug() 输出

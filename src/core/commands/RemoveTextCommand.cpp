@@ -10,7 +10,7 @@
 #include "core/commands/RemoveTextCommand.h"
 #include "core/document/Document.h"
 #include "core/document/ParagraphBlock.h"
-#include &lt;QDebug&gt;
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -44,18 +44,18 @@ RemoveTextCommand::~RemoveTextCommand()
  */
 void RemoveTextCommand::redo()
 {
-    Block *block = document()-&gt;block(m_blockIndex);
+    Block *block = document()->block(m_blockIndex);
     if (!block) {
-        qWarning() &lt;&lt; "Block not found at index" &lt;&lt; m_blockIndex;
+        qWarning() << "Block not found at index" << m_blockIndex;
         return;
     }
-    ParagraphBlock *para = qobject_cast&lt;ParagraphBlock*&gt;(block);
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
     if (!para) {
-        qWarning() &lt;&lt; "Block is not a paragraph block";
+        qWarning() << "Block is not a paragraph block";
         return;
     }
-    m_removedText = para-&gt;text().mid(m_position, m_length);
-    para-&gt;remove(m_position, m_length);
+    m_removedText = para->text().mid(m_position, m_length);
+    para->remove(m_position, m_length);
 }
 
 /**
@@ -65,14 +65,14 @@ void RemoveTextCommand::redo()
  */
 void RemoveTextCommand::undo()
 {
-    Block *block = document()-&gt;block(m_blockIndex);
+    Block *block = document()->block(m_blockIndex);
     if (!block)
         return;
-    ParagraphBlock *para = qobject_cast&lt;ParagraphBlock*&gt;(block);
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
     if (!para)
         return;
-    for (const auto&amp; span : m_removedSpans) {
-        para-&gt;insert(m_position, span.text(), span.style());
+    for (const auto& span : m_removedSpans) {
+        para->insert(m_position, span.text(), span.style());
         m_position += span.text().length();
     }
 }

@@ -8,14 +8,14 @@
  */
 
 #include "app/Application.h"
-#include &lt;QSettings&gt;
-#include &lt;QMessageBox&gt;
-#include &lt;QFileInfo&gt;
-#include &lt;QDir&gt;
-#include &lt;QTranslator&gt;
-#include &lt;QLibraryInfo&gt;
-#include &lt;QStandardPaths&gt;
-#include &lt;QLocale&gt;
+#include <QSettings>
+#include <QMessageBox>
+#include <QFileInfo>
+#include <QDir>
+#include <QTranslator>
+#include <QLibraryInfo>
+#include <QStandardPaths>
+#include <QLocale>
 
 namespace QtWordEditor {
 
@@ -36,13 +36,13 @@ public:
  * @param argc Number of command line arguments
  * @param argv Command line arguments
  */
-Application::Application(int &amp;argc, char **argv)
+Application::Application(int &argc, char **argv)
     : QApplication(argc, argv)
     , d_ptr(new ApplicationPrivate)
 {
-    setOrganizationName(d_ptr-&gt;organizationName);
-    setApplicationName(d_ptr-&gt;applicationName);
-    setApplicationVersion(d_ptr-&gt;version);
+    setOrganizationName(d_ptr->organizationName);
+    setApplicationName(d_ptr->applicationName);
+    setApplicationVersion(d_ptr->version);
 }
 
 /**
@@ -63,7 +63,7 @@ bool Application::init()
         loadSettings();
         loadTranslations();
         return true;
-    } catch (const std::exception &amp;e) {
+    } catch (const std::exception &e) {
         QMessageBox::critical(nullptr, tr("Initialization Error"),
                               tr("Failed to initialize application: %1").arg(e.what()));
         return false;
@@ -76,8 +76,8 @@ bool Application::init()
 void Application::loadSettings()
 {
     Q_D(Application);
-    if (!d-&gt;settings) {
-        d-&gt;settings = new QSettings(this);
+    if (!d->settings) {
+        d->settings = new QSettings(this);
     }
 }
 
@@ -87,8 +87,8 @@ void Application::loadSettings()
 void Application::saveSettings()
 {
     Q_D(Application);
-    if (d-&gt;settings) {
-        d-&gt;settings-&gt;sync();
+    if (d->settings) {
+        d->settings->sync();
     }
 }
 
@@ -98,7 +98,7 @@ void Application::saveSettings()
  */
 Application *Application::instance()
 {
-    return static_cast&lt;Application*&gt;(QCoreApplication::instance());
+    return static_cast<Application*>(QCoreApplication::instance());
 }
 
 /**
@@ -117,34 +117,34 @@ void Application::loadTranslations()
     QString locale = QLocale::system().name();
     
     QStringList searchPaths;
-    searchPaths &lt;&lt; QDir(applicationDirPath()).absoluteFilePath("translations");
-    searchPaths &lt;&lt; QDir(applicationDirPath()).absolutePath();
-    searchPaths &lt;&lt; QDir(qApp-&gt;applicationDirPath()).absoluteFilePath("cmake-build-debug");
-    searchPaths &lt;&lt; QDir(qApp-&gt;applicationDirPath()).absoluteFilePath("../cmake-build-debug");
+    searchPaths << QDir(applicationDirPath()).absoluteFilePath("translations");
+    searchPaths << QDir(applicationDirPath()).absolutePath();
+    searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("cmake-build-debug");
+    searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("../cmake-build-debug");
     
-    for (const QString &amp;path : searchPaths) {
-        qDebug() &lt;&lt; "Trying to load translation from:" &lt;&lt; path;
-        if (m_translator-&gt;load(QString("QtWordEditor_%1").arg(locale), path)) {
+    for (const QString &path : searchPaths) {
+        qDebug() << "Trying to load translation from:" << path;
+        if (m_translator->load(QString("QtWordEditor_%1").arg(locale), path)) {
             installTranslator(m_translator);
-            qDebug() &lt;&lt; "Successfully loaded translation:" &lt;&lt; locale &lt;&lt; "from" &lt;&lt; path;
+            qDebug() << "Successfully loaded translation:" << locale << "from" << path;
             return;
         }
-        if (m_translator-&gt;load(QString("QtWordEditor_%1.qm").arg(locale), path)) {
+        if (m_translator->load(QString("QtWordEditor_%1.qm").arg(locale), path)) {
             installTranslator(m_translator);
-            qDebug() &lt;&lt; "Successfully loaded translation (with .qm):" &lt;&lt; locale &lt;&lt; "from" &lt;&lt; path;
-            return;
-        }
-    }
-    
-    for (const QString &amp;path : searchPaths) {
-        if (m_translator-&gt;load("QtWordEditor", path)) {
-            installTranslator(m_translator);
-            qDebug() &lt;&lt; "Successfully loaded translation without locale from" &lt;&lt; path;
+            qDebug() << "Successfully loaded translation (with .qm):" << locale << "from" << path;
             return;
         }
     }
     
-    qDebug() &lt;&lt; "Failed to load translation";
+    for (const QString &path : searchPaths) {
+        if (m_translator->load("QtWordEditor", path)) {
+            installTranslator(m_translator);
+            qDebug() << "Successfully loaded translation without locale from" << path;
+            return;
+        }
+    }
+    
+    qDebug() << "Failed to load translation";
     delete m_translator;
     m_translator = nullptr;
 }
@@ -153,7 +153,7 @@ void Application::loadTranslations()
  * @brief Switches the application language
  * @param language Language code (e.g., "zh_CN", "en_US")
  */
-void Application::switchLanguage(const QString &amp;language)
+void Application::switchLanguage(const QString &language)
 {
     if (m_translator) {
         removeTranslator(m_translator);
@@ -162,33 +162,33 @@ void Application::switchLanguage(const QString &amp;language)
     }
     
     if (language == "en_US" || language == "en") {
-        qDebug() &lt;&lt; "Switching to English";
+        qDebug() << "Switching to English";
         return;
     }
     
     m_translator = new QTranslator(this);
     
     QStringList searchPaths;
-    searchPaths &lt;&lt; QDir(applicationDirPath()).absoluteFilePath("translations");
-    searchPaths &lt;&lt; QDir(applicationDirPath()).absolutePath();
-    searchPaths &lt;&lt; QDir(qApp-&gt;applicationDirPath()).absoluteFilePath("cmake-build-debug");
-    searchPaths &lt;&lt; QDir(qApp-&gt;applicationDirPath()).absoluteFilePath("../cmake-build-debug");
+    searchPaths << QDir(applicationDirPath()).absoluteFilePath("translations");
+    searchPaths << QDir(applicationDirPath()).absolutePath();
+    searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("cmake-build-debug");
+    searchPaths << QDir(qApp->applicationDirPath()).absoluteFilePath("../cmake-build-debug");
     
-    for (const QString &amp;path : searchPaths) {
-        qDebug() &lt;&lt; "Trying to load translation from:" &lt;&lt; path;
-        if (m_translator-&gt;load(QString("QtWordEditor_%1").arg(language), path)) {
+    for (const QString &path : searchPaths) {
+        qDebug() << "Trying to load translation from:" << path;
+        if (m_translator->load(QString("QtWordEditor_%1").arg(language), path)) {
             installTranslator(m_translator);
-            qDebug() &lt;&lt; "Successfully loaded translation:" &lt;&lt; language &lt;&lt; "from" &lt;&lt; path;
+            qDebug() << "Successfully loaded translation:" << language << "from" << path;
             return;
         }
-        if (m_translator-&gt;load(QString("QtWordEditor_%1.qm").arg(language), path)) {
+        if (m_translator->load(QString("QtWordEditor_%1.qm").arg(language), path)) {
             installTranslator(m_translator);
-            qDebug() &lt;&lt; "Successfully loaded translation (with .qm):" &lt;&lt; language &lt;&lt; "from" &lt;&lt; path;
+            qDebug() << "Successfully loaded translation (with .qm):" << language << "from" << path;
             return;
         }
     }
     
-    qDebug() &lt;&lt; "Failed to load translation for" &lt;&lt; language;
+    qDebug() << "Failed to load translation for" << language;
     delete m_translator;
     m_translator = nullptr;
 }

@@ -69,7 +69,7 @@ QString Document::author() const
  * @brief Sets the document author
  * @param author New author name
  */
-void Document::setAuthor(const QString &amp;author)
+void Document::setAuthor(const QString &author)
 {
     if (m_author != author) {
         m_author = author;
@@ -99,7 +99,7 @@ QDateTime Document::modified() const
  * @brief Sets the document modification timestamp
  * @param modified New modification datetime
  */
-void Document::setModified(const QDateTime &amp;modified)
+void Document::setModified(const QDateTime &modified)
 {
     if (m_modified != modified) {
         m_modified = modified;
@@ -123,7 +123,7 @@ int Document::sectionCount() const
  */
 Section *Document::section(int index) const
 {
-    if (index &gt;= 0 &amp;&amp; index &lt; m_sections.size())
+    if (index >= 0 && index < m_sections.size())
         return m_sections.at(index);
     return nullptr;
 }
@@ -144,9 +144,9 @@ void Document::addSection(Section *section)
  */
 void Document::insertSection(int index, Section *section)
 {
-    if (!section || index &lt; 0 || index &gt; m_sections.size())
+    if (!section || index < 0 || index > m_sections.size())
         return;
-    section-&gt;setParent(this);
+    section->setParent(this);
     m_sections.insert(index, section);
     emit sectionAdded(index);
     updateBlockPositions();
@@ -158,10 +158,10 @@ void Document::insertSection(int index, Section *section)
  */
 void Document::removeSection(int index)
 {
-    if (index &lt; 0 || index &gt;= m_sections.size())
+    if (index < 0 || index >= m_sections.size())
         return;
     Section *section = m_sections.takeAt(index);
-    section-&gt;deleteLater();
+    section->deleteLater();
     emit sectionRemoved(index);
     updateBlockPositions();
 }
@@ -174,7 +174,7 @@ int Document::blockCount() const
 {
     int total = 0;
     for (Section *section : m_sections)
-        total += section-&gt;blockCount();
+        total += section->blockCount();
     return total;
 }
 
@@ -185,13 +185,13 @@ int Document::blockCount() const
  */
 Block *Document::block(int globalIndex) const
 {
-    if (globalIndex &lt; 0)
+    if (globalIndex < 0)
         return nullptr;
     int remaining = globalIndex;
     for (Section *section : m_sections) {
-        int cnt = section-&gt;blockCount();
-        if (remaining &lt; cnt)
-            return section-&gt;block(remaining);
+        int cnt = section->blockCount();
+        if (remaining < cnt)
+            return section->block(remaining);
         remaining -= cnt;
     }
     return nullptr;
@@ -214,8 +214,8 @@ QString Document::plainText() const
 {
     QString result;
     for (Section *section : m_sections) {
-        for (int i = 0; i &lt; section-&gt;blockCount(); ++i) {
-            Block *blk = section-&gt;block(i);
+        for (int i = 0; i < section->blockCount(); ++i) {
+            Block *blk = section->block(i);
             result += "[block]";
         }
         result += "\n";
@@ -230,9 +230,9 @@ void Document::updateBlockPositions()
 {
     int globalIndex = 0;
     for (Section *section : m_sections) {
-        for (int i = 0; i &lt; section-&gt;blockCount(); ++i) {
-            Block *blk = section-&gt;block(i);
-            blk-&gt;setPositionInDocument(globalIndex++);
+        for (int i = 0; i < section->blockCount(); ++i) {
+            Block *blk = section->block(i);
+            blk->setPositionInDocument(globalIndex++);
         }
     }
 }

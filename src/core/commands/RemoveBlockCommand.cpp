@@ -10,7 +10,7 @@
 #include "core/commands/RemoveBlockCommand.h"
 #include "core/document/Document.h"
 #include "core/document/Section.h"
-#include &lt;QDebug&gt;
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -44,13 +44,13 @@ RemoveBlockCommand::~RemoveBlockCommand()
  */
 void RemoveBlockCommand::redo()
 {
-    if (document()-&gt;sectionCount() == 0)
+    if (document()->sectionCount() == 0)
         return;
-    Section *section = document()-&gt;section(0);
-    if (m_index &lt; 0 || m_index &gt;= section-&gt;blockCount())
+    Section *section = document()->section(0);
+    if (m_index < 0 || m_index >= section->blockCount())
         return;
-    m_removedBlock = section-&gt;block(m_index);
-    section-&gt;removeBlock(m_index);
+    m_removedBlock = section->block(m_index);
+    section->removeBlock(m_index);
 }
 
 /**
@@ -62,10 +62,10 @@ void RemoveBlockCommand::undo()
 {
     if (!m_removedBlock)
         return;
-    Section *section = document()-&gt;section(0);
+    Section *section = document()->section(0);
     if (!section)
         return;
-    section-&gt;insertBlock(m_index, m_removedBlock);
+    section->insertBlock(m_index, m_removedBlock);
     m_removedBlock = nullptr;
 }
 

@@ -17,7 +17,7 @@ namespace QtWordEditor {
  * @param document The document this command operates on
  * @param text Optional text describing the command (for undo menu)
  */
-EditCommand::EditCommand(Document *document, const QString &amp;text)
+EditCommand::EditCommand(Document *document, const QString &text)
     : QUndoCommand(text)
     , m_document(document)
 {

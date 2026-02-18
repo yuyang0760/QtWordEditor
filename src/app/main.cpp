@@ -10,13 +10,13 @@
 
 #include "app/Application.h"
 #include "ui/mainwindow/MainWindow.h"
-#include &lt;QTranslator&gt;
-#include &lt;QLibraryInfo&gt;
-#include &lt;QDir&gt;
-#include &lt;QStandardPaths&gt;
-#include &lt;QStyleFactory&gt;
-#include &lt;QDebug&gt;
-#include &lt;iostream&gt;
+#include <QTranslator>
+#include <QLibraryInfo>
+#include <QDir>
+#include <QStandardPaths>
+#include <QStyleFactory>
+#include <QDebug>
+#include <iostream>
 
 /**
  * @brief Main entry point of the application
@@ -28,15 +28,15 @@ int main(int argc, char *argv[])
 {
     QtWordEditor::Application app(argc, argv);
     
-    qDebug() &lt;&lt; "Available styles:" &lt;&lt; QStyleFactory::keys();
+    qDebug() << "Available styles:" << QStyleFactory::keys();
     
     // Enable Fusion style for consistent look across platforms
     QStyle *fusionStyle = QStyleFactory::create("Fusion");
     if (fusionStyle) {
         app.setStyle(fusionStyle);
-        qDebug() &lt;&lt; "Fusion style applied successfully!";
+        qDebug() << "Fusion style applied successfully!";
     } else {
-        qDebug() &lt;&lt; "Failed to create Fusion style!";
+        qDebug() << "Failed to create Fusion style!";
     }
     
     // Load translation files
@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
     
     // Load Qt built-in translations
     if (qtTranslator.load("qt_" + locale, QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
-        app.installTranslator(&amp;qtTranslator);
+        app.installTranslator(&qtTranslator);
     }
     
     // Load application translations
     QString translationsPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("translations");
     if (translator.load("QtWordEditor_" + locale, translationsPath)) {
-        app.installTranslator(&amp;translator);
+        app.installTranslator(&translator);
     }
     
     // Global exception handling
@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
         mainWindow.show();
 
         return app.exec();
-    } catch (const std::exception &amp;e) {
-        std::cerr &lt;&lt; "Unhandled exception: " &lt;&lt; e.what() &lt;&lt; std::endl;
+    } catch (const std::exception &e) {
+        std::cerr << "Unhandled exception: " << e.what() << std::endl;
         return 1;
     }
 }

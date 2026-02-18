@@ -61,7 +61,7 @@ QRectF Block::boundingRect() const
  * @brief Sets the bounding rectangle of the block
  * @param rect New bounding rectangle
  */
-void Block::setBoundingRect(const QRectF &amp;rect)
+void Block::setBoundingRect(const QRectF &rect)
 {
     if (m_boundingRect != rect) {
         m_boundingRect = rect;

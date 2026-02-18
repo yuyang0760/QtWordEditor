@@ -10,7 +10,7 @@
 #include "core/commands/InsertTextCommand.h"
 #include "core/document/Document.h"
 #include "core/document/ParagraphBlock.h"
-#include &lt;QDebug&gt;
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -23,7 +23,7 @@ namespace QtWordEditor {
  * @param style 插入文本的字符样式
  */
 InsertTextCommand::InsertTextCommand(Document *document, int blockIndex, int position,
-                                     const QString &amp;text, const CharacterStyle &amp;style)
+                                     const QString &text, const CharacterStyle &style)
     : EditCommand(document, QString())
     , m_blockIndex(blockIndex)
     , m_position(position)
@@ -47,17 +47,17 @@ InsertTextCommand::~InsertTextCommand()
  */
 void InsertTextCommand::redo()
 {
-    Block *block = document()-&gt;block(m_blockIndex);
+    Block *block = document()->block(m_blockIndex);
     if (!block) {
-        qWarning() &lt;&lt; "Block not found at index" &lt;&lt; m_blockIndex;
+        qWarning() << "Block not found at index" << m_blockIndex;
         return;
     }
-    ParagraphBlock *para = qobject_cast&lt;ParagraphBlock*&gt;(block);
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
     if (!para) {
-        qWarning() &lt;&lt; "Block is not a paragraph block";
+        qWarning() << "Block is not a paragraph block";
         return;
     }
-    para-&gt;insert(m_position, m_text, m_style);
+    para->insert(m_position, m_text, m_style);
 }
 
 /**
@@ -67,13 +67,13 @@ void InsertTextCommand::redo()
  */
 void InsertTextCommand::undo()
 {
-    Block *block = document()-&gt;block(m_blockIndex);
+    Block *block = document()->block(m_blockIndex);
     if (!block)
         return;
-    ParagraphBlock *para = qobject_cast&lt;ParagraphBlock*&gt;(block);
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
     if (!para)
         return;
-    para-&gt;remove(m_position, m_text.length());
+    para->remove(m_position, m_text.length());
 }
 
 /**
@@ -86,13 +86,13 @@ void InsertTextCommand::undo()
  */
 bool InsertTextCommand::mergeWith(const QUndoCommand *other)
 {
-    const InsertTextCommand *cmd = dynamic_cast&lt;const InsertTextCommand*&gt;(other);
+    const InsertTextCommand *cmd = dynamic_cast<const InsertTextCommand*>(other);
     if (!cmd)
         return false;
-    if (m_blockIndex == cmd-&gt;m_blockIndex &amp;&amp;
-        m_position + m_text.length() == cmd-&gt;m_position &amp;&amp;
-        m_style == cmd-&gt;m_style) {
-        m_text += cmd-&gt;m_text;
+    if (m_blockIndex == cmd->m_blockIndex &&
+        m_position + m_text.length() == cmd->m_position &&
+        m_style == cmd->m_style) {
+        m_text += cmd->m_text;
         return true;
     }
     return false;

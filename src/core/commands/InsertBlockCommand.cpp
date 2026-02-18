@@ -10,7 +10,7 @@
 #include "core/commands/InsertBlockCommand.h"
 #include "core/document/Document.h"
 #include "core/document/Section.h"
-#include &lt;QDebug&gt;
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -47,16 +47,16 @@ InsertBlockCommand::~InsertBlockCommand()
 void InsertBlockCommand::redo()
 {
     if (!m_block) {
-        qWarning() &lt;&lt; "Block is null";
+        qWarning() << "Block is null";
         return;
     }
-    if (document()-&gt;sectionCount() == 0) {
+    if (document()->sectionCount() == 0) {
         Section *sec = new Section(document());
-        document()-&gt;addSection(sec);
+        document()->addSection(sec);
     }
-    Section *section = document()-&gt;section(0);
-    section-&gt;addBlock(m_block);
-    m_block-&gt;setParent(section);
+    Section *section = document()->section(0);
+    section->addBlock(m_block);
+    m_block->setParent(section);
 }
 
 /**
@@ -68,12 +68,12 @@ void InsertBlockCommand::undo()
 {
     if (!m_block)
         return;
-    Section *section = document()-&gt;section(0);
+    Section *section = document()->section(0);
     if (!section)
         return;
-    for (int i = 0; i &lt; section-&gt;blockCount(); ++i) {
-        if (section-&gt;block(i) == m_block) {
-            section-&gt;removeBlock(i);
+    for (int i = 0; i < section->blockCount(); ++i) {
+        if (section->block(i) == m_block) {
+            section->removeBlock(i);
             break;
         }
     }

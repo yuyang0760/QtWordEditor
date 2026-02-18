@@ -10,7 +10,7 @@
 #include "core/document/Section.h"
 #include "core/document/Block.h"
 #include "core/document/Page.h"
-#include &lt;QDebug&gt;
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -65,7 +65,7 @@ QString Section::header() const
  * @brief Sets the section header text
  * @param header New header text
  */
-void Section::setHeader(const QString &amp;header)
+void Section::setHeader(const QString &header)
 {
     if (m_header != header) {
         m_header = header;
@@ -85,7 +85,7 @@ QString Section::footer() const
  * @brief Sets the section footer text
  * @param footer New footer text
  */
-void Section::setFooter(const QString &amp;footer)
+void Section::setFooter(const QString &footer)
 {
     if (m_footer != footer) {
         m_footer = footer;
@@ -108,7 +108,7 @@ int Section::blockCount() const
  */
 Block *Section::block(int index) const
 {
-    if (index &gt;= 0 &amp;&amp; index &lt; m_blocks.size())
+    if (index >= 0 && index < m_blocks.size())
         return m_blocks.at(index);
     return nullptr;
 }
@@ -129,9 +129,9 @@ void Section::addBlock(Block *block)
  */
 void Section::insertBlock(int index, Block *block)
 {
-    if (!block || index &lt; 0 || index &gt; m_blocks.size())
+    if (!block || index < 0 || index > m_blocks.size())
         return;
-    block-&gt;setParent(this);
+    block->setParent(this);
     m_blocks.insert(index, block);
     emit blockAdded(index);
 }
@@ -142,10 +142,10 @@ void Section::insertBlock(int index, Block *block)
  */
 void Section::removeBlock(int index)
 {
-    if (index &lt; 0 || index &gt;= m_blocks.size())
+    if (index < 0 || index >= m_blocks.size())
         return;
     Block *block = m_blocks.takeAt(index);
-    block-&gt;deleteLater();
+    block->deleteLater();
     emit blockRemoved(index);
 }
 
@@ -165,7 +165,7 @@ int Section::pageCount() const
  */
 Page *Section::page(int index) const
 {
-    if (index &gt;= 0 &amp;&amp; index &lt; m_pages.size())
+    if (index >= 0 && index < m_pages.size())
         return m_pages.at(index);
     return nullptr;
 }

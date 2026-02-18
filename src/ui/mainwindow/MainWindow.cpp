@@ -77,8 +77,8 @@ Document *MainWindow::document() const
 
 void MainWindow::setDocument(Document *document)
 {
-    qDebug() << "MainWindow::setDocument called, document =" << document;
-    qDebug() << "  m_document before =" << m_document;
+    qDebug() << "MainWindow::setDocument - 设置文档，文档指针:" << document;
+    qDebug() << "  原文档指针:" << m_document;
     
     if (m_document) {
     }
@@ -136,7 +136,7 @@ void MainWindow::setupUi()
     // 连接样式变化信号
     connect(m_styleManager, &StyleManager::characterStyleChanged,
             this, [this](const QString &styleName) {
-        qDebug() << "Character style changed:" << styleName << "- rebuilding scene";
+        qDebug() << "字符样式变化:" << styleName << "- 重建场景";
         if (m_scene) {
             m_scene->rebuildFromDocument();
         }
@@ -148,7 +148,7 @@ void MainWindow::setupUi()
 
     connect(m_styleManager, &StyleManager::paragraphStyleChanged,
             this, [this](const QString &styleName) {
-        qDebug() << "Paragraph style changed:" << styleName << "- rebuilding scene";
+        qDebug() << "段落样式变化:" << styleName << "- 重建场景";
         if (m_scene) {
             m_scene->rebuildFromDocument();
         }
@@ -160,7 +160,7 @@ void MainWindow::setupUi()
 
     connect(m_styleManager, &StyleManager::stylesChanged,
             this, [this]() {
-        qDebug() << "Styles changed - rebuilding scene";
+        qDebug() << "样式变化 - 重建场景";
         if (m_scene) {
             m_scene->rebuildFromDocument();
         }
@@ -173,7 +173,7 @@ void MainWindow::setupUi()
     // 连接 RibbonBar 样式按钮信号
     connect(m_ribbonBar, &RibbonBar::fontChanged,
             this, [this](const QFont &font) {
-        qDebug() << "Font changed from ribbon:" << font;
+        qDebug() << "字体变化（来自功能区）:" << font;
         CharacterStyle style;
         style.setFont(font);
         if (m_selection->isEmpty()) {
@@ -186,7 +186,7 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::fontSizeChanged,
             this, [this](int size) {
-        qDebug() << "Font size changed from ribbon:" << size;
+        qDebug() << "字体大小变化（来自功能区）:" << size;
         CharacterStyle style;
         style.setFontSize(size);
         if (m_selection->isEmpty()) {
@@ -199,7 +199,7 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::boldChanged,
             this, [this](bool bold) {
-        qDebug() << "Bold changed from ribbon:" << bold;
+        qDebug() << "加粗变化（来自功能区）:" << bold;
         CharacterStyle style;
         style.setBold(bold);
         if (m_selection->isEmpty()) {
@@ -212,7 +212,7 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::italicChanged,
             this, [this](bool italic) {
-        qDebug() << "Italic changed from ribbon:" << italic;
+        qDebug() << "斜体变化（来自功能区）:" << italic;
         CharacterStyle style;
         style.setItalic(italic);
         if (m_selection->isEmpty()) {
@@ -225,7 +225,7 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::underlineChanged,
             this, [this](bool underline) {
-        qDebug() << "Underline changed from ribbon:" << underline;
+        qDebug() << "下划线变化（来自功能区）:" << underline;
         CharacterStyle style;
         style.setUnderline(underline);
         if (m_selection->isEmpty()) {
@@ -239,7 +239,7 @@ void MainWindow::setupUi()
     // 连接 RibbonBar 样式选择信号
     connect(m_ribbonBar, &RibbonBar::characterStyleChanged,
             this, [this](const QString &styleName) {
-        qDebug() << "Character style selected from ribbon:" << styleName;
+        qDebug() << "选择字符样式（来自功能区）:" << styleName;
         if (m_selection->isEmpty() && m_styleManager && m_styleManager->hasCharacterStyle(styleName)) {
             CharacterStyle style = m_styleManager->getResolvedCharacterStyle(styleName);
             m_formatController->setCurrentInputStyle(style);
@@ -251,13 +251,13 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::paragraphStyleChanged,
             this, [this](const QString &styleName) {
-        qDebug() << "Paragraph style selected from ribbon:" << styleName;
+        qDebug() << "选择段落样式（来自功能区）:" << styleName;
         m_formatController->applyNamedParagraphStyle(styleName);
     });
 
     connect(m_ribbonBar, &RibbonBar::openStyleManagerRequested,
             this, [this]() {
-        qDebug() << "Open style manager requested";
+        qDebug() << "请求打开样式管理器";
         StyleManagerDialog dialog(m_styleManager, this);
         dialog.exec();
         // 对话框关闭后刷新样式列表
@@ -401,17 +401,17 @@ void MainWindow::createActions()
 
     QAction *fontAct = new QAction(tr("&Font..."), this);
     connect(fontAct, &QAction::triggered, this, [this]() {
-        qDebug() << "Font dialog placeholder";
+        qDebug() << "字体对话框（占位）";
     });
 
     QAction *paragraphAct = new QAction(tr("&Paragraph..."), this);
     connect(paragraphAct, &QAction::triggered, this, [this]() {
-        qDebug() << "Paragraph dialog placeholder";
+        qDebug() << "段落对话框（占位）";
     });
 
     QAction *imageAct = new QAction(tr("&Image..."), this);
     connect(imageAct, &QAction::triggered, this, [this]() {
-        qDebug() << "Insert image dialog placeholder";
+        qDebug() << "插入图片对话框（占位）";
     });
 
     QAction *zoomInAct = new QAction(tr("Zoom &In"), this);
@@ -779,10 +779,10 @@ void MainWindow::pageSetup()
         m_pageSetup = newSetup;
         m_isModified = true;
         updateWindowTitle();
-        qDebug() << "Page setup changed:";
-        qDebug() << "  Size:" << newSetup.pageWidth << "x" << newSetup.pageHeight << "mm";
-        qDebug() << "  Margins:" << newSetup.marginLeft << newSetup.marginRight << newSetup.marginTop << newSetup.marginBottom << "mm";
-        qDebug() << "  Portrait:" << newSetup.portrait;
+        qDebug() << "页面设置变化:";
+        qDebug() << "  尺寸:" << newSetup.pageWidth << "x" << newSetup.pageHeight << "mm";
+        qDebug() << "  边距:" << newSetup.marginLeft << newSetup.marginRight << newSetup.marginTop << newSetup.marginBottom << "mm";
+        qDebug() << "  纵向:" << newSetup.portrait;
     }
 }
 
@@ -842,15 +842,15 @@ void MainWindow::updateStyleState()
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
 {
-    qDebug() << "calculateCursorVisualPosition called, pos:" << pos.blockIndex << "," << pos.offset;
+    qDebug() << "calculateCursorVisualPosition - 计算光标位置，位置:" << pos.blockIndex << "," << pos.offset;
     
     if (m_scene) {
         QPointF result = m_scene->calculateCursorVisualPosition(pos);
-        qDebug() << "  Returning position from scene:" << result;
+        qDebug() << "  返回场景坐标:" << result;
         return result;
     }
     
-    qDebug() << "  m_scene is null, returning (0,0)";
+    qDebug() << "  场景为空，返回 (0,0)";
     return QPointF(0, 0);
 }
 

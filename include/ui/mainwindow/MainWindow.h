@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QPlainTextEdit>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QWidget>
 #include "core/Global.h"
 #include "ui/dialogs/PageSetupDialog.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -147,6 +150,9 @@ private:
     /** @brief 设置用户界面 */
     void setupUi();
     
+    /** @brief 设置自定义状态栏 */
+    void setupCustomStatusBar();
+    
     /** @brief 设置调试控制台 */
     void setupDebugConsole();
     
@@ -177,6 +183,10 @@ private:
     PageSetup m_pageSetup;                  ///< 页面设置
     
     CursorPosition m_currentCursorPos;      ///< 当前光标位置
+    
+    QWidget *m_statusBarWidget;              ///< 状态栏自定义容器
+    QLabel *m_statusLine1Label;              ///< 状态栏第一行
+    QLabel *m_statusLine2Label;              ///< 状态栏第二行
     
     QDockWidget *m_debugConsoleDock;        ///< 调试控制台停靠窗口
     QPlainTextEdit *m_debugConsoleTextEdit; ///< 调试控制台文本编辑器

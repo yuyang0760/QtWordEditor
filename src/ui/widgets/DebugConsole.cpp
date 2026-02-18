@@ -50,8 +50,7 @@ void DebugConsole::log(const QString &message)
     if (!console->m_enabled)
         return;
 
-    QString timestamp = QDateTime::currentDateTime().toString("[HH:mm:ss.zzz]");
-    QString fullMessage = QString("%1 %2").arg(timestamp, message);
+    QString fullMessage = message;
     
     // 同时输出到旧的消息处理器（如果有的话）
     if (s_oldMessageHandler) {

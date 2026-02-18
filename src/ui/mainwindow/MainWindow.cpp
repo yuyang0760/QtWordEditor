@@ -3,6 +3,9 @@
 #include "core/document/Document.h"
 #include "core/document/Section.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/Span.h"
+#include "core/document/ImageBlock.h"
+#include "core/document/TableBlock.h"
 #include "core/document/Page.h"
 #include "core/layout/PageBuilder.h"
 #include "core/utils/Constants.h"
@@ -20,6 +23,8 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDockWidget>
+#include <QScreen>
+#include <QGuiApplication>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -84,7 +89,16 @@ void MainWindow::setDocument(Document *document)
 
 void MainWindow::setupUi()
 {
-    resize(800, 600);
+    resize(1200, 700);
+    
+    // 窗口居中显示
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        QRect screenGeometry = screen->availableGeometry();
+        int x = (screenGeometry.width() - width()) / 2;
+        int y = (screenGeometry.height() - height()) / 2;
+        move(x, y);
+    }
 
     QWidget *centralContainer = new QWidget(this);
     QVBoxLayout *mainLayout = new QVBoxLayout(centralContainer);
@@ -161,6 +175,9 @@ void MainWindow::setupUi()
 
     m_view->setFocus();
     m_view->activateWindow();
+    
+    // 创建自定义状态栏
+    setupCustomStatusBar();
     
     // 创建调试控制台
     setupDebugConsole();
@@ -365,7 +382,6 @@ void MainWindow::newDocument()
         
         m_currentFile.clear();
         m_isModified = false;
-        statusBar()->showMessage(tr("New document created"));
     }
 }
 
@@ -483,9 +499,63 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
     
     Page *page = m_scene->pageAt(scenePos);
     
-    QString cursorInfo = QString("光标: 块%1, 偏移%2")
+    // ========== 收集文档信息 ==========
+    QString blockType = "N/A";
+    QString spanInfo = "N/A";
+    int spanIndex = -1;
+    int spanOffset = -1;
+    QString characterInfo = "N/A";
+    QString paragraphLength = "N/A";
+    QString spanCount = "N/A";
+    
+    if (m_document && m_document->sectionCount() > 0) {
+        Section *section = m_document->section(0);
+        if (section && m_currentCursorPos.blockIndex >= 0 && m_currentCursorPos.blockIndex < section->blockCount()) {
+            Block *block = section->block(m_currentCursorPos.blockIndex);
+            if (block) {
+                // 获取块类型
+                if (qobject_cast<ParagraphBlock*>(block)) {
+                    blockType = "段落块";
+                    
+                    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+                    paragraphLength = QString::number(paraBlock->length());
+                    spanCount = QString::number(paraBlock->spanCount());
+                    
+                    // 查找 Span 信息
+                    int posInSpan = 0;
+                    spanIndex = paraBlock->findSpanIndex(m_currentCursorPos.offset, &posInSpan);
+                    spanOffset = posInSpan;
+                    
+                    if (spanIndex >= 0 && spanIndex < paraBlock->spanCount()) {
+                        Span span = paraBlock->span(spanIndex);
+                        spanInfo = QString("索引:%1, 长度:%2, 偏移:%3")
+                            .arg(spanIndex)
+                            .arg(span.length())
+                            .arg(posInSpan);
+                        
+                        // 获取字符信息
+                        if (m_currentCursorPos.offset >= 0 && m_currentCursorPos.offset < paraBlock->text().length()) {
+                            QChar ch = paraBlock->text().at(m_currentCursorPos.offset);
+                            characterInfo = QString("'%1' (0x%2)")
+                                .arg(ch.isPrint() ? ch : '?')
+                                .arg(ch.unicode(), 4, 16, QChar('0'));
+                        }
+                    }
+                } else if (qobject_cast<ImageBlock*>(block)) {
+                    blockType = "图片块";
+                } else if (qobject_cast<TableBlock*>(block)) {
+                    blockType = "表格块";
+                }
+            }
+        }
+    }
+    
+    // ========== 第一行：光标和位置信息 ==========
+    QString line1 = QString("光标: 块%1, 偏移%2  |  缩放: %3%  |  块类型: %4")
         .arg(m_currentCursorPos.blockIndex)
-        .arg(m_currentCursorPos.offset);
+        .arg(m_currentCursorPos.offset)
+        .arg(m_currentZoom, 0, 'f', 0)
+        .arg(blockType);
     
     if (page) {
         qreal pageSpacing = 30.0;
@@ -496,26 +566,45 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
         qreal relativeX = scenePos.x();
         qreal relativeY = scenePos.y() - yOffset;
         
-        QString statusText = QString("%1  |  缩放: %2%  |  页码: %3  |  场景坐标: (%4, %5)  |  相对坐标: (%6, %7)  |  视图坐标: (%8, %9)")
-            .arg(cursorInfo)
-            .arg(m_currentZoom, 0, 'f', 0)
+        line1 += QString("  |  页码: %1  |  场景: (%2, %3)  |  相对: (%4, %5)  |  视图: (%6, %7)")
             .arg(page->pageNumber())
-            .arg(scenePos.x(), 0, 'f', 2)
-            .arg(scenePos.y(), 0, 'f', 2)
-            .arg(relativeX, 0, 'f', 2)
-            .arg(relativeY, 0, 'f', 2)
+            .arg(scenePos.x(), 0, 'f', 1)
+            .arg(scenePos.y(), 0, 'f', 1)
+            .arg(relativeX, 0, 'f', 1)
+            .arg(relativeY, 0, 'f', 1)
             .arg(viewPos.x())
             .arg(viewPos.y());
-        statusBar()->showMessage(statusText);
     } else {
-        QString statusText = QString("%1  |  缩放: %2%  |  场景坐标: (%3, %4)  |  视图坐标: (%5, %6)")
-            .arg(cursorInfo)
-            .arg(m_currentZoom, 0, 'f', 0)
-            .arg(scenePos.x(), 0, 'f', 2)
-            .arg(scenePos.y(), 0, 'f', 2)
+        line1 += QString("  |  场景: (%1, %2)  |  视图: (%3, %4)")
+            .arg(scenePos.x(), 0, 'f', 1)
+            .arg(scenePos.y(), 0, 'f', 1)
             .arg(viewPos.x())
             .arg(viewPos.y());
-        statusBar()->showMessage(statusText);
+    }
+    
+    // ========== 第二行：Span 和详细信息 ==========
+    QString line2 = "";
+    if (spanIndex >= 0) {
+        line2 = QString("Span: %1  |  段落长度: %2  |  Span数量: %3")
+            .arg(spanInfo)
+            .arg(paragraphLength)
+            .arg(spanCount);
+        
+        if (characterInfo != "N/A") {
+            line2 += QString("  |  字符: %1").arg(characterInfo);
+        }
+    } else {
+        line2 = QString("段落长度: %1  |  Span数量: %2")
+            .arg(paragraphLength)
+            .arg(spanCount);
+    }
+    
+    // 更新状态栏标签
+    if (m_statusLine1Label) {
+        m_statusLine1Label->setText(line1);
+    }
+    if (m_statusLine2Label) {
+        m_statusLine2Label->setText(line2);
     }
 }
 
@@ -622,7 +711,7 @@ void MainWindow::setupDebugConsole()
     dockContent->setLayout(dockLayout);
     m_debugConsoleDock->setWidget(dockContent);
     
-    addDockWidget(Qt::BottomDockWidgetArea, m_debugConsoleDock);
+    addDockWidget(Qt::RightDockWidgetArea, m_debugConsoleDock);
     
     // 连接 DebugConsole 的信号到我们的槽
     connect(DebugConsole::instance(), &DebugConsole::logMessage,
@@ -638,6 +727,32 @@ void MainWindow::setupDebugConsole()
     
     // 发送欢迎消息
     DebugConsole::log(tr("调试控制台初始化成功！"));
+}
+
+void MainWindow::setupCustomStatusBar()
+{
+    // 创建自定义状态栏容器
+    m_statusBarWidget = new QWidget(this);
+    QVBoxLayout *statusLayout = new QVBoxLayout(m_statusBarWidget);
+    statusLayout->setContentsMargins(5, 2, 5, 2);
+    statusLayout->setSpacing(2);
+    
+    // 创建第一行标签
+    m_statusLine1Label = new QLabel(tr("准备就绪"), this);
+    m_statusLine1Label->setFrameStyle(QFrame::NoFrame);
+    m_statusLine1Label->setStyleSheet("color: #333; font-size: 10pt;");
+    
+    // 创建第二行标签
+    m_statusLine2Label = new QLabel("", this);
+    m_statusLine2Label->setFrameStyle(QFrame::NoFrame);
+    m_statusLine2Label->setStyleSheet("color: #666; font-size: 9pt;");
+    
+    statusLayout->addWidget(m_statusLine1Label);
+    statusLayout->addWidget(m_statusLine2Label);
+    m_statusBarWidget->setLayout(statusLayout);
+    
+    // 将自定义部件添加到状态栏
+    statusBar()->addWidget(m_statusBarWidget, 1);
 }
 
 } // namespace QtWordEditor

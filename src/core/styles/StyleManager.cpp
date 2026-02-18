@@ -10,6 +10,70 @@ namespace QtWordEditor {
 StyleManager::StyleManager(QObject *parent)
     : QObject(parent)
 {
+    // 初始化默认字符样式
+    initializeDefaultCharacterStyles();
+    
+    // 初始化默认段落样式
+    initializeDefaultParagraphStyles();
+}
+
+void StyleManager::initializeDefaultCharacterStyles()
+{
+    // Default 样式
+    CharacterStyle defaultStyle;
+    defaultStyle.setFontSize(12);
+    addCharacterStyle("Default", defaultStyle);
+    
+    // Heading 1 样式
+    CharacterStyle heading1;
+    heading1.setFontSize(24);
+    heading1.setBold(true);
+    addCharacterStyle("Heading 1", heading1);
+    
+    // Heading 2 样式（继承自 Heading 1）
+    CharacterStyle heading2;
+    heading2.setFontSize(20);
+    addCharacterStyle("Heading 2", heading2, "Heading 1");
+    
+    // Heading 3 样式（继承自 Heading 1）
+    CharacterStyle heading3;
+    heading3.setFontSize(18);
+    addCharacterStyle("Heading 3", heading3, "Heading 1");
+    
+    // Emphasis 样式
+    CharacterStyle emphasis;
+    emphasis.setItalic(true);
+    addCharacterStyle("Emphasis", emphasis);
+    
+    // Strong 样式
+    CharacterStyle strong;
+    strong.setBold(true);
+    addCharacterStyle("Strong", strong);
+}
+
+void StyleManager::initializeDefaultParagraphStyles()
+{
+    // Default 样式
+    ParagraphStyle defaultStyle;
+    addParagraphStyle("Default", defaultStyle);
+    
+    // Heading 1 段落样式
+    ParagraphStyle heading1;
+    heading1.setSpaceBefore(12);
+    heading1.setSpaceAfter(12);
+    addParagraphStyle("Heading 1", heading1);
+    
+    // Heading 2 段落样式（继承自 Heading 1）
+    ParagraphStyle heading2;
+    heading2.setSpaceBefore(10);
+    heading2.setSpaceAfter(10);
+    addParagraphStyle("Heading 2", heading2, "Heading 1");
+    
+    // Quote 段落样式
+    ParagraphStyle quote;
+    quote.setLeftIndent(30);
+    quote.setRightIndent(30);
+    addParagraphStyle("Quote", quote);
 }
 
 StyleManager::~StyleManager()

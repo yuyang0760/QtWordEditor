@@ -196,6 +196,16 @@ signals:
     void paragraphStyleChanged(const QString &styleName);
 
 private:
+    /**
+     * @brief 初始化默认字符样式
+     */
+    void initializeDefaultCharacterStyles();
+    
+    /**
+     * @brief 初始化默认段落样式
+     */
+    void initializeDefaultParagraphStyles();
+    
     Document *m_document = nullptr;                             ///< 关联的文档
     QHash<QString, CharacterStyleInfo> m_characterStyles;      ///< 字符样式哈希表
     QHash<QString, ParagraphStyleInfo> m_paragraphStyles;      ///< 段落样式哈希表

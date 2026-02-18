@@ -131,6 +131,31 @@ void MainWindow::setupUi()
     m_formatController = new FormatController(m_document, m_selection, this);
     m_styleManager = new StyleManager(this);
 
+    // 连接样式变化信号
+    connect(m_styleManager, &StyleManager::characterStyleChanged,
+            this, [this](const QString &styleName) {
+        qDebug() << "Character style changed:" << styleName << "- rebuilding scene";
+        if (m_scene) {
+            m_scene->rebuildFromDocument();
+        }
+    });
+
+    connect(m_styleManager, &StyleManager::paragraphStyleChanged,
+            this, [this](const QString &styleName) {
+        qDebug() << "Paragraph style changed:" << styleName << "- rebuilding scene";
+        if (m_scene) {
+            m_scene->rebuildFromDocument();
+        }
+    });
+
+    connect(m_styleManager, &StyleManager::stylesChanged,
+            this, [this]() {
+        qDebug() << "Styles changed - rebuilding scene";
+        if (m_scene) {
+            m_scene->rebuildFromDocument();
+        }
+    });
+
     // 设置场景到 EditEventHandler
     m_editEventHandler->setScene(m_scene);
     

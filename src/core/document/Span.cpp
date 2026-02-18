@@ -1,4 +1,5 @@
 #include "core/document/Span.h"
+#include "core/styles/StyleManager.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -8,26 +9,30 @@ class SpanData : public QSharedData
 public:
     SpanData()
         : m_text("")
+        , m_styleName("")
     {
     }
 
     SpanData(const QString &text, const CharacterStyle &style)
         : m_text(text)
-        , m_style(style)
+        , m_styleName("")
+        , m_directStyle(style)
     {
     }
 
     SpanData(const SpanData &other)
         : QSharedData(other)
         , m_text(other.m_text)
-        , m_style(other.m_style)
+        , m_styleName(other.m_styleName)
+        , m_directStyle(other.m_directStyle)
     {
     }
 
     ~SpanData() = default;
 
     QString m_text;
-    CharacterStyle m_style;
+    QString m_styleName;           // 命名样式名称
+    CharacterStyle m_directStyle;  // 直接样式（覆盖命名样式）
 };
 
 Span::Span()
@@ -93,12 +98,51 @@ int Span::length() const
 
 CharacterStyle Span::style() const
 {
-    return d->m_style;
+    // 向后兼容：返回直接样式
+    return d->m_directStyle;
 }
 
 void Span::setStyle(const CharacterStyle &style)
 {
-    d->m_style = style;
+    // 向后兼容：设置直接样式
+    d->m_directStyle = style;
+}
+
+QString Span::styleName() const
+{
+    return d->m_styleName;
+}
+
+void Span::setStyleName(const QString &styleName)
+{
+    d->m_styleName = styleName;
+}
+
+CharacterStyle Span::directStyle() const
+{
+    return d->m_directStyle;
+}
+
+void Span::setDirectStyle(const CharacterStyle &style)
+{
+    d->m_directStyle = style;
+}
+
+CharacterStyle Span::effectiveStyle(const StyleManager *styleManager) const
+{
+    CharacterStyle result;
+    
+    // 1. 如果有命名样式，先应用
+    if (!d->m_styleName.isEmpty() && styleManager) {
+        if (styleManager->hasCharacterStyle(d->m_styleName)) {
+            result = styleManager->characterStyle(d->m_styleName);
+        }
+    }
+    
+    // 2. 然后用直接样式覆盖
+    result = result.mergeWith(d->m_directStyle);
+    
+    return result;
 }
 
 Span Span::split(int position)
@@ -108,14 +152,18 @@ Span Span::split(int position)
     }
     QString firstPart = d->m_text.left(position);
     QString secondPart = d->m_text.mid(position);
-    Span second(secondPart, d->m_style);
+    Span second(secondPart);
+    second.setStyleName(d->m_styleName);
+    second.setDirectStyle(d->m_directStyle);
     d->m_text = firstPart;
     return second;
 }
 
 bool Span::operator==(const Span &other) const
 {
-    return d->m_text == other.d->m_text && d->m_style == other.d->m_style;
+    return d->m_text == other.d->m_text && 
+           d->m_styleName == other.d->m_styleName &&
+           d->m_directStyle == other.d->m_directStyle;
 }
 
 bool Span::operator!=(const Span &other) const

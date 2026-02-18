@@ -10,6 +10,7 @@
 namespace QtWordEditor {
 
 class SpanData;
+class StyleManager;
 
 /**
  * @brief The Span class represents a text fragment with uniform character style.
@@ -32,9 +33,20 @@ public:
     void remove(int position, int length);
     int length() const;
 
-    // Style
+    // Style - 传统接口（向后兼容）
     CharacterStyle style() const;
     void setStyle(const CharacterStyle &style);
+
+    // 命名样式
+    QString styleName() const;
+    void setStyleName(const QString &styleName);
+
+    // 直接样式（覆盖命名样式）
+    CharacterStyle directStyle() const;
+    void setDirectStyle(const CharacterStyle &style);
+
+    // 获取最终生效的样式（命名样式 + 直接样式）
+    CharacterStyle effectiveStyle(const StyleManager *styleManager) const;
 
     // Split at position, returning the second part; this span becomes the first part.
     Span split(int position);

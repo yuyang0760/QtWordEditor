@@ -132,10 +132,10 @@ CharacterStyle Span::effectiveStyle(const StyleManager *styleManager) const
 {
     CharacterStyle result;
     
-    // 1. 如果有命名样式，先应用
+    // 1. 如果有命名样式，先应用（解析继承）
     if (!d->m_styleName.isEmpty() && styleManager) {
         if (styleManager->hasCharacterStyle(d->m_styleName)) {
-            result = styleManager->characterStyle(d->m_styleName);
+            result = styleManager->getResolvedCharacterStyle(d->m_styleName);
         }
     }
     

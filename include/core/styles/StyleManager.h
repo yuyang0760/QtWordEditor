@@ -13,6 +13,24 @@ namespace QtWordEditor {
 class Document;
 
 /**
+ * @brief 字符样式信息结构体
+ * 包含样式本身和父样式名称
+ */
+struct CharacterStyleInfo {
+    CharacterStyle style;          ///< 字符样式
+    QString parentStyleName;        ///< 父样式名称（可选）
+};
+
+/**
+ * @brief 段落样式信息结构体
+ * 包含样式本身和父样式名称
+ */
+struct ParagraphStyleInfo {
+    ParagraphStyle style;           ///< 段落样式
+    QString parentStyleName;        ///< 父样式名称（可选）
+};
+
+/**
  * @brief 样式管理器类，管理命名的字符样式和段落样式
  *
  * 该类提供了样式模板的存储、检索和应用功能，支持：
@@ -20,6 +38,7 @@ class Document;
  * 2. 段落样式的管理（对齐、缩进、行距等）
  * 3. 样式到文档内容的应用
  * 4. 样式模板的维护和复用
+ * 5. 样式继承机制
  */
 class StyleManager : public QObject
 {
@@ -54,15 +73,23 @@ public:
      * @brief 添加字符样式
      * @param name 样式名称
      * @param style 字符样式对象
+     * @param parentStyleName 父样式名称（可选）
      */
-    void addCharacterStyle(const QString &name, const CharacterStyle &style);
+    void addCharacterStyle(const QString &name, const CharacterStyle &style, const QString &parentStyleName = QString());
     
     /**
-     * @brief 根据名称获取字符样式
+     * @brief 根据名称获取字符样式（不包含继承）
      * @param name 样式名称
      * @return 对应的字符样式对象
      */
     CharacterStyle characterStyle(const QString &name) const;
+    
+    /**
+     * @brief 获取解析继承后的字符样式
+     * @param name 样式名称
+     * @return 解析继承后的完整字符样式
+     */
+    CharacterStyle getResolvedCharacterStyle(const QString &name) const;
     
     /**
      * @brief 检查是否存在指定名称的字符样式
@@ -76,6 +103,20 @@ public:
      * @return 样式名称字符串列表
      */
     QStringList characterStyleNames() const;
+    
+    /**
+     * @brief 设置字符样式的父样式
+     * @param styleName 样式名称
+     * @param parentStyleName 父样式名称
+     */
+    void setCharacterStyleParent(const QString &styleName, const QString &parentStyleName);
+    
+    /**
+     * @brief 获取字符样式的父样式名称
+     * @param styleName 样式名称
+     * @return 父样式名称，如果没有则返回空字符串
+     */
+    QString characterStyleParent(const QString &styleName) const;
 
     // ========== 段落样式管理方法 ==========
     
@@ -83,15 +124,23 @@ public:
      * @brief 添加段落样式
      * @param name 样式名称
      * @param style 段落样式对象
+     * @param parentStyleName 父样式名称（可选）
      */
-    void addParagraphStyle(const QString &name, const ParagraphStyle &style);
+    void addParagraphStyle(const QString &name, const ParagraphStyle &style, const QString &parentStyleName = QString());
     
     /**
-     * @brief 根据名称获取段落样式
+     * @brief 根据名称获取段落样式（不包含继承）
      * @param name 样式名称
      * @return 对应的段落样式对象
      */
     ParagraphStyle paragraphStyle(const QString &name) const;
+    
+    /**
+     * @brief 获取解析继承后的段落样式
+     * @param name 样式名称
+     * @return 解析继承后的完整段落样式
+     */
+    ParagraphStyle getResolvedParagraphStyle(const QString &name) const;
     
     /**
      * @brief 检查是否存在指定名称的段落样式
@@ -105,6 +154,20 @@ public:
      * @return 样式名称字符串列表
      */
     QStringList paragraphStyleNames() const;
+    
+    /**
+     * @brief 设置段落样式的父样式
+     * @param styleName 样式名称
+     * @param parentStyleName 父样式名称
+     */
+    void setParagraphStyleParent(const QString &styleName, const QString &parentStyleName);
+    
+    /**
+     * @brief 获取段落样式的父样式名称
+     * @param styleName 样式名称
+     * @return 父样式名称，如果没有则返回空字符串
+     */
+    QString paragraphStyleParent(const QString &styleName) const;
 
     // ========== 样式应用方法 ==========
     
@@ -127,11 +190,15 @@ public:
 signals:
     /** @brief 样式发生改变时发出的信号 */
     void stylesChanged();
+    /** @brief 字符样式发生改变时发出的信号 */
+    void characterStyleChanged(const QString &styleName);
+    /** @brief 段落样式发生改变时发出的信号 */
+    void paragraphStyleChanged(const QString &styleName);
 
 private:
     Document *m_document = nullptr;                             ///< 关联的文档
-    QHash<QString, CharacterStyle> m_characterStyles;          ///< 字符样式哈希表
-    QHash<QString, ParagraphStyle> m_paragraphStyles;          ///< 段落样式哈希表
+    QHash<QString, CharacterStyleInfo> m_characterStyles;      ///< 字符样式哈希表
+    QHash<QString, ParagraphStyleInfo> m_paragraphStyles;      ///< 段落样式哈希表
 };
 
 } // namespace QtWordEditor

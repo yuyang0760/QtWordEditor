@@ -133,12 +133,11 @@ void MainWindow::setupUi()
     
     mainLayout->addWidget(viewContainer);
 
-    // 连接样式变化信号 - 优化：只更新受影响的文本块，不重建整个场景
     connect(m_styleManager, &StyleManager::characterStyleChanged,
             this, [this](const QString &styleName) {
-      //  QDebug() << "字符样式变化:" << styleName << "- 更新受影响的文本块";
+        Q_UNUSED(styleName);
         if (m_scene) {
-            m_scene->updateTextItemsWithCharacterStyle(styleName);
+            m_scene->updateAllTextItems();
         }
         // 刷新 RibbonBar 的样式列表
         if (m_ribbonBar) {
@@ -148,9 +147,9 @@ void MainWindow::setupUi()
 
     connect(m_styleManager, &StyleManager::paragraphStyleChanged,
             this, [this](const QString &styleName) {
-      //  QDebug() << "段落样式变化:" << styleName << "- 更新受影响的文本块";
+        Q_UNUSED(styleName);
         if (m_scene) {
-            m_scene->updateTextItemsWithParagraphStyle(styleName);
+            m_scene->updateAllTextItems();
         }
         // 刷新 RibbonBar 的样式列表
         if (m_ribbonBar) {

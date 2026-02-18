@@ -7,6 +7,7 @@
 #include <QInputMethod>
 #include <QGuiApplication>
 #include <QDebug>
+#include <QOpenGLWidget>
 
 namespace QtWordEditor {
 
@@ -17,6 +18,10 @@ DocumentView::DocumentView(QWidget *parent)
     , m_cursor(nullptr)
     , m_cursorVisualPos(0, 0)
 {
+    // 使用 OpenGL 加速的视口，大幅提升渲染性能
+    QOpenGLWidget *glViewport = new QOpenGLWidget(this);
+    setViewport(glViewport);
+    
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
     // 使用智能视口更新而不是全屏更新，提高性能
     setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);

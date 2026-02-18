@@ -10,7 +10,7 @@ if(MSVC)
 endif()
 
 # Find Qt6
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport LinguistTools)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport OpenGLWidgets LinguistTools)
 
 # Enable automatic moc, uic, rcc
 set(CMAKE_AUTOMOC ON)
@@ -57,7 +57,7 @@ target_include_directories(QtWordEditorUI PUBLIC include)
 # Set library dependencies
 target_link_libraries(QtWordEditorCore PRIVATE Qt6::Core Qt6::Gui)
 target_link_libraries(QtWordEditorEditControl PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets QtWordEditorCore QtWordEditorGraphics)
-target_link_libraries(QtWordEditorGraphics PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets QtWordEditorCore)
+target_link_libraries(QtWordEditorGraphics PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGLWidgets QtWordEditorCore)
 target_link_libraries(QtWordEditorIO PRIVATE Qt6::Core Qt6::Gui Qt6::PrintSupport QtWordEditorCore)
 target_link_libraries(QtWordEditorUI PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::PrintSupport QtWordEditorCore QtWordEditorEditControl QtWordEditorGraphics)
 
@@ -81,6 +81,7 @@ target_link_libraries(QtWordEditor
     Qt6::Widgets
     Qt6::Gui
     Qt6::PrintSupport
+    Qt6::OpenGLWidgets
     QtWordEditorCore
     QtWordEditorEditControl
     QtWordEditorGraphics

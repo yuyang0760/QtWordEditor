@@ -43,12 +43,6 @@ public:
     void updateBlock() override;
     
     /**
-     * @brief 更新块内容显示
-     * @param forceUpdate 是否强制更新，即使检测到内容没有变化
-     */
-    void updateBlock(bool forceUpdate);
-    
-    /**
      * @brief 获取内部的文本图形项
      * @return 指向QGraphicsTextItem的指针
      */
@@ -114,9 +108,6 @@ private:
     
     QGraphicsTextItem *m_textItem;  ///< 内部文本图形项
     qreal m_textWidth;              ///< 文本显示宽度
-    
-    // 缓存上次渲染的内容，避免不必要的重建
-    QList<Span> m_cachedSpans;      ///< 上次渲染的 Span 列表
 };
 
 } // namespace QtWordEditor

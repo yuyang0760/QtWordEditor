@@ -73,18 +73,6 @@ public:
      * @param block 要更新的块
      */
     void updateSingleTextItem(Block *block);
-    
-    /**
-     * @brief 更新使用指定字符样式的文本块
-     * @param styleName 字符样式名称
-     */
-    void updateTextItemsWithCharacterStyle(const QString &styleName);
-    
-    /**
-     * @brief 更新使用指定段落样式的文本块
-     * @param styleName 段落样式名称
-     */
-    void updateTextItemsWithParagraphStyle(const QString &styleName);
 
     // ========== 光标相关方法 ==========
     

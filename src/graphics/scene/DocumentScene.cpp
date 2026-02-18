@@ -268,9 +268,8 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
         blockIndex >= 0 && blockIndex < m_pageTextItems[pageIndex].size()) {
         QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIndex];
         if (textItem) {
-            // 转换到 textItem 的局部坐标
-            QPointF itemPos = textItem->pos();
-            QPointF localPos = scenePos - itemPos;
+            // 使用 mapFromScene 转换坐标到 textItem 的局部坐标
+            QPointF localPos = textItem->mapFromScene(scenePos);
             
             // 使用 hitTest 获取准确位置
             pos.offset = textItem->document()->documentLayout()->hitTest(localPos, Qt::FuzzyHit);

@@ -199,17 +199,34 @@ void MainWindow::setupUi()
     connect(m_ribbonBar, &RibbonBar::boldChanged,
             this, [this](bool /* bold */) {
         qDebug() << "MainWindow: 加粗按钮被点击";
-        // 忽略按钮传入的参数，根据当前显示样式进行切换
-        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-        qDebug() << "  getCurrentDisplayStyle() 返回的加粗:" << currentStyle.bold();
-        bool newBold = !currentStyle.bold();
-        qDebug() << "  计算的新加粗:" << newBold;
         
         CharacterStyle style;
-        style.setBold(newBold);
         if (m_selection->isEmpty()) {
+            // 无选区：根据当前显示样式切换
+            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+            qDebug() << "  无选区，getCurrentDisplayStyle() 返回的加粗:" << currentStyle.bold();
+            bool newBold = !currentStyle.bold();
+            qDebug() << "  计算的新加粗:" << newBold;
+            style.setBold(newBold);
             m_formatController->setCurrentInputStyle(style);
         } else {
+            // 有选区：检查选区内是否全部都是加粗
+            bool allBold = m_formatController->isSelectionAllBold();
+            
+            qDebug() << "  有选区，选区内全部加粗:" << allBold;
+            
+            bool newBold;
+            if (allBold) {
+                // 选区内全部都是加粗 → 取消加粗
+                newBold = false;
+                qDebug() << "  选区内全部加粗，设置为 false";
+            } else {
+                // 选区内不一致或未加粗 → 设置为加粗
+                newBold = true;
+                qDebug() << "  选区内不一致或未加粗，设置为 true";
+            }
+            
+            style.setBold(newBold);
             m_formatController->setBold(newBold);
         }
         updateStyleState();
@@ -217,16 +234,33 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::italicChanged,
             this, [this](bool /* italic */) {
-      //  QDebug() << "斜体变化（来自功能区）";
-        // 忽略按钮传入的参数，根据当前显示样式进行切换
-        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-        bool newItalic = !currentStyle.italic();
+        qDebug() << "MainWindow: 斜体按钮被点击";
         
         CharacterStyle style;
-        style.setItalic(newItalic);
         if (m_selection->isEmpty()) {
+            // 无选区：根据当前显示样式切换
+            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+            bool newItalic = !currentStyle.italic();
+            style.setItalic(newItalic);
             m_formatController->setCurrentInputStyle(style);
         } else {
+            // 有选区：检查选区内是否全部都是斜体
+            bool allItalic = m_formatController->isSelectionAllItalic();
+            
+            qDebug() << "  有选区，选区内全部斜体:" << allItalic;
+            
+            bool newItalic;
+            if (allItalic) {
+                // 选区内全部都是斜体 → 取消斜体
+                newItalic = false;
+                qDebug() << "  选区内全部斜体，设置为 false";
+            } else {
+                // 选区内不一致或未斜体 → 设置为斜体
+                newItalic = true;
+                qDebug() << "  选区内不一致或未斜体，设置为 true";
+            }
+            
+            style.setItalic(newItalic);
             m_formatController->setItalic(newItalic);
         }
         updateStyleState();
@@ -234,16 +268,33 @@ void MainWindow::setupUi()
 
     connect(m_ribbonBar, &RibbonBar::underlineChanged,
             this, [this](bool /* underline */) {
-      //  QDebug() << "下划线变化（来自功能区）";
-        // 忽略按钮传入的参数，根据当前显示样式进行切换
-        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-        bool newUnderline = !currentStyle.underline();
+        qDebug() << "MainWindow: 下划线按钮被点击";
         
         CharacterStyle style;
-        style.setUnderline(newUnderline);
         if (m_selection->isEmpty()) {
+            // 无选区：根据当前显示样式切换
+            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+            bool newUnderline = !currentStyle.underline();
+            style.setUnderline(newUnderline);
             m_formatController->setCurrentInputStyle(style);
         } else {
+            // 有选区：检查选区内是否全部都有下划线
+            bool allUnderline = m_formatController->isSelectionAllUnderline();
+            
+            qDebug() << "  有选区，选区内全部下划线:" << allUnderline;
+            
+            bool newUnderline;
+            if (allUnderline) {
+                // 选区内全部都有下划线 → 取消下划线
+                newUnderline = false;
+                qDebug() << "  选区内全部下划线，设置为 false";
+            } else {
+                // 选区内不一致或无下划线 → 设置为下划线
+                newUnderline = true;
+                qDebug() << "  选区内不一致或无下划线，设置为 true";
+            }
+            
+            style.setUnderline(newUnderline);
             m_formatController->setUnderline(newUnderline);
         }
         updateStyleState();

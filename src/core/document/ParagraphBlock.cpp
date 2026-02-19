@@ -137,11 +137,11 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         
         qDebug() << "    before=[" << before << "], middle=[" << middle << "], after=[" << after << "]";
         
+        // 保存原始样式的副本！防止隐式共享问题！必须在删除之前获取！
+        CharacterStyle originalStyle = span.style();
+        
         // 替换原来的 span
         m_spans.removeAt(startSpanIndex);
-        
-        // 保存原始样式的副本！防止隐式共享问题！
-        CharacterStyle originalStyle = span.style();
         
         qDebug() << "    原始样式的加粗: " << originalStyle.bold();
         

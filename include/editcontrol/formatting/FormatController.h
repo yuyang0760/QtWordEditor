@@ -141,6 +141,27 @@ public:
      * @return true=所有属性都一致，false=至少有一个属性不一致
      */
     bool isSelectionStyleConsistent() const;
+    
+    /**
+     * @brief 检查选区内的所有字符的粗体是否都为 true
+     * 
+     * @return true=选区内所有字符都是粗体，false=至少有一个字符不是粗体
+     */
+    bool isSelectionAllBold() const;
+    
+    /**
+     * @brief 检查选区内的所有字符的斜体是否都为 true
+     * 
+     * @return true=选区内所有字符都是斜体，false=至少有一个字符不是斜体
+     */
+    bool isSelectionAllItalic() const;
+    
+    /**
+     * @brief 检查选区内的所有字符的下划线是否都为 true
+     * 
+     * @return true=选区内所有字符都有下划线，false=至少有一个字符没有下划线
+     */
+    bool isSelectionAllUnderline() const;
 
     /**
      * @brief 获取当前应该在工具栏显示的样式

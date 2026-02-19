@@ -91,6 +91,8 @@ void FormatController::applyNamedCharacterStyle(const QString &styleName)
 void FormatController::setFont(const QFont &font)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setFont(font);
     applyCharacterStyle(style);
 }
@@ -98,6 +100,8 @@ void FormatController::setFont(const QFont &font)
 void FormatController::setFontSize(int size)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setFontSize(size);
     applyCharacterStyle(style);
 }
@@ -105,6 +109,8 @@ void FormatController::setFontSize(int size)
 void FormatController::setBold(bool bold)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setBold(bold);
     applyCharacterStyle(style);
 }
@@ -112,6 +118,8 @@ void FormatController::setBold(bool bold)
 void FormatController::setItalic(bool italic)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setItalic(italic);
     applyCharacterStyle(style);
 }
@@ -119,6 +127,8 @@ void FormatController::setItalic(bool italic)
 void FormatController::setUnderline(bool underline)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setUnderline(underline);
     applyCharacterStyle(style);
 }
@@ -126,6 +136,8 @@ void FormatController::setUnderline(bool underline)
 void FormatController::setTextColor(const QColor &color)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setTextColor(color);
     applyCharacterStyle(style);
 }
@@ -133,6 +145,8 @@ void FormatController::setTextColor(const QColor &color)
 void FormatController::setBackgroundColor(const QColor &color)
 {
     CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
     style.setBackgroundColor(color);
     applyCharacterStyle(style);
 }
@@ -364,38 +378,8 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                     currentOffset = spanEnd;
                 }
                 
-                // ========== 如果选区跨多个 Span，显示最后一个选中字符的样式 ==========
-                qDebug() << "  选区跨多个 Span，使用最后一个选中字符的样式";
-                CursorPosition targetPos = m_selection->focusPosition();
-                int targetBlock = targetPos.blockIndex;
-                int targetOffset = targetPos.offset - 1;
-                
-                qDebug() << "  计算目标位置: 块 " << targetBlock << "，偏移 " << targetOffset << " (原 offset=" << targetPos.offset << "-1)";
-                
-                // 处理边界情况
-                if (targetOffset < 0) {
-                    if (targetBlock > 0) {
-                        targetBlock = targetBlock - 1;
-                        Block *prevBlock = m_document->block(targetBlock);
-                        if (prevBlock) {
-                            ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
-                            if (prevParaBlock) {
-                                targetOffset = prevParaBlock->length() - 1;
-                                qDebug() << "  调整目标位置到前一个块: 块 " << targetBlock << "，偏移 " << targetOffset;
-                            }
-                        }
-                    } else {
-                        qDebug() << "  已在文档开头，返回默认样式";
-                        return result;
-                    }
-                }
-                
-                if (targetOffset >= 0) {
-                    result = getStyleAtPosition(targetBlock, targetOffset);
-                    qDebug() << "  获取到的样式: 加粗=" << result.bold() 
-                             << ", 斜体=" << result.italic() 
-                             << ", 下划线=" << result.underline();
-                }
+                // ========== 如果选区跨多个 Span，返回默认空样式 ==========
+                qDebug() << "  选区跨多个 Span，返回默认空样式";
                 return result;
             }
         }
@@ -549,6 +533,144 @@ bool FormatController::isSelectionStyleConsistent() const
            consistency.boldConsistent && 
            consistency.italicConsistent && 
            consistency.underlineConsistent;
+}
+
+bool FormatController::isSelectionAllBold() const
+{
+    if (!m_selection || m_selection->isEmpty()) {
+        return false;
+    }
+    
+    SelectionRange range = m_selection->range();
+    
+    // 检查是否跨多个块
+    if (range.startBlock != range.endBlock) {
+        return false;
+    }
+    
+    if (range.startBlock < 0) {
+        return false;
+    }
+    
+    Block *block = m_document->block(range.startBlock);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock) {
+        return false;
+    }
+    
+    // 收集所有与选区重叠的 Span
+    int currentOffset = 0;
+    for (int i = 0; i < paraBlock->spanCount(); ++i) {
+        const Span &span = paraBlock->span(i);
+        int spanStart = currentOffset;
+        int spanEnd = spanStart + span.text().length();
+        
+        // 检查 span 是否与选区重叠
+        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
+            // 如果有一个 span 的粗体是 false，那么就返回 false
+            if (!span.style().bold()) {
+                qDebug() << "FormatController::isSelectionAllBold - 发现非加粗的 Span " << i;
+                return false;
+            }
+        }
+        
+        currentOffset = spanEnd;
+    }
+    
+    qDebug() << "FormatController::isSelectionAllBold - 选区内所有 Span 都是加粗";
+    return true;
+}
+
+bool FormatController::isSelectionAllItalic() const
+{
+    if (!m_selection || m_selection->isEmpty()) {
+        return false;
+    }
+    
+    SelectionRange range = m_selection->range();
+    
+    // 检查是否跨多个块
+    if (range.startBlock != range.endBlock) {
+        return false;
+    }
+    
+    if (range.startBlock < 0) {
+        return false;
+    }
+    
+    Block *block = m_document->block(range.startBlock);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock) {
+        return false;
+    }
+    
+    // 收集所有与选区重叠的 Span
+    int currentOffset = 0;
+    for (int i = 0; i < paraBlock->spanCount(); ++i) {
+        const Span &span = paraBlock->span(i);
+        int spanStart = currentOffset;
+        int spanEnd = spanStart + span.text().length();
+        
+        // 检查 span 是否与选区重叠
+        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
+            // 如果有一个 span 的斜体是 false，那么就返回 false
+            if (!span.style().italic()) {
+                qDebug() << "FormatController::isSelectionAllItalic - 发现非斜体的 Span " << i;
+                return false;
+            }
+        }
+        
+        currentOffset = spanEnd;
+    }
+    
+    qDebug() << "FormatController::isSelectionAllItalic - 选区内所有 Span 都是斜体";
+    return true;
+}
+
+bool FormatController::isSelectionAllUnderline() const
+{
+    if (!m_selection || m_selection->isEmpty()) {
+        return false;
+    }
+    
+    SelectionRange range = m_selection->range();
+    
+    // 检查是否跨多个块
+    if (range.startBlock != range.endBlock) {
+        return false;
+    }
+    
+    if (range.startBlock < 0) {
+        return false;
+    }
+    
+    Block *block = m_document->block(range.startBlock);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock) {
+        return false;
+    }
+    
+    // 收集所有与选区重叠的 Span
+    int currentOffset = 0;
+    for (int i = 0; i < paraBlock->spanCount(); ++i) {
+        const Span &span = paraBlock->span(i);
+        int spanStart = currentOffset;
+        int spanEnd = spanStart + span.text().length();
+        
+        // 检查 span 是否与选区重叠
+        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
+            // 如果有一个 span 的下划线是 false，那么就返回 false
+            if (!span.style().underline()) {
+                qDebug() << "FormatController::isSelectionAllUnderline - 发现无下划线的 Span " << i;
+                return false;
+            }
+        }
+        
+        currentOffset = spanEnd;
+    }
+    
+    qDebug() << "FormatController::isSelectionAllUnderline - 选区内所有 Span 都有下划线";
+    return true;
 }
 
 CharacterStyle FormatController::getCurrentInputStyle() const

@@ -153,9 +153,20 @@ void TextBlockItem::applyRichTextFromBlock()
         QString escapedText = span.text().toHtmlEscaped();
         QString color = borderColors[i % borderColors.size()];
         
-        // 构建带边框的 span
-        html += QString("<span style=\"border: 2px solid %1; background-color: %2; padding: 0px 2px;\">")
-            .arg(color, color);  // 40 表示透明度（约25%）
+        // 构建带边框的 span，同时添加字体和字号样式
+        QString styleString = QString("border: 2px solid %1; background-color: %1; padding: 0px 2px;").arg(color);
+        
+        // 添加字体族
+        if (!style.fontFamily().isEmpty()) {
+            styleString += QString(" font-family: '%1';").arg(style.fontFamily());
+        }
+        
+        // 添加字号
+        if (style.fontSize() > 0) {
+            styleString += QString(" font-size: %1pt;").arg(style.fontSize());
+        }
+        
+        html += QString("<span style=\"%1\">").arg(styleString);
         
         // 添加粗体标记
         if (style.bold()) {

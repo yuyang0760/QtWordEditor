@@ -172,13 +172,16 @@ void MainWindow::setupUi()
     // 连接 RibbonBar 样式按钮信号
     connect(m_ribbonBar, &RibbonBar::fontChanged,
             this, [this](const QFont &font) {
-      //  QDebug() << "字体变化（来自功能区）:" << font;
+        qDebug() << "字体变化（来自功能区）:" << font;
+        // 只设置字体族，不改变字号！
         CharacterStyle style;
-        style.setFont(font);
+        style.clearAllProperties();
+        style.setFontFamily(font.family());
         if (m_selection->isEmpty()) {
             m_formatController->setCurrentInputStyle(style);
         } else {
-            m_formatController->setFont(font);
+            // 使用单独的 setFontFamily 方法（我们需要添加）
+            m_formatController->setFontFamily(font.family());
         }
         updateStyleState();
     });
@@ -908,7 +911,22 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
 {
     m_currentCursorPos = pos;
     QPointF visualPos = calculateCursorVisualPosition(pos);
-    qreal cursorHeight = 20.0;
+    
+    // 根据光标位置的字号计算光标高度
+    qreal cursorHeight = 20.0;  // 默认值
+    if (pos.blockIndex >= 0) {
+        Block *block = m_document->block(pos.blockIndex);
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (paraBlock) {
+            CharacterStyle style = paraBlock->styleAt(pos.offset);
+            int fontSize = style.fontSize();
+            if (fontSize > 0) {
+                // 字号为磅值，转换为像素高度（约1.2倍字号比较合适）
+                cursorHeight = fontSize * 1.2;
+            }
+        }
+    }
+    
     m_scene->updateCursor(visualPos, cursorHeight);
     m_view->setCursorVisualPosition(visualPos);
     

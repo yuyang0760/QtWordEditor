@@ -90,19 +90,39 @@ void FormatController::applyNamedCharacterStyle(const QString &styleName)
 
 void FormatController::setFont(const QFont &font)
 {
+    qDebug() << "FormatController::setFont - 被调用，字体:" << font;
     CharacterStyle style;
     // 清除所有属性设置，确保只设置当前属性
     style.clearAllProperties();
     style.setFont(font);
+    qDebug() << "  生成的 CharacterStyle - 字体族:" << style.fontFamily()
+             << "，字号:" << style.fontSize()
+             << "，属性标记:" << style.isPropertySet(CharacterStyleProperty::FontFamily)
+             << "/" << style.isPropertySet(CharacterStyleProperty::FontSize);
+    applyCharacterStyle(style);
+}
+
+void FormatController::setFontFamily(const QString &family)
+{
+    qDebug() << "FormatController::setFontFamily - 被调用，字体族:" << family;
+    CharacterStyle style;
+    // 清除所有属性设置，确保只设置当前属性
+    style.clearAllProperties();
+    style.setFontFamily(family);
+    qDebug() << "  生成的 CharacterStyle - 字体族:" << style.fontFamily()
+             << "，属性标记:" << style.isPropertySet(CharacterStyleProperty::FontFamily);
     applyCharacterStyle(style);
 }
 
 void FormatController::setFontSize(int size)
 {
+    qDebug() << "FormatController::setFontSize - 被调用，字号:" << size;
     CharacterStyle style;
     // 清除所有属性设置，确保只设置当前属性
     style.clearAllProperties();
     style.setFontSize(size);
+    qDebug() << "  生成的 CharacterStyle - 字号:" << style.fontSize()
+             << "，属性标记:" << style.isPropertySet(CharacterStyleProperty::FontSize);
     applyCharacterStyle(style);
 }
 
@@ -429,50 +449,48 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
     
     SelectionRange range = m_selection->range();
     
-    // 检查是否跨多个块
-    if (range.startBlock != range.endBlock) {
-        qDebug() << "FormatController::getSelectionStyleConsistency - 跨多个块，所有属性都不一致";
-        consistency.fontFamilyConsistent = false;
-        consistency.fontSizeConsistent = false;
-        consistency.boldConsistent = false;
-        consistency.italicConsistent = false;
-        consistency.underlineConsistent = false;
-        return consistency;
-    }
-    
-    // 检查是否在单个块内
-    if (range.startBlock < 0) {
-        return consistency;
-    }
-    
-    Block *block = m_document->block(range.startBlock);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (!paraBlock) {
-        return consistency;
-    }
-    
-    // 收集所有与选区重叠的 Span
+    // 收集所有与选区重叠的 Span（支持跨多个块）
     QList<CharacterStyle> selectedStyles;
-    int currentOffset = 0;
-    for (int i = 0; i < paraBlock->spanCount(); ++i) {
-        const Span &span = paraBlock->span(i);
-        int spanStart = currentOffset;
-        int spanEnd = spanStart + span.text().length();
-        
-        // 检查 span 是否与选区重叠
-        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
-            selectedStyles.append(span.style());
-            qDebug() << "  包含 Span " << i << ": 加粗=" << span.style().bold() 
-                     << ", 斜体=" << span.style().italic()
-                     << ", 下划线=" << span.style().underline()
-                     << ", 字体=" << span.style().fontFamily()
-                     << ", 字号=" << span.style().fontSize();
+    
+    // 遍历从 startBlock 到 endBlock 的所有块
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock) {
+            continue;
         }
         
-        currentOffset = spanEnd;
+        // 计算当前块的起始和结束偏移量
+        int blockStartOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
+        int blockEndOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
+        
+        qDebug() << "FormatController::getSelectionStyleConsistency - 处理块" << blockIndex 
+                 << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
+        
+        // 收集当前块中与选区重叠的 Span
+        int currentOffset = 0;
+        for (int i = 0; i < paraBlock->spanCount(); ++i) {
+            const Span &span = paraBlock->span(i);
+            int spanStart = currentOffset;
+            int spanEnd = spanStart + span.text().length();
+            
+            // 检查 span 是否与选区重叠
+            if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
+                selectedStyles.append(span.style());
+                qDebug() << "  包含块" << blockIndex << "的 Span " << i 
+                         << ": 加粗=" << span.style().bold() 
+                         << ", 斜体=" << span.style().italic()
+                         << ", 下划线=" << span.style().underline()
+                         << ", 字体=" << span.style().fontFamily()
+                         << ", 字号=" << span.style().fontSize();
+            }
+            
+            currentOffset = spanEnd;
+        }
     }
     
     if (selectedStyles.isEmpty()) {
+        qDebug() << "FormatController::getSelectionStyleConsistency - 没有找到任何 Span";
         return consistency;
     }
     
@@ -559,38 +577,44 @@ bool FormatController::isSelectionAllBold() const
     
     SelectionRange range = m_selection->range();
     
-    // 检查是否跨多个块
-    if (range.startBlock != range.endBlock) {
-        return false;
-    }
-    
     if (range.startBlock < 0) {
         return false;
     }
     
-    Block *block = m_document->block(range.startBlock);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (!paraBlock) {
-        return false;
-    }
-    
-    // 收集所有与选区重叠的 Span
-    int currentOffset = 0;
-    for (int i = 0; i < paraBlock->spanCount(); ++i) {
-        const Span &span = paraBlock->span(i);
-        int spanStart = currentOffset;
-        int spanEnd = spanStart + span.text().length();
-        
-        // 检查 span 是否与选区重叠
-        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
-            // 如果有一个 span 的粗体是 false，那么就返回 false
-            if (!span.style().bold()) {
-                qDebug() << "FormatController::isSelectionAllBold - 发现非加粗的 Span " << i;
-                return false;
-            }
+    // 遍历从 startBlock 到 endBlock 的所有块
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock) {
+            continue;
         }
         
-        currentOffset = spanEnd;
+        // 计算当前块的起始和结束偏移量
+        int blockStartOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
+        int blockEndOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
+        
+        qDebug() << "FormatController::isSelectionAllBold - 检查块" << blockIndex 
+                 << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
+        
+        // 检查当前块中与选区重叠的 Span
+        int currentOffset = 0;
+        for (int i = 0; i < paraBlock->spanCount(); ++i) {
+            const Span &span = paraBlock->span(i);
+            int spanStart = currentOffset;
+            int spanEnd = spanStart + span.text().length();
+            
+            // 检查 span 是否与选区重叠
+            if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
+                // 如果有一个 span 的粗体是 false，那么就返回 false
+                if (!span.style().bold()) {
+                    qDebug() << "FormatController::isSelectionAllBold - 发现块" << blockIndex 
+                             << "的非加粗的 Span " << i;
+                    return false;
+                }
+            }
+            
+            currentOffset = spanEnd;
+        }
     }
     
     qDebug() << "FormatController::isSelectionAllBold - 选区内所有 Span 都是加粗";
@@ -605,38 +629,44 @@ bool FormatController::isSelectionAllItalic() const
     
     SelectionRange range = m_selection->range();
     
-    // 检查是否跨多个块
-    if (range.startBlock != range.endBlock) {
-        return false;
-    }
-    
     if (range.startBlock < 0) {
         return false;
     }
     
-    Block *block = m_document->block(range.startBlock);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (!paraBlock) {
-        return false;
-    }
-    
-    // 收集所有与选区重叠的 Span
-    int currentOffset = 0;
-    for (int i = 0; i < paraBlock->spanCount(); ++i) {
-        const Span &span = paraBlock->span(i);
-        int spanStart = currentOffset;
-        int spanEnd = spanStart + span.text().length();
-        
-        // 检查 span 是否与选区重叠
-        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
-            // 如果有一个 span 的斜体是 false，那么就返回 false
-            if (!span.style().italic()) {
-                qDebug() << "FormatController::isSelectionAllItalic - 发现非斜体的 Span " << i;
-                return false;
-            }
+    // 遍历从 startBlock 到 endBlock 的所有块
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock) {
+            continue;
         }
         
-        currentOffset = spanEnd;
+        // 计算当前块的起始和结束偏移量
+        int blockStartOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
+        int blockEndOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
+        
+        qDebug() << "FormatController::isSelectionAllItalic - 检查块" << blockIndex 
+                 << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
+        
+        // 检查当前块中与选区重叠的 Span
+        int currentOffset = 0;
+        for (int i = 0; i < paraBlock->spanCount(); ++i) {
+            const Span &span = paraBlock->span(i);
+            int spanStart = currentOffset;
+            int spanEnd = spanStart + span.text().length();
+            
+            // 检查 span 是否与选区重叠
+            if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
+                // 如果有一个 span 的斜体是 false，那么就返回 false
+                if (!span.style().italic()) {
+                    qDebug() << "FormatController::isSelectionAllItalic - 发现块" << blockIndex 
+                             << "的非斜体的 Span " << i;
+                    return false;
+                }
+            }
+            
+            currentOffset = spanEnd;
+        }
     }
     
     qDebug() << "FormatController::isSelectionAllItalic - 选区内所有 Span 都是斜体";
@@ -651,38 +681,44 @@ bool FormatController::isSelectionAllUnderline() const
     
     SelectionRange range = m_selection->range();
     
-    // 检查是否跨多个块
-    if (range.startBlock != range.endBlock) {
-        return false;
-    }
-    
     if (range.startBlock < 0) {
         return false;
     }
     
-    Block *block = m_document->block(range.startBlock);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (!paraBlock) {
-        return false;
-    }
-    
-    // 收集所有与选区重叠的 Span
-    int currentOffset = 0;
-    for (int i = 0; i < paraBlock->spanCount(); ++i) {
-        const Span &span = paraBlock->span(i);
-        int spanStart = currentOffset;
-        int spanEnd = spanStart + span.text().length();
-        
-        // 检查 span 是否与选区重叠
-        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
-            // 如果有一个 span 的下划线是 false，那么就返回 false
-            if (!span.style().underline()) {
-                qDebug() << "FormatController::isSelectionAllUnderline - 发现无下划线的 Span " << i;
-                return false;
-            }
+    // 遍历从 startBlock 到 endBlock 的所有块
+    for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
+        Block *block = m_document->block(blockIndex);
+        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        if (!paraBlock) {
+            continue;
         }
         
-        currentOffset = spanEnd;
+        // 计算当前块的起始和结束偏移量
+        int blockStartOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
+        int blockEndOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
+        
+        qDebug() << "FormatController::isSelectionAllUnderline - 检查块" << blockIndex 
+                 << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
+        
+        // 检查当前块中与选区重叠的 Span
+        int currentOffset = 0;
+        for (int i = 0; i < paraBlock->spanCount(); ++i) {
+            const Span &span = paraBlock->span(i);
+            int spanStart = currentOffset;
+            int spanEnd = spanStart + span.text().length();
+            
+            // 检查 span 是否与选区重叠
+            if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
+                // 如果有一个 span 的下划线是 false，那么就返回 false
+                if (!span.style().underline()) {
+                    qDebug() << "FormatController::isSelectionAllUnderline - 发现块" << blockIndex 
+                             << "的无下划线的 Span " << i;
+                    return false;
+                }
+            }
+            
+            currentOffset = spanEnd;
+        }
     }
     
     qDebug() << "FormatController::isSelectionAllUnderline - 选区内所有 Span 都有下划线";

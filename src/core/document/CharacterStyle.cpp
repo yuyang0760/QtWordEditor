@@ -65,16 +65,16 @@ QFont CharacterStyle::font() const
 
 void CharacterStyle::setFont(const QFont &font)
 {
-    if (d->m_font != font) {
-        d->m_font = font;
-        // 设置字体相关的所有属性标记
+    if (d->m_font.family() != font.family()) {
+        d->m_font.setFamily(font.family());
         d->m_propertySetFlags |= CharacterStyleProperty::FontFamily;
-        d->m_propertySetFlags |= CharacterStyleProperty::FontSize;
-        d->m_propertySetFlags |= CharacterStyleProperty::Bold;
-        d->m_propertySetFlags |= CharacterStyleProperty::Italic;
-        d->m_propertySetFlags |= CharacterStyleProperty::Underline;
-        d->m_propertySetFlags |= CharacterStyleProperty::StrikeOut;
     }
+    if (d->m_font.pointSize() != font.pointSize()) {
+        d->m_font.setPointSize(font.pointSize());
+        d->m_propertySetFlags |= CharacterStyleProperty::FontSize;
+    }
+    // 注意：不设置粗体、斜体、下划线、删除线等属性标记
+    // 只在专门调用 setBold()、setItalic() 等方法时才设置这些标记
 }
 
 QString CharacterStyle::fontFamily() const

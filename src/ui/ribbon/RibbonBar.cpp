@@ -26,7 +26,7 @@ public:
     QComboBox *paragraphStyleCombo = nullptr;
     QComboBox *characterStyleCombo = nullptr;
     QFontComboBox *fontCombo = nullptr;
-    QSpinBox *fontSizeSpin = nullptr;
+    QComboBox *fontSizeCombo = nullptr;  // 改为 QComboBox
     QAction *boldAction = nullptr;
     QAction *italicAction = nullptr;
     QAction *underlineAction = nullptr;
@@ -107,16 +107,29 @@ RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
             this, &RibbonBar::fontChanged);
     addWidget(d->fontCombo);
     
-    d->fontSizeSpin = new QSpinBox(this);
-    d->fontSizeSpin->setRange(6, 72);
-    d->fontSizeSpin->setValue(12);
-    d->fontSizeSpin->setMaximumWidth(55);
-    d->fontSizeSpin->setMinimumHeight(24);
-    d->fontSizeSpin->setMaximumHeight(24);
-    d->fontSizeSpin->setButtonSymbols(QSpinBox::UpDownArrows);
-    connect(d->fontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
-            this, &RibbonBar::fontSizeChanged);
-    addWidget(d->fontSizeSpin);
+    d->fontSizeCombo = new QComboBox(this);
+    d->fontSizeCombo->setMaximumWidth(55);
+    d->fontSizeCombo->setMinimumHeight(24);
+    d->fontSizeCombo->setMaximumHeight(24);
+    d->fontSizeCombo->setEditable(true);
+    
+    // 添加常见字号选项
+    QStringList fontSizeList = QStringList() 
+        << "6" << "7" << "8" << "9" << "10" << "11" << "12" 
+        << "14" << "16" << "18" << "20" << "22" << "24" << "26" 
+        << "28" << "36" << "48" << "72";
+    d->fontSizeCombo->addItems(fontSizeList);
+    d->fontSizeCombo->setCurrentText("12");
+    
+    connect(d->fontSizeCombo, &QComboBox::currentTextChanged,
+            this, [this](const QString &text) {
+        bool ok = false;
+        int size = text.toInt(&ok);
+        if (ok && size > 0) {
+            emit fontSizeChanged(size);
+        }
+    });
+    addWidget(d->fontSizeCombo);
     
     QFrame *separator1 = new QFrame(this);
     separator1->setFrameShape(QFrame::VLine);
@@ -328,7 +341,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsi
 {
     // 使用 QSignalBlocker 防止信号循环
     QSignalBlocker fontBlocker(d->fontCombo);
-    QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
+    QSignalBlocker fontSizeBlocker(d->fontSizeCombo);
     QSignalBlocker boldBlocker(d->boldAction);
     QSignalBlocker italicBlocker(d->italicAction);
     QSignalBlocker underlineBlocker(d->underlineAction);
@@ -355,7 +368,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsi
         
         // 更新字号下拉框
         int fontSize = style.fontSize();
-        d->fontSizeSpin->setValue(fontSize);
+        d->fontSizeCombo->setCurrentText(QString::number(fontSize));
         
         // 更新粗体按钮
         bool bold = style.bold();
@@ -374,8 +387,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsi
         d->fontCombo->setCurrentIndex(-1);
         
         // 清空字号
-        d->fontSizeSpin->clear();
-        d->fontSizeSpin->setSpecialValueText("");
+        d->fontSizeCombo->setCurrentIndex(-1);
         
         // 取消按钮选中状态
         d->boldAction->setChecked(false);
@@ -398,7 +410,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
 
     // 使用 QSignalBlocker 防止信号循环
     QSignalBlocker fontBlocker(d->fontCombo);
-    QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
+    QSignalBlocker fontSizeBlocker(d->fontSizeCombo);
     QSignalBlocker boldBlocker(d->boldAction);
     QSignalBlocker italicBlocker(d->italicAction);
     QSignalBlocker underlineBlocker(d->underlineAction);
@@ -428,11 +440,10 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     // ========== 更新字号 ==========
     if (consistency.fontSizeConsistent) {
         int fontSize = consistency.consistentFontSize;
-        d->fontSizeSpin->setValue(fontSize);
+        d->fontSizeCombo->setCurrentText(QString::number(fontSize));
         qDebug() << "  字号一致，设置字号:" << fontSize;
     } else {
-        d->fontSizeSpin->clear();
-        d->fontSizeSpin->setSpecialValueText("");
+        d->fontSizeCombo->setCurrentIndex(-1);
         qDebug() << "  字号不一致，清空";
     }
     

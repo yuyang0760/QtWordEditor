@@ -152,8 +152,23 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         }
         
         // ========== 修改：合并样式而不是直接替换 ==========
+        qDebug() << "    合并样式：";
+        qDebug() << "      originalStyle - 字体族:" << originalStyle.fontFamily()
+                 << "，字号:" << originalStyle.fontSize()
+                 << "，加粗:" << originalStyle.bold();
+        qDebug() << "      传入的 style - 字体族:" << style.fontFamily()
+                 << "，字号:" << style.fontSize()
+                 << "，加粗:" << style.bold();
+        qDebug() << "      传入的 style 属性标记 - 字体族:" << style.isPropertySet(CharacterStyleProperty::FontFamily)
+                 << "，字号:" << style.isPropertySet(CharacterStyleProperty::FontSize)
+                 << "，加粗:" << style.isPropertySet(CharacterStyleProperty::Bold);
+        
         CharacterStyle mergedMiddleStyle = originalStyle.mergeWith(style);
-        qDebug() << "    mergedMiddleStyle 加粗: " << mergedMiddleStyle.bold();
+        
+        qDebug() << "      mergedMiddleStyle - 字体族:" << mergedMiddleStyle.fontFamily()
+                 << "，字号:" << mergedMiddleStyle.fontSize()
+                 << "，加粗:" << mergedMiddleStyle.bold();
+        
         m_spans.insert(startSpanIndex, Span(middle, mergedMiddleStyle));
         startSpanIndex++;
         

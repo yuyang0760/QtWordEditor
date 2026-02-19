@@ -66,6 +66,12 @@ public:
     void setFont(const QFont &font);
     
     /**
+     * @brief 设置字体族
+     * @param family 字体族名称
+     */
+    void setFontFamily(const QString &family);
+    
+    /**
      * @brief 设置字体大小
      * @param size 字体大小（磅值）
      */

@@ -5,7 +5,7 @@
 #include <QHash>
 #include <QAction>
 #include <QFontComboBox>
-#include <QSpinBox>
+#include <QComboBox>
 #include "core/Global.h"
 #include "core/document/CharacterStyle.h"
 

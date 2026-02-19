@@ -29,7 +29,8 @@ constexpr int PAGE_TOP_SPACING = 20;
 // 字体相关常量
 // ==========================================
 // 默认字体
-constexpr const char *DefaultFontFamily = "Times New Roman";
+// 注意：不再硬编码 "Times New Roman"，让 CharacterStyle 使用系统默认字体
+// 只保留 DefaultFontSize 作为默认字号
 constexpr int DefaultFontSize = 12;
 
 // ==========================================

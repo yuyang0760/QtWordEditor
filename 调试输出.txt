@@ -1,0 +1,383 @@
+调试控制台已清空
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(101,80)
+  光标位置: 块 0 ，偏移 2
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(98,81)
+  光标位置: 块 0 ，偏移 2
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(94,81)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(86,82)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(86,82)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(82,82)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(81,82)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(81,83)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(80,83)
+  光标位置: 块 0 ，偏移 0
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(77,84)
+  光标位置: 块 0 ，偏移 0
+  选择起始: 块 0 ，偏移 2
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseRelease at: QPointF(77,84)
+  最终选择范围:
+    Anchor: 块 0 ，偏移 2
+    Focus: 块 0 ，偏移 0
+    Start: 块 0 ，偏移 0
+    End: 块 0 ，偏移 2
+MainWindow: 加粗按钮被点击
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  getCurrentDisplayStyle() 返回的加粗: false
+  计算的新加粗: true
+FormatController::applyCharacterStyle - 开始应用样式
+  范围: 块 0 偏移 0 到块 0 偏移 2
+  要应用的样式:
+    加粗: true
+    斜体: false
+    下划线: false
+  处理块 0 : 偏移 0 到 2
+ParagraphBlock::setStyle - 开始处理: 位置 0 长度 2
+  同一个 span 内处理: startSpanIndex= 0 , text=[ "这是第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 长度= 34
+    posInStartSpan= 0 , posInEndSpan= 2
+    before=[ "" ], middle=[ "这是" ], after=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ]
+    原始样式的加粗:  false
+    mergedMiddleStyle 加粗:  true
+    插入 after span, 加粗:  false
+  同一个 span 内处理完成，当前 spans 数量:  2
+  mergeAdjacentSpans 之前的 spans:
+    span  0 : text=[ "这是" ], 加粗: true
+    span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
+  mergeAdjacentSpans 之后的 spans:
+    span  0 : text=[ "这是" ], 加粗: true
+    span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
+ParagraphBlock::setStyle - 处理完成
+TextBlockItem::applyRichTextFromBlock - 开始应用，块ID: -1
+  spanCount: 2
+  处理 span  0 : text=[ "这是" ], 加粗: true
+  处理 span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
+  生成的 HTML: "<span style=\"border: 2px solid #ff6666; background-color: #ff6666; padding: 0px 2px;\"><b>这是</b></span><span style=\"border: 2px solid #66ff66; background-color: #66ff66; padding: 0px 2px;\">第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！</span>"
+TextBlockItem::applyRichTextFromBlock - 完成
+FormatController::applyCharacterStyle - 样式应用完成
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
+  已在文档开头，返回默认样式
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
+  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(115,82)
+  光标位置: 块 0 ，偏移 3
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
+  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(114,82)
+  光标位置: 块 0 ，偏移 3
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
+  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
+  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(109,82)
+  光标位置: 块 0 ，偏移 2
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(101,83)
+  光标位置: 块 0 ，偏移 2
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(98,84)
+  光标位置: 块 0 ，偏移 2
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  1  个 Span
+  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(94,84)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  2  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  2  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  2  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: QPointF(94,84)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  2  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseMove at: QPointF(93,84)
+  光标位置: 块 0 ，偏移 1
+  选择起始: 块 0 ，偏移 3
+MainWindow::updateStyleState - 开始更新样式
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
+    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
+    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
+  选区共包含  2  个 Span
+  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
+  获取到的样式: 加粗= true , 斜体= false , 下划线= false
+  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
+  已更新到 ribbonBar
+  选择范围已设置
+EditEventHandler::handleMouseRelease at: QPointF(93,84)
+  最终选择范围:
+    Anchor: 块 0 ，偏移 3
+    Focus: 块 0 ，偏移 1
+    Start: 块 0 ，偏移 1
+    End: 块 0 ，偏移 3

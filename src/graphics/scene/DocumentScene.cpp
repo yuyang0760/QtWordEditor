@@ -198,7 +198,14 @@ void DocumentScene::updateCursor(const QPointF &pos, qreal height)
         addItem(m_cursorItem);
     }
     m_cursorItem->setPosition(pos, height);
-    m_cursorItem->setVisible(true);
+}
+
+// ========== 新增方法：设置光标可见性 ==========
+void DocumentScene::setCursorVisible(bool visible)
+{
+    if (m_cursorItem) {
+        m_cursorItem->setCursorVisible(visible);
+    }
 }
 
 void DocumentScene::updateSelection(const QList<QRectF> &rects)

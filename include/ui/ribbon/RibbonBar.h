@@ -47,6 +47,13 @@ public:
     void updateFromSelection(const CharacterStyle &style);
     
     /**
+     * @brief 根据字符样式和样式一致性更新控件状态
+     * @param style 要显示的字符样式对象
+     * @param styleConsistent true=样式一致（显示样式），false=样式不一致（不显示样式/混合状态）
+     */
+    void updateFromSelection(const CharacterStyle &style, bool styleConsistent);
+    
+    /**
      * @brief 刷新样式列表
      * 当样式发生变化时调用
      */

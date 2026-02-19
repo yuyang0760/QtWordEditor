@@ -82,6 +82,12 @@ public:
      * @param height 光标高度
      */
     void updateCursor(const QPointF &pos, qreal height);
+    
+    /**
+     * @brief 设置光标是否可见
+     * @param visible true=显示光标，false=隐藏光标
+     */
+    void setCursorVisible(bool visible);
 
     // ========== 选择区域相关方法 ==========
     

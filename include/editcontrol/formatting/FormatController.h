@@ -110,6 +110,13 @@ public:
     // ========== 样式获取方法（用于工具栏显示） ==========
 
     /**
+     * @brief 检查选区是否样式一致
+     * 
+     * @return true=选区样式一致（单Span），false=选区样式不一致（多Span）
+     */
+    bool isSelectionStyleConsistent() const;
+
+    /**
      * @brief 获取当前应该在工具栏显示的样式
      * 
      * 逻辑：

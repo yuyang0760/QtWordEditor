@@ -38,6 +38,15 @@ void FormatController::applyCharacterStyle(const CharacterStyle &style)
     
     range.normalize();
     
+    // ========== 添加调试输出 ==========
+    qDebug() << "FormatController::applyCharacterStyle - 开始应用样式";
+    qDebug() << "  范围: 块" << range.startBlock << "偏移" << range.startOffset 
+             << "到块" << range.endBlock << "偏移" << range.endOffset;
+    qDebug() << "  要应用的样式:";
+    qDebug() << "    加粗:" << style.bold();
+    qDebug() << "    斜体:" << style.italic();
+    qDebug() << "    下划线:" << style.underline();
+    
     // 遍历选择范围内的每个块
     for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
         Block *block = m_document->block(blockIndex);
@@ -55,24 +64,18 @@ void FormatController::applyCharacterStyle(const CharacterStyle &style)
         if (startOffset >= endOffset)
             continue;
         
-        // 对于选择范围内的每个位置，获取原样式并合并
-        // 这里我们创建一个合并后的样式，直接应用到整个范围
-        CharacterStyle mergedStyle;
+        qDebug() << "  处理块" << blockIndex << ": 偏移" << startOffset << "到" << endOffset;
         
-        // 获取起始位置的当前样式作为基础
-        if (startOffset < paraBlock->length()) {
-            CharacterStyle currentStyle = paraBlock->styleAt(startOffset);
-            // 使用 mergeWith 合并，只覆盖显式设置的属性
-            mergedStyle = currentStyle.mergeWith(style);
-        } else {
-            mergedStyle = style;
-        }
+        // 对于选择范围内的每个位置，获取原样式并合并
+        // 这里我们不再只获取起始位置，而是让 ParagraphBlock::setStyle 自己处理
         
         // 创建并推入命令
         SetCharacterStyleCommand *cmd = new SetCharacterStyleCommand(
-            m_document, blockIndex, startOffset, endOffset, mergedStyle);
+            m_document, blockIndex, startOffset, endOffset, style);
         m_document->undoStack()->push(cmd);
     }
+    
+    qDebug() << "FormatController::applyCharacterStyle - 样式应用完成";
 }
 
 void FormatController::applyNamedCharacterStyle(const QString &styleName)
@@ -324,47 +327,109 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     if (!m_document)
         return result;
 
-    CursorPosition targetPos;
-
     // 判断是否有选区
-    if (m_selection && !m_selection->isEmpty()) {
-        // 有选区：获取选区终点（Focus）位置
-        targetPos = m_selection->focusPosition();
-    } else {
-        // 无选区：获取光标位置
-        if (m_cursor) {
-            targetPos = m_cursor->position();
-        } else {
-            qWarning() << "FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象，无法获取光标位置";
-            return result;
+    bool hasSelection = (m_selection && !m_selection->isEmpty());
+    if (hasSelection) {
+        // ========== 有选区的情况 ==========
+        qDebug() << "FormatController::getCurrentDisplayStyle - 有选区";
+        SelectionRange range = m_selection->range();
+        qDebug() << "  选区: Anchor(" << range.anchorBlock << "," << range.anchorOffset << ")" 
+                 << ", Focus(" << range.focusBlock << "," << range.focusOffset << ")";
+        
+        // 检查选区是否在单个块内
+        if (range.startBlock >= 0 && range.startBlock == range.endBlock) {
+            Block *block = m_document->block(range.startBlock);
+            ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                // ========== 查找选区完全在哪个 Span 内 ==========
+                int spanIndex = -1;
+                int currentOffset = 0;
+                for (int i = 0; i < paraBlock->spanCount(); ++i) {
+                    const Span &span = paraBlock->span(i);
+                    int spanStart = currentOffset;
+                    int spanEnd = spanStart + span.text().length();
+                    
+                    // 检查 span 是否完全包含选区
+                    if (spanStart <= range.startOffset && spanEnd >= range.endOffset) {
+                        spanIndex = i;
+                        qDebug() << "  选区完全在 Span " << i << " 内: [" << spanStart << "," << spanEnd << "] "
+                                 << (span.style().bold() ? "[加粗]" : "[正常]");
+                        result = span.style();
+                        qDebug() << "  获取到该 Span 的样式: 加粗=" << result.bold() 
+                                 << ", 斜体=" << result.italic() 
+                                 << ", 下划线=" << result.underline();
+                        return result;
+                    }
+                    
+                    currentOffset = spanEnd;
+                }
+                
+                // ========== 如果选区跨多个 Span，显示最后一个选中字符的样式 ==========
+                qDebug() << "  选区跨多个 Span，使用最后一个选中字符的样式";
+                CursorPosition targetPos = m_selection->focusPosition();
+                int targetBlock = targetPos.blockIndex;
+                int targetOffset = targetPos.offset - 1;
+                
+                qDebug() << "  计算目标位置: 块 " << targetBlock << "，偏移 " << targetOffset << " (原 offset=" << targetPos.offset << "-1)";
+                
+                // 处理边界情况
+                if (targetOffset < 0) {
+                    if (targetBlock > 0) {
+                        targetBlock = targetBlock - 1;
+                        Block *prevBlock = m_document->block(targetBlock);
+                        if (prevBlock) {
+                            ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
+                            if (prevParaBlock) {
+                                targetOffset = prevParaBlock->length() - 1;
+                                qDebug() << "  调整目标位置到前一个块: 块 " << targetBlock << "，偏移 " << targetOffset;
+                            }
+                        }
+                    } else {
+                        qDebug() << "  已在文档开头，返回默认样式";
+                        return result;
+                    }
+                }
+                
+                if (targetOffset >= 0) {
+                    result = getStyleAtPosition(targetBlock, targetOffset);
+                    qDebug() << "  获取到的样式: 加粗=" << result.bold() 
+                             << ", 斜体=" << result.italic() 
+                             << ", 下划线=" << result.underline();
+                }
+                return result;
+            }
         }
-    }
-
-    // 计算目标位置：终点位置 - 1
-    int targetBlock = targetPos.blockIndex;
-    int targetOffset = targetPos.offset - 1;
-
-    // 处理边界情况：如果偏移量为 -1（即终点在块的开头）
-    if (targetOffset < 0) {
-        // 尝试找到前一个块
-        if (targetBlock > 0) {
-            targetBlock = targetBlock - 1;
-            Block *prevBlock = m_document->block(targetBlock);
-            if (prevBlock) {
-                ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
-                if (prevParaBlock) {
-                    targetOffset = prevParaBlock->length() - 1;
+    } else {
+        // ========== 无选区的情况：使用光标前一个字符的样式 ==========
+        if (m_cursor) {
+            CursorPosition targetPos = m_cursor->position();
+            qDebug() << "FormatController::getCurrentDisplayStyle - 无选区，光标位置: (" << targetPos.blockIndex << "," << targetPos.offset << ")";
+            
+            int targetBlock = targetPos.blockIndex;
+            int targetOffset = targetPos.offset - 1;
+            
+            qDebug() << "  计算目标位置: 块 " << targetBlock << "，偏移 " << targetOffset << " (原 offset=" << targetPos.offset << "-1)";
+            
+            if (targetOffset >= 0) {
+                result = getStyleAtPosition(targetBlock, targetOffset);
+                qDebug() << "  获取到的样式: 加粗=" << result.bold() 
+                         << ", 斜体=" << result.italic() 
+                         << ", 下划线=" << result.underline();
+            } else if (targetBlock > 0) {
+                targetBlock = targetBlock - 1;
+                Block *prevBlock = m_document->block(targetBlock);
+                if (prevBlock) {
+                    ParagraphBlock *prevParaBlock = qobject_cast<ParagraphBlock*>(prevBlock);
+                    if (prevParaBlock) {
+                        targetOffset = prevParaBlock->length() - 1;
+                        result = getStyleAtPosition(targetBlock, targetOffset);
+                        qDebug() << "  调整目标位置到前一个块，获取到的样式: 加粗=" << result.bold();
+                    }
                 }
             }
         } else {
-            // 已经在文档开头，没有前一个字符，返回空样式
-            return result;
+            qWarning() << "FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象";
         }
-    }
-
-    // 获取目标位置的样式
-    if (targetOffset >= 0) {
-        result = getStyleAtPosition(targetBlock, targetOffset);
     }
 
     return result;

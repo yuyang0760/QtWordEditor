@@ -3,10 +3,12 @@ build/
 build2/
 build_mingw/
 install/
+debug/
 cmake-build-debug/
 cmake-build-release/
 .idea/
 .vscode/
+.lingma/
 out/
 *.exe
 *.dll

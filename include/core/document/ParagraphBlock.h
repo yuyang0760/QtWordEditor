@@ -52,6 +52,10 @@ public:
     // Helper: set character style for a range
     void setStyle(int start, int length, const CharacterStyle &style);
     
+    // Helper: check if a range spans multiple spans
+    // @return true=范围跨多个Span（样式不一致），false=范围在单个Span内（样式一致）
+    bool isRangeSpansMultipleSpans(int start, int end) const;
+    
     // Helper: get character at a specific position
     QChar characterAt(int position) const;
 

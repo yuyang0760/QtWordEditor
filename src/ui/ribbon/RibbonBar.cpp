@@ -125,20 +125,32 @@ RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
     
     d->boldAction = new QAction(tr("B"), this);
     d->boldAction->setCheckable(true);
-    connect(d->boldAction, &QAction::toggled,
-            this, &RibbonBar::boldChanged);
+    // 使用 triggered 信号，不依赖按钮的 toggled 状态
+    connect(d->boldAction, &QAction::triggered,
+            this, [this]() {
+                // 使用 QSignalBlocker 防止 setChecked 触发信号
+                QSignalBlocker blocker(d->boldAction);
+                // 发出信号，由 MainWindow 处理实际切换
+                emit boldChanged(false);  // 参数值会被忽略
+            });
     addAction(d->boldAction);
     
     d->italicAction = new QAction(tr("I"), this);
     d->italicAction->setCheckable(true);
-    connect(d->italicAction, &QAction::toggled,
-            this, &RibbonBar::italicChanged);
+    connect(d->italicAction, &QAction::triggered,
+            this, [this]() {
+                QSignalBlocker blocker(d->italicAction);
+                emit italicChanged(false);  // 参数值会被忽略
+            });
     addAction(d->italicAction);
     
     d->underlineAction = new QAction(tr("U"), this);
     d->underlineAction->setCheckable(true);
-    connect(d->underlineAction, &QAction::toggled,
-            this, &RibbonBar::underlineChanged);
+    connect(d->underlineAction, &QAction::triggered,
+            this, [this]() {
+                QSignalBlocker blocker(d->underlineAction);
+                emit underlineChanged(false);  // 参数值会被忽略
+            });
     addAction(d->underlineAction);
     
     // 段落组
@@ -308,6 +320,12 @@ void RibbonBar::updateFromSelection(const QString &characterStyleName,
 
 void RibbonBar::updateFromSelection(const CharacterStyle &style)
 {
+    // 默认调用带一致性参数的版本，假设样式一致
+    updateFromSelection(style, true);
+}
+
+void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsistent)
+{
     // 使用 QSignalBlocker 防止信号循环
     QSignalBlocker fontBlocker(d->fontCombo);
     QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
@@ -315,25 +333,55 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style)
     QSignalBlocker italicBlocker(d->italicAction);
     QSignalBlocker underlineBlocker(d->underlineAction);
     
-    // 更新字体下拉框（直接使用样式，不管属性是否被显式设置）
-    QFont font = style.font();
-    d->fontCombo->setCurrentFont(font);
-    
-    // 更新字号下拉框
-    int fontSize = style.fontSize();
-    d->fontSizeSpin->setValue(fontSize);
-    
-    // 更新粗体按钮
-    bool bold = style.bold();
-    d->boldAction->setChecked(bold);
-    
-    // 更新斜体按钮
-    bool italic = style.italic();
-    d->italicAction->setChecked(italic);
-    
-    // 更新下划线按钮
-    bool underline = style.underline();
-    d->underlineAction->setChecked(underline);
+    if (styleConsistent) {
+        // ========== 样式一致：正常显示样式 ==========
+        // 更新字体下拉框
+        QString fontFamily = style.fontFamily();
+        
+        // 通过字体族名称查找并设置（比直接用 setCurrentFont 更可靠）
+        bool found = false;
+        for (int i = 0; i < d->fontCombo->count(); ++i) {
+            if (d->fontCombo->itemText(i) == fontFamily) {
+                d->fontCombo->setCurrentIndex(i);
+                found = true;
+                break;
+            }
+        }
+        
+        // 如果找不到，尝试使用 setCurrentFont() 作为备选
+        if (!found) {
+            d->fontCombo->setCurrentFont(style.font());
+        }
+        
+        // 更新字号下拉框
+        int fontSize = style.fontSize();
+        d->fontSizeSpin->setValue(fontSize);
+        
+        // 更新粗体按钮
+        bool bold = style.bold();
+        d->boldAction->setChecked(bold);
+        
+        // 更新斜体按钮
+        bool italic = style.italic();
+        d->italicAction->setChecked(italic);
+        
+        // 更新下划线按钮
+        bool underline = style.underline();
+        d->underlineAction->setChecked(underline);
+    } else {
+        // ========== 样式不一致：不显示样式（混合状态） ==========
+        // 清空字体选择
+        d->fontCombo->setCurrentIndex(-1);
+        
+        // 清空字号
+        d->fontSizeSpin->clear();
+        d->fontSizeSpin->setSpecialValueText("");
+        
+        // 取消按钮选中状态
+        d->boldAction->setChecked(false);
+        d->italicAction->setChecked(false);
+        d->underlineAction->setChecked(false);
+    }
     
     // 注意：我们仍然调用旧的 updateFromSelection 来更新样式名称下拉框
     // 但由于我们现在没有样式名称，暂时不调用

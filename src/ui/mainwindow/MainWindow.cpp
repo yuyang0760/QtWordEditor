@@ -197,40 +197,54 @@ void MainWindow::setupUi()
     });
 
     connect(m_ribbonBar, &RibbonBar::boldChanged,
-            this, [this](bool bold) {
-      //  QDebug() << "加粗变化（来自功能区）:" << bold;
+            this, [this](bool /* bold */) {
+        qDebug() << "MainWindow: 加粗按钮被点击";
+        // 忽略按钮传入的参数，根据当前显示样式进行切换
+        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+        qDebug() << "  getCurrentDisplayStyle() 返回的加粗:" << currentStyle.bold();
+        bool newBold = !currentStyle.bold();
+        qDebug() << "  计算的新加粗:" << newBold;
+        
         CharacterStyle style;
-        style.setBold(bold);
+        style.setBold(newBold);
         if (m_selection->isEmpty()) {
             m_formatController->setCurrentInputStyle(style);
         } else {
-            m_formatController->setBold(bold);
+            m_formatController->setBold(newBold);
         }
         updateStyleState();
     });
 
     connect(m_ribbonBar, &RibbonBar::italicChanged,
-            this, [this](bool italic) {
-      //  QDebug() << "斜体变化（来自功能区）:" << italic;
+            this, [this](bool /* italic */) {
+      //  QDebug() << "斜体变化（来自功能区）";
+        // 忽略按钮传入的参数，根据当前显示样式进行切换
+        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+        bool newItalic = !currentStyle.italic();
+        
         CharacterStyle style;
-        style.setItalic(italic);
+        style.setItalic(newItalic);
         if (m_selection->isEmpty()) {
             m_formatController->setCurrentInputStyle(style);
         } else {
-            m_formatController->setItalic(italic);
+            m_formatController->setItalic(newItalic);
         }
         updateStyleState();
     });
 
     connect(m_ribbonBar, &RibbonBar::underlineChanged,
-            this, [this](bool underline) {
-      //  QDebug() << "下划线变化（来自功能区）:" << underline;
+            this, [this](bool /* underline */) {
+      //  QDebug() << "下划线变化（来自功能区）";
+        // 忽略按钮传入的参数，根据当前显示样式进行切换
+        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+        bool newUnderline = !currentStyle.underline();
+        
         CharacterStyle style;
-        style.setUnderline(underline);
+        style.setUnderline(newUnderline);
         if (m_selection->isEmpty()) {
             m_formatController->setCurrentInputStyle(style);
         } else {
-            m_formatController->setUnderline(underline);
+            m_formatController->setUnderline(newUnderline);
         }
         updateStyleState();
     });
@@ -291,6 +305,8 @@ void MainWindow::setupUi()
                         QList<QRectF> rects = m_scene->calculateSelectionRects(m_selection->range());
                         m_scene->updateSelection(rects);
                     }
+                    // 始终显示光标
+                    m_scene->setCursorVisible(true);
                 }
             });
     
@@ -305,9 +321,16 @@ void MainWindow::setupUi()
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
     
-    // 连接选区变化信号到样式状态更新
+    // 连接选区变化信号到样式状态更新（始终显示光标）
     connect(m_selection, &Selection::selectionChanged,
-            this, &MainWindow::updateStyleState);
+            this, [this]() {
+                if (m_selection && m_scene) {
+                    // 始终显示光标
+                    m_scene->setCursorVisible(true);
+                }
+                // 同时更新样式状态
+                updateStyleState();
+            });
 
     m_currentZoom = 100.0;
     
@@ -836,16 +859,22 @@ void MainWindow::updateStyleState()
         return;
     }
     
-    // 当有选区时，不更新工具栏的样式显示
-    if (m_selection && !m_selection->isEmpty()) {
-        return;
-    }
+    qDebug() << "MainWindow::updateStyleState - 开始更新样式";
     
-    // 使用新的 FormatController::getCurrentDisplayStyle() 方法获取应该显示的样式
+    // ========== 简化逻辑：无论选区样式是否一致，都显示最后一个选中字符的样式 ==========
+    // getCurrentDisplayStyle() 已经返回：
+    // - 无选区：光标前一个字符的样式
+    // - 有选区：选区终点（Focus）前一个字符的样式（即最后一个选中字符的样式）
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
-    // 更新 RibbonBar 的样式显示
-    m_ribbonBar->updateFromSelection(style);
+    qDebug() << "  从 formatController 收到样式: 加粗=" << style.bold() 
+             << ", 斜体=" << style.italic() 
+             << ", 下划线=" << style.underline();
+    
+    // 直接更新工具栏，始终显示样式（不再有混合状态）
+    m_ribbonBar->updateFromSelection(style, true);
+    
+    qDebug() << "  已更新到 ribbonBar";
 }
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)

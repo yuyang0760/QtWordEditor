@@ -51,8 +51,7 @@ void TextBlockItem::initializeTextItem()
     m_textItem->document()->setDefaultTextOption(option);
     
     // 设置默认字体
-    QFont font;
-    font.setFamily(Constants::DefaultFontFamily);
+    QFont font;  // 使用系统默认字体
     font.setPointSize(Constants::DefaultFontSize);
     m_textItem->setFont(font);
     
@@ -134,39 +133,67 @@ void TextBlockItem::applyRichTextFromBlock()
     if (!para)
         return;
     
-    QTextDocument *doc = m_textItem->document();
-    QTextCursor cursor(doc);
-    cursor.select(QTextCursor::Document);
-    cursor.removeSelectedText();
+    qDebug() << "TextBlockItem::applyRichTextFromBlock - 开始应用，块ID:" << para->blockId();
+    qDebug() << "  spanCount:" << para->spanCount();
+    
+    // 构建 HTML 字符串，给每个 Span 添加边框
+    QString html;
+    QList<QString> borderColors = {
+        "#ff6666",  // 浅红色
+        "#66ff66",  // 浅绿色
+        "#e6e89c"   // 浅蓝色
+    };
     
     for (int i = 0; i < para->spanCount(); ++i) {
         Span span = para->span(i);
-        
-        // 注意：目前由于 TextBlockItem 无法访问 StyleManager，我们只使用 span 的直接样式
-        // 如果需要完整支持命名样式，需要通过某种方式（例如从 DocumentScene 或其他地方）传递 StyleManager
         CharacterStyle style = span.style();
         
-        QTextCharFormat format;
+        qDebug() << "  处理 span " << i << ": text=[" << span.text() << "], 加粗:" << style.bold();
         
-        // 设置字体
-        format.setFont(style.font());
+        QString escapedText = span.text().toHtmlEscaped();
+        QString color = borderColors[i % borderColors.size()];
         
-        // 设置颜色
-        if (style.textColor().isValid()) {
-            format.setForeground(style.textColor());
+        // 构建带边框的 span
+        html += QString("<span style=\"border: 2px solid %1; background-color: %2; padding: 0px 2px;\">")
+            .arg(color, color);  // 40 表示透明度（约25%）
+        
+        // 添加粗体标记
+        if (style.bold()) {
+            html += "<b>";
         }
         
-        if (style.backgroundColor().isValid()) {
-            format.setBackground(style.backgroundColor());
+        // 添加斜体标记
+        if (style.italic()) {
+            html += "<i>";
         }
         
-        // 设置字间距
-        if (style.letterSpacing() != 0) {
-            format.setFontLetterSpacing(style.letterSpacing());
+        // 添加下划线标记
+        if (style.underline()) {
+            html += "<u>";
         }
         
-        cursor.insertText(span.text(), format);
+        html += escapedText;
+        
+        // 关闭标记
+        if (style.underline()) {
+            html += "</u>";
+        }
+        if (style.italic()) {
+            html += "</i>";
+        }
+        if (style.bold()) {
+            html += "</b>";
+        }
+        
+        html += "</span>";
     }
+    
+    qDebug() << "  生成的 HTML:" << html;
+    
+    // 使用 HTML 设置文本
+    m_textItem->setHtml(html);
+    
+    qDebug() << "TextBlockItem::applyRichTextFromBlock - 完成";
 }
 
 } // namespace QtWordEditor

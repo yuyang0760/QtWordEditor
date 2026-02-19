@@ -112,6 +112,8 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         return;
     }
     
+    qDebug() << "ParagraphBlock::setStyle - 开始处理: 位置" << start << "长度" << length;
+    
     // 找到起始和结束的 span
     int posInStartSpan = 0;
     int startSpanIndex = findSpanIndex(start, &posInStartSpan);
@@ -124,70 +126,139 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         Span &span = m_spans[startSpanIndex];
         QString text = span.text();
         
+        qDebug() << "  同一个 span 内处理: startSpanIndex=" << startSpanIndex 
+                 << ", text=[" << text << "], 长度=" << text.length();
+        qDebug() << "    posInStartSpan=" << posInStartSpan << ", posInEndSpan=" << posInEndSpan;
+        
         // 分割成三个部分
         QString before = text.left(posInStartSpan);
         QString middle = text.mid(posInStartSpan, end - start);
         QString after = text.mid(posInEndSpan);
         
+        qDebug() << "    before=[" << before << "], middle=[" << middle << "], after=[" << after << "]";
+        
         // 替换原来的 span
         m_spans.removeAt(startSpanIndex);
         
+        // 保存原始样式的副本！防止隐式共享问题！
+        CharacterStyle originalStyle = span.style();
+        
+        qDebug() << "    原始样式的加粗: " << originalStyle.bold();
+        
         if (!before.isEmpty()) {
-            m_spans.insert(startSpanIndex, Span(before, span.style()));
+            qDebug() << "    插入 before span, 加粗: " << originalStyle.bold();
+            m_spans.insert(startSpanIndex, Span(before, originalStyle));
             startSpanIndex++;
         }
         
-        m_spans.insert(startSpanIndex, Span(middle, style));
+        // ========== 修改：合并样式而不是直接替换 ==========
+        CharacterStyle mergedMiddleStyle = originalStyle.mergeWith(style);
+        qDebug() << "    mergedMiddleStyle 加粗: " << mergedMiddleStyle.bold();
+        m_spans.insert(startSpanIndex, Span(middle, mergedMiddleStyle));
         startSpanIndex++;
         
         if (!after.isEmpty()) {
-            m_spans.insert(startSpanIndex, Span(after, span.style()));
+            qDebug() << "    插入 after span, 加粗: " << originalStyle.bold();
+            m_spans.insert(startSpanIndex, Span(after, originalStyle));
         }
+        
+        qDebug() << "  同一个 span 内处理完成，当前 spans 数量: " << m_spans.size();
     } else {
+        qDebug() << "  跨 span 处理: startSpanIndex=" << startSpanIndex 
+                 << ", endSpanIndex=" << endSpanIndex;
+        
         // 处理起始 span
         Span &startSpan = m_spans[startSpanIndex];
         QString startText = startSpan.text();
         QString beforeStart = startText.left(posInStartSpan);
         QString afterStart = startText.mid(posInStartSpan);
         
+        qDebug() << "    起始 span 文本: [" << startText << "], 长度: " << startText.length();
+        qDebug() << "      beforeStart: [" << beforeStart << "], afterStart: [" << afterStart << "]";
+        
+        // 保存原始样式的副本！防止隐式共享问题！
+        CharacterStyle originalStartStyle = startSpan.style();
+        
         m_spans.removeAt(startSpanIndex);
         
         if (!beforeStart.isEmpty()) {
-            m_spans.insert(startSpanIndex, Span(beforeStart, startSpan.style()));
+            m_spans.insert(startSpanIndex, Span(beforeStart, originalStartStyle));
             startSpanIndex++;
         }
         
-        m_spans.insert(startSpanIndex, Span(afterStart, style));
+        // ========== 修改：合并样式而不是直接替换 ==========
+        CharacterStyle mergedStartStyle = originalStartStyle.mergeWith(style);
+        m_spans.insert(startSpanIndex, Span(afterStart, mergedStartStyle));
+        
+        qDebug() << "    起始 span 处理后, startSpanIndex 现在是: " << startSpanIndex;
+        qDebug() << "    当前 spans 数量: " << m_spans.size();
+        
+        // 重要！因为我们删除和插入了 span，需要重新计算 endSpanIndex
+        // 重新计算当前的 endSpanIndex
+        int adjustedEndSpanIndex = 0;
+        int posInEndSpanAdjusted = 0;
+        if (end > 0 && end <= this->length()) {
+            adjustedEndSpanIndex = findSpanIndex(end, &posInEndSpanAdjusted);
+        } else {
+            adjustedEndSpanIndex = m_spans.size() - 1;
+            posInEndSpanAdjusted = m_spans.last().length();
+        }
+        
+        qDebug() << "    重新计算后的 endSpanIndex: " << adjustedEndSpanIndex 
+                 << ", posInEndSpanAdjusted: " << posInEndSpanAdjusted;
         
         // 处理中间的 span（完全包含在范围内的）
-        for (int i = startSpanIndex + 1; i < endSpanIndex; ++i) {
-            m_spans[i].setStyle(style);
+        // 注意：现在中间 span 的索引范围是 startSpanIndex + 1 到 adjustedEndSpanIndex - 1
+        for (int i = startSpanIndex + 1; i < adjustedEndSpanIndex; ++i) {
+            if (i >= 0 && i < m_spans.size()) {
+                qDebug() << "      处理中间 span " << i;
+                CharacterStyle mergedMiddleStyle = m_spans[i].style().mergeWith(style);
+                m_spans[i].setStyle(mergedMiddleStyle);
+            }
         }
         
         // 处理结束 span
-        int currentEndSpanIndex = endSpanIndex;
-        if (startSpanIndex < endSpanIndex) {
-            currentEndSpanIndex = endSpanIndex;
+        if (adjustedEndSpanIndex >= 0 && adjustedEndSpanIndex < m_spans.size()) {
+            Span &endSpan = m_spans[adjustedEndSpanIndex];
+            QString endText = endSpan.text();
+            QString beforeEnd = endText.left(posInEndSpanAdjusted);
+            QString afterEnd = endText.mid(posInEndSpanAdjusted);
+            
+            qDebug() << "    结束 span 文本: [" << endText << "], 长度: " << endText.length();
+            qDebug() << "      beforeEnd: [" << beforeEnd << "], afterEnd: [" << afterEnd << "]";
+            
+            // 保存原始样式引用
+            CharacterStyle originalEndStyle = endSpan.style();
+            
+            m_spans.removeAt(adjustedEndSpanIndex);
+            
+            if (!beforeEnd.isEmpty()) {
+                CharacterStyle mergedEndStyle = originalEndStyle.mergeWith(style);
+                m_spans.insert(adjustedEndSpanIndex, Span(beforeEnd, mergedEndStyle));
+                adjustedEndSpanIndex++;
+            }
+            
+            if (!afterEnd.isEmpty()) {
+                m_spans.insert(adjustedEndSpanIndex, Span(afterEnd, originalEndStyle));
+            }
         }
         
-        Span &endSpan = m_spans[currentEndSpanIndex];
-        QString endText = endSpan.text();
-        QString beforeEnd = endText.left(posInEndSpan);
-        QString afterEnd = endText.mid(posInEndSpan);
-        
-        m_spans.removeAt(currentEndSpanIndex);
-        
-        if (!beforeEnd.isEmpty()) {
-            m_spans.insert(currentEndSpanIndex, Span(beforeEnd, style));
-            currentEndSpanIndex++;
-        }
-        
-        if (!afterEnd.isEmpty()) {
-            m_spans.insert(currentEndSpanIndex, Span(afterEnd, endSpan.style()));
-        }
+        qDebug() << "  跨 span 处理完成";
+    }
+    
+    qDebug() << "  mergeAdjacentSpans 之前的 spans:";
+    for (int i = 0; i < m_spans.size(); ++i) {
+        qDebug() << "    span " << i << ": text=[" << m_spans[i].text() << "], 加粗:" << m_spans[i].style().bold();
     }
     
     mergeAdjacentSpans();
+    
+    qDebug() << "  mergeAdjacentSpans 之后的 spans:";
+    for (int i = 0; i < m_spans.size(); ++i) {
+        qDebug() << "    span " << i << ": text=[" << m_spans[i].text() << "], 加粗:" << m_spans[i].style().bold();
+    }
+    
+    qDebug() << "ParagraphBlock::setStyle - 处理完成";
     emit textChanged();
 }
 

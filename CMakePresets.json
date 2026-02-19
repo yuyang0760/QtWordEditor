@@ -6,7 +6,7 @@
             "name": "Debug",
             "displayName": "Debug",
             "description": "Debug build using MinGW and Ninja",
-            "binaryDir": "${sourceDir}/cmake-build-debug",
+            "binaryDir": "${sourceDir}/debug",
             "generator": "Ninja",
             "toolchainFile": "",
             "cacheVariables": {

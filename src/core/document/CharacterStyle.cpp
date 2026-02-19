@@ -1,4 +1,5 @@
 #include "core/document/CharacterStyle.h"
+#include "core/utils/Constants.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -7,12 +8,14 @@ class CharacterStyleData : public QSharedData
 {
 public:
     CharacterStyleData()
-        : m_font("Times New Roman", 12)
+        : m_font(QFont())  // 使用系统默认字体，而不是硬编码 "Times New Roman"
         , m_textColor(Qt::black)
         , m_backgroundColor(Qt::transparent)
         , m_letterSpacing(0.0)
         , m_propertySetFlags()
     {
+        // 使用 Constants.h 中定义的默认字号
+        m_font.setPointSize(QtWordEditor::Constants::DefaultFontSize);
     }
 
     CharacterStyleData(const CharacterStyleData &other)
@@ -107,10 +110,9 @@ bool CharacterStyle::bold() const
 
 void CharacterStyle::setBold(bool bold)
 {
-    if (d->m_font.bold() != bold) {
-        d->m_font.setBold(bold);
-        d->m_propertySetFlags |= CharacterStyleProperty::Bold;
-    }
+    // 不管值有没有变化，都设置标记！确保 mergeWith 能正确合并
+    d->m_font.setBold(bold);
+    d->m_propertySetFlags |= CharacterStyleProperty::Bold;
 }
 
 bool CharacterStyle::italic() const
@@ -120,10 +122,9 @@ bool CharacterStyle::italic() const
 
 void CharacterStyle::setItalic(bool italic)
 {
-    if (d->m_font.italic() != italic) {
-        d->m_font.setItalic(italic);
-        d->m_propertySetFlags |= CharacterStyleProperty::Italic;
-    }
+    // 不管值有没有变化，都设置标记！确保 mergeWith 能正确合并
+    d->m_font.setItalic(italic);
+    d->m_propertySetFlags |= CharacterStyleProperty::Italic;
 }
 
 bool CharacterStyle::underline() const
@@ -133,10 +134,9 @@ bool CharacterStyle::underline() const
 
 void CharacterStyle::setUnderline(bool underline)
 {
-    if (d->m_font.underline() != underline) {
-        d->m_font.setUnderline(underline);
-        d->m_propertySetFlags |= CharacterStyleProperty::Underline;
-    }
+    // 不管值有没有变化，都设置标记！确保 mergeWith 能正确合并
+    d->m_font.setUnderline(underline);
+    d->m_propertySetFlags |= CharacterStyleProperty::Underline;
 }
 
 bool CharacterStyle::strikeOut() const
@@ -222,10 +222,10 @@ void CharacterStyle::clearProperty(CharacterStyleProperty property)
     // 将属性恢复为默认值
     switch (property) {
         case CharacterStyleProperty::FontFamily:
-            d->m_font.setFamily("Times New Roman");
+            d->m_font.setFamily(QFont().family());  // 使用系统默认字体族
             break;
         case CharacterStyleProperty::FontSize:
-            d->m_font.setPointSize(12);
+            d->m_font.setPointSize(QtWordEditor::Constants::DefaultFontSize);
             break;
         case CharacterStyleProperty::Bold:
             d->m_font.setBold(false);

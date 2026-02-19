@@ -2,6 +2,7 @@
 #define FORMATCONTROLLER_H
 
 #include <QObject>
+#include <functional>
 #include "core/document/CharacterStyle.h"
 #include "core/document/ParagraphStyle.h"
 #include "core/Global.h"
@@ -12,6 +13,7 @@ class Document;
 class Selection;
 class Cursor;
 class StyleManager;
+class ParagraphBlock;
 struct CursorPosition;
 
 /**
@@ -290,6 +292,47 @@ public:
     void onCursorMoved();
 
 private:
+    // ========== 辅助方法 ==========
+    
+    /**
+     * @brief 收集选区内所有 Span 的样式
+     * @return Span 样式列表
+     */
+    QList<CharacterStyle> collectSelectionStyles() const;
+    
+    /**
+     * @brief 检查选区内所有样式是否都满足某个条件
+     * @param checkFunc 检查函数
+     * @return true=所有样式都满足条件
+     */
+    bool checkSelectionAll(const std::function<bool(const CharacterStyle&)>& checkFunc) const;
+    
+    /**
+     * @brief 应用单个字符样式属性
+     * @param setPropertyFunc 设置属性的函数
+     */
+    void applySingleProperty(const std::function<void(CharacterStyle&)>& setPropertyFunc);
+    
+    /**
+     * @brief 获取指定块的 ParagraphBlock
+     * @param blockIndex 块索引
+     * @return ParagraphBlock 指针，失败返回 nullptr
+     */
+    ParagraphBlock* getParagraphBlock(int blockIndex) const;
+    
+    /**
+     * @brief 验证选区有效性
+     * @return true=选区有效
+     */
+    bool validateSelection() const;
+    
+    /**
+     * @brief 应用单个段落样式属性
+     * @param setPropertyFunc 设置属性的函数
+     */
+    void applySingleParagraphProperty(const std::function<void(ParagraphStyle&)>& setPropertyFunc);
+
+    // ========== 成员变量 ==========
     Document *m_document;       ///< 关联的文档对象
     Cursor *m_cursor;           ///< 关联的光标对象
     Selection *m_selection;     ///< 关联的选择区域对象

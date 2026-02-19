@@ -499,8 +499,12 @@ void MainWindow::newDocument()
         m_document->addSection(section);
         
         ParagraphBlock *para1 = new ParagraphBlock(section);
-        para1->setText("");
+        para1->setText("这是第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！");
         section->addBlock(para1);
+        
+        ParagraphBlock *para2 = new ParagraphBlock(section);
+        para2->setText("这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。");
+        section->addBlock(para2);
         
         qreal pageWidth = Constants::PAGE_WIDTH;
         qreal pageHeight = Constants::PAGE_HEIGHT;
@@ -832,6 +836,11 @@ void MainWindow::updateStyleState()
         return;
     }
     
+    // 当有选区时，不更新工具栏的样式显示
+    if (m_selection && !m_selection->isEmpty()) {
+        return;
+    }
+    
     // 使用新的 FormatController::getCurrentDisplayStyle() 方法获取应该显示的样式
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
@@ -870,12 +879,27 @@ void MainWindow::setupDebugConsole()
     m_debugConsoleTextEdit->setFont(font);
     dockLayout->addWidget(m_debugConsoleTextEdit);
     
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    
+    QPushButton *copyButton = new QPushButton(tr("复制"), dockContent);
+    connect(copyButton, &QPushButton::clicked, this, [this]() {
+        if (m_debugConsoleTextEdit->textCursor().hasSelection()) {
+            m_debugConsoleTextEdit->copy();
+        } else {
+            m_debugConsoleTextEdit->selectAll();
+            m_debugConsoleTextEdit->copy();
+        }
+    });
+    buttonLayout->addWidget(copyButton);
+    
     QPushButton *clearButton = new QPushButton(tr("清空"), dockContent);
     connect(clearButton, &QPushButton::clicked, this, [this]() {
         m_debugConsoleTextEdit->clear();
         DebugConsole::log(tr("调试控制台已清空"));
     });
-    dockLayout->addWidget(clearButton);
+    buttonLayout->addWidget(clearButton);
+    
+    dockLayout->addLayout(buttonLayout);
     
     dockContent->setLayout(dockLayout);
     m_debugConsoleDock->setWidget(dockContent);

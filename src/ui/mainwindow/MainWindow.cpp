@@ -915,8 +915,8 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     // 同时更新状态栏，显示光标位置
     updateStatusBar(m_lastScenePos, m_lastViewPos);
     
-    // 更新样式状态显示
-    updateStyleState();
+    // 注意：不再在这里更新样式状态，只在鼠标松开时更新
+    // 无选区时的样式更新由单独的 cursor->positionChanged 连接处理
 }
 
 void MainWindow::updateStyleState()
@@ -958,6 +958,12 @@ void MainWindow::updateStyleState()
             ribbonConsistency.boldConsistent = consistency.boldConsistent;
             ribbonConsistency.italicConsistent = consistency.italicConsistent;
             ribbonConsistency.underlineConsistent = consistency.underlineConsistent;
+            // 传递一致的属性值
+            ribbonConsistency.consistentFontFamily = consistency.consistentFontFamily;
+            ribbonConsistency.consistentFontSize = consistency.consistentFontSize;
+            ribbonConsistency.consistentBold = consistency.consistentBold;
+            ribbonConsistency.consistentItalic = consistency.consistentItalic;
+            ribbonConsistency.consistentUnderline = consistency.consistentUnderline;
             
             m_ribbonBar->updateFromSelection(style, ribbonConsistency);
             qDebug() << "  选区跨多个 Span，根据各属性一致性更新工具栏";

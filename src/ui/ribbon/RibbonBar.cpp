@@ -405,7 +405,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     
     // ========== 更新字体 ==========
     if (consistency.fontFamilyConsistent) {
-        QString fontFamily = style.fontFamily();
+        QString fontFamily = consistency.consistentFontFamily;
         bool found = false;
         for (int i = 0; i < d->fontCombo->count(); ++i) {
             if (d->fontCombo->itemText(i) == fontFamily) {
@@ -415,7 +415,9 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
             }
         }
         if (!found) {
-            d->fontCombo->setCurrentFont(style.font());
+            QFont font;
+            font.setFamily(fontFamily);
+            d->fontCombo->setCurrentFont(font);
         }
         qDebug() << "  字体一致，设置字体:" << fontFamily;
     } else {
@@ -425,7 +427,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     
     // ========== 更新字号 ==========
     if (consistency.fontSizeConsistent) {
-        int fontSize = style.fontSize();
+        int fontSize = consistency.consistentFontSize;
         d->fontSizeSpin->setValue(fontSize);
         qDebug() << "  字号一致，设置字号:" << fontSize;
     } else {
@@ -436,7 +438,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     
     // ========== 更新粗体 ==========
     if (consistency.boldConsistent) {
-        bool bold = style.bold();
+        bool bold = consistency.consistentBold;
         d->boldAction->setChecked(bold);
         qDebug() << "  粗体一致，设置:" << bold;
     } else {
@@ -446,7 +448,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     
     // ========== 更新斜体 ==========
     if (consistency.italicConsistent) {
-        bool italic = style.italic();
+        bool italic = consistency.consistentItalic;
         d->italicAction->setChecked(italic);
         qDebug() << "  斜体一致，设置:" << italic;
     } else {
@@ -456,7 +458,7 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
     
     // ========== 更新下划线 ==========
     if (consistency.underlineConsistent) {
-        bool underline = style.underline();
+        bool underline = consistency.consistentUnderline;
         d->underlineAction->setChecked(underline);
         qDebug() << "  下划线一致，设置:" << underline;
     } else {

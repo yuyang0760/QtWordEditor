@@ -56,12 +56,24 @@ public:
         bool italicConsistent;       // 斜体是否一致
         bool underlineConsistent;    // 下划线是否一致
         
+        // 一致时的属性值
+        QString consistentFontFamily;
+        int consistentFontSize;
+        bool consistentBold;
+        bool consistentItalic;
+        bool consistentUnderline;
+        
         StyleConsistency() 
             : fontFamilyConsistent(true)
             , fontSizeConsistent(true)
             , boldConsistent(true)
             , italicConsistent(true)
             , underlineConsistent(true)
+            , consistentFontFamily("")
+            , consistentFontSize(0)
+            , consistentBold(false)
+            , consistentItalic(false)
+            , consistentUnderline(false)
         {}
         
         StyleConsistency(bool allConsistent) 
@@ -70,6 +82,11 @@ public:
             , boldConsistent(allConsistent)
             , italicConsistent(allConsistent)
             , underlineConsistent(allConsistent)
+            , consistentFontFamily("")
+            , consistentFontSize(0)
+            , consistentBold(false)
+            , consistentItalic(false)
+            , consistentUnderline(false)
         {}
     };
 

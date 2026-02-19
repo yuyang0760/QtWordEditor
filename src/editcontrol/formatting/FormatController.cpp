@@ -472,15 +472,29 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
         currentOffset = spanEnd;
     }
     
+    if (selectedStyles.isEmpty()) {
+        return consistency;
+    }
+    
+    // 使用第一个 Span 的样式作为基准
+    CharacterStyle firstStyle = selectedStyles[0];
+    
+    // 初始化一致时的属性值
+    consistency.consistentFontFamily = firstStyle.fontFamily();
+    consistency.consistentFontSize = firstStyle.fontSize();
+    consistency.consistentBold = firstStyle.bold();
+    consistency.consistentItalic = firstStyle.italic();
+    consistency.consistentUnderline = firstStyle.underline();
+    
     if (selectedStyles.size() <= 1) {
         // 只有一个 Span，所有属性都一致
         qDebug() << "FormatController::getSelectionStyleConsistency - 只有 " << selectedStyles.size() << " 个 Span，所有属性都一致";
+        qDebug() << "  一致的属性值：加粗=" << consistency.consistentBold
+                 << ", 斜体=" << consistency.consistentItalic;
         return consistency;
     }
     
     // 比较所有 Span 的各个属性
-    CharacterStyle firstStyle = selectedStyles[0];
-    
     for (int i = 1; i < selectedStyles.size(); ++i) {
         CharacterStyle currentStyle = selectedStyles[i];
         
@@ -521,6 +535,8 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
              << ", 粗体=" << consistency.boldConsistent
              << ", 斜体=" << consistency.italicConsistent
              << ", 下划线=" << consistency.underlineConsistent;
+    qDebug() << "  一致的属性值：加粗=" << consistency.consistentBold
+             << ", 斜体=" << consistency.consistentItalic;
     
     return consistency;
 }

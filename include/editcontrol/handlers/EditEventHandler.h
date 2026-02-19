@@ -41,6 +41,8 @@ public:
 signals:
     // 选择发生变化时发出信号，用于更新选择显示
     void selectionNeedsUpdate();
+    // 选择完成（鼠标松开）时发出信号，用于更新工具栏样式
+    void selectionFinished();
 
 private:
     Document *m_document;

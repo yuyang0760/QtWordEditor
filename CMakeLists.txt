@@ -5,6 +5,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ========== 调试输出开关 ==========
+# 设置为 OFF 可以一键禁用所有 qDebug() 输出
+# 设置为 ON 启用调试输出
+option(ENABLE_DEBUG_OUTPUT "Enable qDebug() output" OFF)
+
+if(NOT ENABLE_DEBUG_OUTPUT)
+    add_compile_definitions(QT_NO_DEBUG_OUTPUT)
+    message(STATUS "Debug output disabled (QT_NO_DEBUG_OUTPUT defined)")
+else()
+    message(STATUS "Debug output enabled")
+endif()
+
 if(MSVC)
     add_compile_options(/Zc:__cplusplus /permissive- /FS)
 endif()

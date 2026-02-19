@@ -186,6 +186,9 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
     // 结束选择
     m_isSelecting = false;
 
+    // 发出选择完成信号，用于更新工具栏样式
+    emit selectionFinished();
+
     return true;
 }
 

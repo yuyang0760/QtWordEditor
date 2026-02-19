@@ -321,14 +321,29 @@ void MainWindow::setupUi()
     connect(m_cursor, &Cursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
     
-    // 连接选区变化信号到样式状态更新（始终显示光标）
+    // 连接光标位置变化信号到样式状态更新（无选区时）
+    connect(m_cursor, &Cursor::positionChanged,
+            this, [this]() {
+                // 只有在无选区时，光标移动才更新样式
+                if (m_selection && m_selection->isEmpty()) {
+                    updateStyleState();
+                }
+            });
+    
+    // 连接选区变化信号（只更新光标可见性，不更新样式）
     connect(m_selection, &Selection::selectionChanged,
             this, [this]() {
                 if (m_selection && m_scene) {
                     // 始终显示光标
                     m_scene->setCursorVisible(true);
                 }
-                // 同时更新样式状态
+                // 不在这里更新样式，只在鼠标松开时更新
+            });
+    
+    // 连接选择完成信号（鼠标松开时）到样式状态更新
+    connect(m_editEventHandler, &EditEventHandler::selectionFinished,
+            this, [this]() {
+                qDebug() << "MainWindow: 收到 selectionFinished 信号，更新样式状态";
                 updateStyleState();
             });
 

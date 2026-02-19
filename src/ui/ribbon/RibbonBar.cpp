@@ -387,6 +387,84 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsi
     // 但由于我们现在没有样式名称，暂时不调用
 }
 
+void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleConsistency &consistency)
+{
+    qDebug() << "RibbonBar::updateFromSelection - 各属性一致性："
+             << "字体=" << consistency.fontFamilyConsistent
+             << ", 字号=" << consistency.fontSizeConsistent
+             << ", 粗体=" << consistency.boldConsistent
+             << ", 斜体=" << consistency.italicConsistent
+             << ", 下划线=" << consistency.underlineConsistent;
+
+    // 使用 QSignalBlocker 防止信号循环
+    QSignalBlocker fontBlocker(d->fontCombo);
+    QSignalBlocker fontSizeBlocker(d->fontSizeSpin);
+    QSignalBlocker boldBlocker(d->boldAction);
+    QSignalBlocker italicBlocker(d->italicAction);
+    QSignalBlocker underlineBlocker(d->underlineAction);
+    
+    // ========== 更新字体 ==========
+    if (consistency.fontFamilyConsistent) {
+        QString fontFamily = style.fontFamily();
+        bool found = false;
+        for (int i = 0; i < d->fontCombo->count(); ++i) {
+            if (d->fontCombo->itemText(i) == fontFamily) {
+                d->fontCombo->setCurrentIndex(i);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            d->fontCombo->setCurrentFont(style.font());
+        }
+        qDebug() << "  字体一致，设置字体:" << fontFamily;
+    } else {
+        d->fontCombo->setCurrentIndex(-1);
+        qDebug() << "  字体不一致，清空";
+    }
+    
+    // ========== 更新字号 ==========
+    if (consistency.fontSizeConsistent) {
+        int fontSize = style.fontSize();
+        d->fontSizeSpin->setValue(fontSize);
+        qDebug() << "  字号一致，设置字号:" << fontSize;
+    } else {
+        d->fontSizeSpin->clear();
+        d->fontSizeSpin->setSpecialValueText("");
+        qDebug() << "  字号不一致，清空";
+    }
+    
+    // ========== 更新粗体 ==========
+    if (consistency.boldConsistent) {
+        bool bold = style.bold();
+        d->boldAction->setChecked(bold);
+        qDebug() << "  粗体一致，设置:" << bold;
+    } else {
+        d->boldAction->setChecked(false);
+        qDebug() << "  粗体不一致，取消选中";
+    }
+    
+    // ========== 更新斜体 ==========
+    if (consistency.italicConsistent) {
+        bool italic = style.italic();
+        d->italicAction->setChecked(italic);
+        qDebug() << "  斜体一致，设置:" << italic;
+    } else {
+        d->italicAction->setChecked(false);
+        qDebug() << "  斜体不一致，取消选中";
+    }
+    
+    // ========== 更新下划线 ==========
+    if (consistency.underlineConsistent) {
+        bool underline = style.underline();
+        d->underlineAction->setChecked(underline);
+        qDebug() << "  下划线一致，设置:" << underline;
+    } else {
+        d->underlineAction->setChecked(false);
+        qDebug() << "  下划线不一致，取消选中";
+    }
+}
+
 void RibbonBar::refreshStyleLists()
 {
     if (!d->styleManager)

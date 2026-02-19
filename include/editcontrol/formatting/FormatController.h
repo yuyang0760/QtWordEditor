@@ -110,9 +110,35 @@ public:
     // ========== 样式获取方法（用于工具栏显示） ==========
 
     /**
-     * @brief 检查选区是否样式一致
+     * @brief 各样式属性的一致性状态
+     */
+    struct StyleConsistency {
+        bool fontFamilyConsistent;   // 字体是否一致
+        bool fontSizeConsistent;     // 字号是否一致
+        bool boldConsistent;         // 粗体是否一致
+        bool italicConsistent;       // 斜体是否一致
+        bool underlineConsistent;    // 下划线是否一致
+        
+        StyleConsistency() 
+            : fontFamilyConsistent(true)
+            , fontSizeConsistent(true)
+            , boldConsistent(true)
+            , italicConsistent(true)
+            , underlineConsistent(true)
+        {}
+    };
+
+    /**
+     * @brief 检查选区各样式属性是否一致
      * 
-     * @return true=选区样式一致（单Span），false=选区样式不一致（多Span）
+     * @return 各属性的一致性状态
+     */
+    StyleConsistency getSelectionStyleConsistency() const;
+
+    /**
+     * @brief 检查选区是否样式一致（用于向后兼容）
+     * 
+     * @return true=所有属性都一致，false=至少有一个属性不一致
      */
     bool isSelectionStyleConsistent() const;
 

@@ -861,18 +861,42 @@ void MainWindow::updateStyleState()
     
     qDebug() << "MainWindow::updateStyleState - 开始更新样式";
     
-    // ========== 简化逻辑：无论选区样式是否一致，都显示最后一个选中字符的样式 ==========
-    // getCurrentDisplayStyle() 已经返回：
-    // - 无选区：光标前一个字符的样式
-    // - 有选区：选区终点（Focus）前一个字符的样式（即最后一个选中字符的样式）
+    bool hasSelection = (m_selection && !m_selection->isEmpty());
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
     qDebug() << "  从 formatController 收到样式: 加粗=" << style.bold() 
              << ", 斜体=" << style.italic() 
-             << ", 下划线=" << style.underline();
+             << ", 下划线=" << style.underline()
+             << ", 有选区=" << hasSelection;
     
-    // 直接更新工具栏，始终显示样式（不再有混合状态）
-    m_ribbonBar->updateFromSelection(style, true);
+    if (!hasSelection) {
+        // ========== 无选区：所有属性都一致 ==========
+        m_ribbonBar->updateFromSelection(style, true);
+        qDebug() << "  无选区，工具栏显示一致样式";
+    } else {
+        // ========== 先检查是否完全在单个 Span 内 ==========
+        bool isSingleSpan = m_formatController->isSelectionStyleConsistent();
+        
+        if (isSingleSpan) {
+            // 完全在单个 Span 内：所有属性都一致，直接显示
+            m_ribbonBar->updateFromSelection(style, true);
+            qDebug() << "  选区完全在单个 Span 内，工具栏显示一致样式";
+        } else {
+            // ========== 跨多个 Span：获取每个属性的一致性状态 ==========
+            FormatController::StyleConsistency consistency = m_formatController->getSelectionStyleConsistency();
+            
+            // 将 FormatController::StyleConsistency 转换为 RibbonBar::StyleConsistency
+            RibbonBar::StyleConsistency ribbonConsistency;
+            ribbonConsistency.fontFamilyConsistent = consistency.fontFamilyConsistent;
+            ribbonConsistency.fontSizeConsistent = consistency.fontSizeConsistent;
+            ribbonConsistency.boldConsistent = consistency.boldConsistent;
+            ribbonConsistency.italicConsistent = consistency.italicConsistent;
+            ribbonConsistency.underlineConsistent = consistency.underlineConsistent;
+            
+            m_ribbonBar->updateFromSelection(style, ribbonConsistency);
+            qDebug() << "  选区跨多个 Span，根据各属性一致性更新工具栏";
+        }
+    }
     
     qDebug() << "  已更新到 ribbonBar";
 }

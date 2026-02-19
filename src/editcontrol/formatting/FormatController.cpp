@@ -435,6 +435,122 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     return result;
 }
 
+FormatController::StyleConsistency FormatController::getSelectionStyleConsistency() const
+{
+    StyleConsistency consistency;
+    
+    if (!m_selection || m_selection->isEmpty()) {
+        return consistency; // 无选区时所有属性都一致
+    }
+    
+    SelectionRange range = m_selection->range();
+    
+    // 检查是否跨多个块
+    if (range.startBlock != range.endBlock) {
+        qDebug() << "FormatController::getSelectionStyleConsistency - 跨多个块，所有属性都不一致";
+        consistency.fontFamilyConsistent = false;
+        consistency.fontSizeConsistent = false;
+        consistency.boldConsistent = false;
+        consistency.italicConsistent = false;
+        consistency.underlineConsistent = false;
+        return consistency;
+    }
+    
+    // 检查是否在单个块内
+    if (range.startBlock < 0) {
+        return consistency;
+    }
+    
+    Block *block = m_document->block(range.startBlock);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock) {
+        return consistency;
+    }
+    
+    // 收集所有与选区重叠的 Span
+    QList<CharacterStyle> selectedStyles;
+    int currentOffset = 0;
+    for (int i = 0; i < paraBlock->spanCount(); ++i) {
+        const Span &span = paraBlock->span(i);
+        int spanStart = currentOffset;
+        int spanEnd = spanStart + span.text().length();
+        
+        // 检查 span 是否与选区重叠
+        if (!(spanEnd <= range.startOffset || spanStart >= range.endOffset)) {
+            selectedStyles.append(span.style());
+            qDebug() << "  包含 Span " << i << ": 加粗=" << span.style().bold() 
+                     << ", 斜体=" << span.style().italic()
+                     << ", 下划线=" << span.style().underline()
+                     << ", 字体=" << span.style().fontFamily()
+                     << ", 字号=" << span.style().fontSize();
+        }
+        
+        currentOffset = spanEnd;
+    }
+    
+    if (selectedStyles.size() <= 1) {
+        // 只有一个 Span，所有属性都一致
+        qDebug() << "FormatController::getSelectionStyleConsistency - 只有 " << selectedStyles.size() << " 个 Span，所有属性都一致";
+        return consistency;
+    }
+    
+    // 比较所有 Span 的各个属性
+    CharacterStyle firstStyle = selectedStyles[0];
+    
+    for (int i = 1; i < selectedStyles.size(); ++i) {
+        CharacterStyle currentStyle = selectedStyles[i];
+        
+        // 检查字体
+        if (consistency.fontFamilyConsistent && currentStyle.fontFamily() != firstStyle.fontFamily()) {
+            consistency.fontFamilyConsistent = false;
+            qDebug() << "  字体不一致：" << firstStyle.fontFamily() << " vs " << currentStyle.fontFamily();
+        }
+        
+        // 检查字号
+        if (consistency.fontSizeConsistent && currentStyle.fontSize() != firstStyle.fontSize()) {
+            consistency.fontSizeConsistent = false;
+            qDebug() << "  字号不一致：" << firstStyle.fontSize() << " vs " << currentStyle.fontSize();
+        }
+        
+        // 检查粗体
+        if (consistency.boldConsistent && currentStyle.bold() != firstStyle.bold()) {
+            consistency.boldConsistent = false;
+            qDebug() << "  粗体不一致：" << firstStyle.bold() << " vs " << currentStyle.bold();
+        }
+        
+        // 检查斜体
+        if (consistency.italicConsistent && currentStyle.italic() != firstStyle.italic()) {
+            consistency.italicConsistent = false;
+            qDebug() << "  斜体不一致：" << firstStyle.italic() << " vs " << currentStyle.italic();
+        }
+        
+        // 检查下划线
+        if (consistency.underlineConsistent && currentStyle.underline() != firstStyle.underline()) {
+            consistency.underlineConsistent = false;
+            qDebug() << "  下划线不一致：" << firstStyle.underline() << " vs " << currentStyle.underline();
+        }
+    }
+    
+    qDebug() << "FormatController::getSelectionStyleConsistency - 一致性检查结果："
+             << "字体=" << consistency.fontFamilyConsistent
+             << ", 字号=" << consistency.fontSizeConsistent
+             << ", 粗体=" << consistency.boldConsistent
+             << ", 斜体=" << consistency.italicConsistent
+             << ", 下划线=" << consistency.underlineConsistent;
+    
+    return consistency;
+}
+
+bool FormatController::isSelectionStyleConsistent() const
+{
+    StyleConsistency consistency = getSelectionStyleConsistency();
+    return consistency.fontFamilyConsistent && 
+           consistency.fontSizeConsistent && 
+           consistency.boldConsistent && 
+           consistency.italicConsistent && 
+           consistency.underlineConsistent;
+}
+
 CharacterStyle FormatController::getCurrentInputStyle() const
 {
     if (m_isInputStyleOverridden) {

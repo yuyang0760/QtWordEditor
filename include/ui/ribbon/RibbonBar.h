@@ -47,11 +47,45 @@ public:
     void updateFromSelection(const CharacterStyle &style);
     
     /**
-     * @brief 根据字符样式和样式一致性更新控件状态
+     * @brief 各样式属性的一致性状态
+     */
+    struct StyleConsistency {
+        bool fontFamilyConsistent;   // 字体是否一致
+        bool fontSizeConsistent;     // 字号是否一致
+        bool boldConsistent;         // 粗体是否一致
+        bool italicConsistent;       // 斜体是否一致
+        bool underlineConsistent;    // 下划线是否一致
+        
+        StyleConsistency() 
+            : fontFamilyConsistent(true)
+            , fontSizeConsistent(true)
+            , boldConsistent(true)
+            , italicConsistent(true)
+            , underlineConsistent(true)
+        {}
+        
+        StyleConsistency(bool allConsistent) 
+            : fontFamilyConsistent(allConsistent)
+            , fontSizeConsistent(allConsistent)
+            , boldConsistent(allConsistent)
+            , italicConsistent(allConsistent)
+            , underlineConsistent(allConsistent)
+        {}
+    };
+
+    /**
+     * @brief 根据字符样式和样式一致性更新控件状态（向后兼容）
      * @param style 要显示的字符样式对象
      * @param styleConsistent true=样式一致（显示样式），false=样式不一致（不显示样式/混合状态）
      */
     void updateFromSelection(const CharacterStyle &style, bool styleConsistent);
+    
+    /**
+     * @brief 根据字符样式和各属性的一致性状态更新控件状态
+     * @param style 要显示的字符样式对象
+     * @param consistency 各属性的一致性状态
+     */
+    void updateFromSelection(const CharacterStyle &style, const StyleConsistency &consistency);
     
     /**
      * @brief 刷新样式列表

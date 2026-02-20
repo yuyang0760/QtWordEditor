@@ -97,36 +97,67 @@ void TextBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     Q_UNUSED(option);
     Q_UNUSED(widget);
     
-    // 获取布局项
-    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
-    
-    // 绘制每个 LayoutItem
-    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
-        painter->save();
-        painter->translate(item.position + QPointF(m_leftIndent, 0));  // 加上左缩进
-        
-        // 使用 QTextLayout 绘制
-        QTextLayout textLayout(item.text, item.font);
-        textLayout.beginLayout();
-        
-        qreal currentY = 0;
-        while (true) {
-            QTextLine line = textLayout.createLine();
-            if (!line.isValid()) break;
-            
-            line.setLineWidth(m_textWidth - m_leftIndent - m_rightIndent);
-            line.setPosition(QPointF(0, currentY));
-            currentY += line.height();
-        }
-        textLayout.endLayout();
-        
-        // 绘制
-        painter->setFont(item.font);
-        painter->setPen(item.style.textColor());
-        textLayout.draw(painter, QPointF(0, 0));
-        
-        painter->restore();
+    // 获取 Span 列表
+    QList<Span> spans = getSpans();
+    if (spans.isEmpty()) {
+        return;
     }
+    
+    // 简单方案：把所有 Span 的文本拼起来
+    QString fullText;
+    for (const Span &span : spans) {
+        fullText += span.text();
+    }
+    
+    if (fullText.isEmpty()) {
+        return;
+    }
+    
+    // 使用第一个 Span 的样式（简化版）
+    const Span &firstSpan = spans.first();
+    
+    // 创建字体
+    QFont font;
+    if (!firstSpan.style().fontFamily().isEmpty()) {
+        font.setFamily(firstSpan.style().fontFamily());
+    }
+    if (firstSpan.style().fontSize() > 0) {
+        font.setPointSize(firstSpan.style().fontSize());
+    } else {
+        font.setPointSize(Constants::DefaultFontSize);
+    }
+    font.setBold(firstSpan.style().bold());
+    font.setItalic(firstSpan.style().italic());
+    font.setUnderline(firstSpan.style().underline());
+    font.setStrikeOut(firstSpan.style().strikeOut());
+    
+    // 使用 QTextLayout 绘制
+    QTextLayout textLayout(fullText, font);
+    textLayout.beginLayout();
+    
+    qreal availableWidth = m_textWidth - m_leftIndent - m_rightIndent;
+    if (availableWidth < 10.0) {
+        availableWidth = 10.0;
+    }
+    
+    qreal currentY = 0;
+    while (true) {
+        QTextLine line = textLayout.createLine();
+        if (!line.isValid()) break;
+        
+        line.setLineWidth(availableWidth);
+        line.setPosition(QPointF(0, currentY));
+        currentY += line.height();
+    }
+    textLayout.endLayout();
+    
+    // 绘制
+    painter->save();
+    painter->translate(m_leftIndent, 0);  // 加上左缩进
+    painter->setFont(font);
+    painter->setPen(firstSpan.style().textColor());
+    textLayout.draw(painter, QPointF(0, 0));
+    painter->restore();
 }
 
 void TextBlockItem::updateGeometry()

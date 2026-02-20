@@ -253,4 +253,108 @@ TextBlockItem::CursorVisualInfo TextBlockItem::cursorPositionAt(int globalOffset
     return result;
 }
 
+QList<QRectF> TextBlockItem::selectionRects(int startOffset, int endOffset) const
+{
+    QList<QRectF> rects;
+    
+    QList<Span> spans = getSpans();
+    if (spans.isEmpty()) {
+        return rects;
+    }
+    
+    // 拼接完整文本
+    QString fullText;
+    for (const Span &span : spans) {
+        fullText += span.text();
+    }
+    
+    if (fullText.isEmpty()) {
+        return rects;
+    }
+    
+    // 归一化偏移
+    int normalizedStart = qMin(startOffset, endOffset);
+    int normalizedEnd = qMax(startOffset, endOffset);
+    
+    // 确保在有效范围内
+    normalizedStart = qBound(0, normalizedStart, fullText.length());
+    normalizedEnd = qBound(0, normalizedEnd, fullText.length());
+    
+    if (normalizedStart >= normalizedEnd) {
+        return rects;
+    }
+    
+    // 使用第一个 Span 的样式
+    const Span &firstSpan = spans.first();
+    QFont font;
+    if (!firstSpan.style().fontFamily().isEmpty()) {
+        font.setFamily(firstSpan.style().fontFamily());
+    }
+    if (firstSpan.style().fontSize() > 0) {
+        font.setPointSize(firstSpan.style().fontSize());
+    } else {
+        font.setPointSize(Constants::DefaultFontSize);
+    }
+    font.setBold(firstSpan.style().bold());
+    font.setItalic(firstSpan.style().italic());
+    font.setUnderline(firstSpan.style().underline());
+    font.setStrikeOut(firstSpan.style().strikeOut());
+    
+    // 使用 QTextLayout 计算选择矩形
+    QTextLayout textLayout(fullText, font);
+    textLayout.beginLayout();
+    
+    qreal availableWidth = m_textWidth - m_leftIndent - m_rightIndent;
+    if (availableWidth < 10.0) {
+        availableWidth = 10.0;
+    }
+    
+    qreal currentY = 0;
+    QList<QTextLine> textLines;
+    
+    while (true) {
+        QTextLine line = textLayout.createLine();
+        if (!line.isValid()) {
+            break;
+        }
+        
+        line.setLineWidth(availableWidth);
+        line.setPosition(QPointF(0, currentY));
+        textLines << line;
+        
+        currentY += line.height();
+    }
+    
+    textLayout.endLayout();
+    
+    // 计算选择矩形
+    for (int i = 0; i < textLines.size(); ++i) {
+        const QTextLine &line = textLines[i];
+        int lineStart = line.textStart();
+        int lineEnd = lineStart + line.textLength();
+        
+        // 确定当前行与选择范围的重叠
+        int selStart = qMax(normalizedStart, lineStart);
+        int selEnd = qMin(normalizedEnd, lineEnd);
+        
+        if (selStart < selEnd) {
+            // 计算选择在该行的起始和结束位置
+            qreal x1 = line.cursorToX(selStart);
+            qreal x2 = line.cursorToX(selEnd);
+            
+            // 创建选择矩形（加上左缩进）
+            QRectF rect(
+                m_leftIndent + qMin(x1, x2),
+                line.y(),
+                qAbs(x2 - x1),
+                line.height()
+            );
+            
+            rects.append(rect);
+        }
+    }
+    
+    return rects;
+}
+
 } // namespace QtWordEditor

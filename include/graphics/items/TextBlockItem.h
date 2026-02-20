@@ -135,6 +135,14 @@ public:
      */
     CursorVisualInfo cursorPositionAt(int globalOffset) const;
 
+    /**
+     * @brief 计算选择矩形（相对于 TextBlockItem 局部坐标）
+     * @param startOffset 选择起始偏移
+     * @param endOffset 选择结束偏移
+     * @return 选择矩形列表
+     */
+    QList<QRectF> selectionRects(int startOffset, int endOffset) const;
+
 private:
     // ========== 内部方法 ==========
     

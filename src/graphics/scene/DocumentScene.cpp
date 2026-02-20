@@ -524,12 +524,6 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
     SelectionRange normalizedRange = range;
     normalizedRange.normalize();
     
-  //  QDebug() << "DocumentScene::calculateSelectionRects - 计算选择矩形，范围:"
-             // << "起始块:" << normalizedRange.startBlock
-             // << "起始偏移:" << normalizedRange.startOffset
-             // << "结束块:" << normalizedRange.endBlock
-             // << "结束偏移:" << normalizedRange.endOffset;
-    
     // 简单假设只有一个section和一个page
     Section *section = m_document->section(0);
     if (!section) {
@@ -537,92 +531,64 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
     }
     
     int pageIndex = 0;
+    if (pageIndex < 0 || pageIndex >= section->pageCount()) {
+        return rects;
+    }
+    
+    Page *page = section->page(pageIndex);
+    if (!page) {
+        return rects;
+    }
     
     // 遍历选择范围内的所有块
     for (int blockIdx = normalizedRange.startBlock; blockIdx <= normalizedRange.endBlock; ++blockIdx) {
         // 检查是否超出范围
-        if (blockIdx < 0 || blockIdx >= section->blockCount()) {
+        if (blockIdx < 0 || blockIdx >= page->blockCount()) {
             continue;
         }
         
-        // 获取对应的QGraphicsTextItem
-        if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
-            blockIdx >= 0 && blockIdx < m_pageTextItems[pageIndex].size()) {
-            
-            QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIdx];
-            if (!textItem) {
-                continue;
-            }
-            
-            QTextDocument *doc = textItem->document();
-            if (!doc) {
-                continue;
-            }
-            
-            QString text = doc->toPlainText();
-          //  QDebug() << "  块" << blockIdx << "文本:" << text;
-            
-            // 确定当前块的选择起始和结束偏移
-            int startOffset = 0;
-            int endOffset = text.length();
-            
-            if (blockIdx == normalizedRange.startBlock) {
-                startOffset = qMin(normalizedRange.startOffset, text.length());
-            }
-            if (blockIdx == normalizedRange.endBlock) {
-                endOffset = qMin(normalizedRange.endOffset, text.length());
-            }
-            
-          //  QDebug() << "    起始偏移:" << startOffset << "结束偏移:" << endOffset;
-            
-            // 如果起始和结束相同，跳过
-            if (startOffset >= endOffset) {
-                continue;
-            }
-            
-            // 使用QTextCursor获取选择的字符范围
-            QTextCursor cursor(doc);
-            cursor.setPosition(startOffset);
-            cursor.setPosition(endOffset, QTextCursor::KeepAnchor);
-            
-            // 获取选择区域
-            QTextBlock block = cursor.block();
-            
-            // 遍历选择范围内的所有行
-            QTextLayout *layout = block.layout();
-            if (!layout) {
-                continue;
-            }
-            
-            for (int i = 0; i < layout->lineCount(); ++i) {
-                QTextLine line = layout->lineAt(i);
-                int lineStart = line.textStart();
-                int lineEnd = line.textStart() + line.textLength();
-                
-                // 确定当前行与选择范围的重叠
-                int selStart = qMax(startOffset, lineStart);
-                int selEnd = qMin(endOffset, lineEnd);
-                
-                if (selStart < selEnd) {
-                    // 计算选择在该行的起始和结束位置
-                    qreal x1 = line.cursorToX(selStart);
-                    qreal x2 = line.cursorToX(selEnd);
-                    
-                    // 获取textItem在场景中的位置
-                    QPointF itemScenePos = textItem->scenePos();
-                    
-                    // 创建选择矩形
-                    QRectF rect(
-                        itemScenePos.x() + qMin(x1, x2),
-                        itemScenePos.y() + line.y(),
-                        qAbs(x2 - x1),
-                        line.height()
-                    );
-                    
-                    rects.append(rect);
-                  //  QDebug() << "    添加矩形:" << rect;
-                }
-            }
+        // 获取对应的 TextBlockItem
+        Block *block = page->block(blockIdx);
+        auto it = m_blockItems.find(block);
+        if (it == m_blockItems.end()) {
+            continue;
+        }
+        
+        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+        if (!textBlockItem) {
+            continue;
+        }
+        
+        // 确定当前块的选择起始和结束偏移
+        QString fullText = textBlockItem->toPlainText();
+        int startOffset = 0;
+        int endOffset = fullText.length();
+        
+        if (blockIdx == normalizedRange.startBlock) {
+            startOffset = qMin(normalizedRange.startOffset, fullText.length());
+        }
+        if (blockIdx == normalizedRange.endBlock) {
+            endOffset = qMin(normalizedRange.endOffset, fullText.length());
+        }
+        
+        // 如果起始和结束相同，跳过
+        if (startOffset >= endOffset) {
+            continue;
+        }
+        
+        // 使用 TextBlockItem 的 selectionRects 方法
+        QList<QRectF> blockRects = textBlockItem->selectionRects(startOffset, endOffset);
+        
+        // 将局部坐标转换为场景坐标
+        QPointF blockScenePos = textBlockItem->scenePos();
+        for (const QRectF &rect : blockRects) {
+            QRectF sceneRect(
+                blockScenePos.x() + rect.x(),
+                blockScenePos.y() + rect.y(),
+                rect.width(),
+                rect.height()
+            );
+            rects.append(sceneRect);
         }
     }
     

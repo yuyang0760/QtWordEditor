@@ -22,12 +22,10 @@ namespace QtWordEditor {
  * @param length 要移除的字符数
  */
 RemoveTextCommand::RemoveTextCommand(Document *document, int blockIndex, int position, int length)
-    : EditCommand(document, QString())
-    , m_blockIndex(blockIndex)
+    : ParagraphCommand(document, blockIndex, QObject::tr("Delete text"))
     , m_position(position)
     , m_length(length)
 {
-    setText(QObject::tr("Delete text"));
 }
 
 /**
@@ -44,16 +42,9 @@ RemoveTextCommand::~RemoveTextCommand()
  */
 void RemoveTextCommand::redo()
 {
-    Block *block = document()->block(m_blockIndex);
-    if (!block) {
-        qWarning() << "Block not found at index" << m_blockIndex;
+    ParagraphBlock *para = getParagraphBlock();
+    if (!para)
         return;
-    }
-    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
-    if (!para) {
-        qWarning() << "Block is not a paragraph block";
-        return;
-    }
     m_removedText = para->text().mid(m_position, m_length);
     para->remove(m_position, m_length);
 }
@@ -65,15 +56,13 @@ void RemoveTextCommand::redo()
  */
 void RemoveTextCommand::undo()
 {
-    Block *block = document()->block(m_blockIndex);
-    if (!block)
-        return;
-    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
+    ParagraphBlock *para = getParagraphBlock();
     if (!para)
         return;
+    int insertPos = m_position;
     for (const auto& span : m_removedSpans) {
-        para->insert(m_position, span.text(), span.style());
-        m_position += span.text().length();
+        para->insert(insertPos, span.text(), span.style());
+        insertPos += span.text().length();
     }
 }
 

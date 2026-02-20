@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ========== 调试输出开关 ==========
 # 设置为 OFF 可以一键禁用所有 qDebug() 输出
 # 设置为 ON 启用调试输出
-option(ENABLE_DEBUG_OUTPUT "Enable qDebug() output" on)
+option(ENABLE_DEBUG_OUTPUT "Enable qDebug() output" OFF)
 
 if(NOT ENABLE_DEBUG_OUTPUT)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)

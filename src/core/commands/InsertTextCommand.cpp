@@ -24,13 +24,11 @@ namespace QtWordEditor {
  */
 InsertTextCommand::InsertTextCommand(Document *document, int blockIndex, int position,
                                      const QString &text, const CharacterStyle &style)
-    : EditCommand(document, QString())
-    , m_blockIndex(blockIndex)
+    : ParagraphCommand(document, blockIndex, QObject::tr("Insert text"))
     , m_position(position)
     , m_text(text)
     , m_style(style)
 {
-    setText(QObject::tr("Insert text"));
 }
 
 /**
@@ -47,16 +45,9 @@ InsertTextCommand::~InsertTextCommand()
  */
 void InsertTextCommand::redo()
 {
-    Block *block = document()->block(m_blockIndex);
-    if (!block) {
-        qWarning() << "Block not found at index" << m_blockIndex;
+    ParagraphBlock *para = getParagraphBlock();
+    if (!para)
         return;
-    }
-    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
-    if (!para) {
-        qWarning() << "Block is not a paragraph block";
-        return;
-    }
     para->insert(m_position, m_text, m_style);
 }
 
@@ -67,10 +58,7 @@ void InsertTextCommand::redo()
  */
 void InsertTextCommand::undo()
 {
-    Block *block = document()->block(m_blockIndex);
-    if (!block)
-        return;
-    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
+    ParagraphBlock *para = getParagraphBlock();
     if (!para)
         return;
     para->remove(m_position, m_text.length());
@@ -89,7 +77,7 @@ bool InsertTextCommand::mergeWith(const QUndoCommand *other)
     const InsertTextCommand *cmd = dynamic_cast<const InsertTextCommand*>(other);
     if (!cmd)
         return false;
-    if (m_blockIndex == cmd->m_blockIndex &&
+    if (blockIndex() == cmd->blockIndex() &&
         m_position + m_text.length() == cmd->m_position &&
         m_style == cmd->m_style) {
         m_text += cmd->m_text;

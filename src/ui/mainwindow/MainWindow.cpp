@@ -10,7 +10,7 @@
 #include "core/document/Page.h"
 #include "core/layout/PageBuilder.h"
 #include "core/utils/Constants.h"
-#include "core/utils/Logger.h"
+// 移除 Logger 头文件，使用 Qt 内置日志函数
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -146,7 +146,7 @@ void MainWindow::setupUi()
     // 连接 RibbonBar 样式按钮信号
     connect(m_ribbonBar, &RibbonBar::fontChanged,
             this, [this](const QFont &font) {
-        LOG_DEBUG("字体变化（来自功能区）:" + font.family());
+        qDebug() << "字体变化（来自功能区）:" << font.family();
         // 只设置字体族，不改变字号！
         CharacterStyle style;
         style.clearAllProperties();
@@ -301,7 +301,7 @@ void MainWindow::setupUi()
     // 连接选择完成信号（鼠标松开时）到样式状态更新
     connect(m_editEventHandler, &EditEventHandler::selectionFinished,
             this, [this]() {
-        LOG_DEBUG("MainWindow: 收到 selectionFinished 信号，更新样式状态");
+        qDebug() << "MainWindow: 收到 selectionFinished 信号，更新样式状态";
         updateStyleState();
     });
 
@@ -851,21 +851,21 @@ void MainWindow::updateStyleState()
         return;
     }
     
-    LOG_DEBUG("MainWindow::updateStyleState - 开始更新样式");
+    qDebug() << "MainWindow::updateStyleState - 开始更新样式";
     
     bool hasSelection = (m_selection && !m_selection->isEmpty());
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
-    LOG_DEBUG(QString("加粗=%1, 斜体=%2, 下划线=%3, 有选区=%4")
+    qDebug() << QString("加粗=%1, 斜体=%2, 下划线=%3, 有选区=%4")
         .arg(style.bold())
         .arg(style.italic())
         .arg(style.underline())
-        .arg(hasSelection));
+        .arg(hasSelection);
     
     if (!hasSelection) {
         // ========== 无选区：所有属性都一致 ==========
         m_ribbonBar->updateFromSelection(style, true);
-        LOG_DEBUG("  无选区，工具栏显示一致样式");
+        qDebug() << "  无选区，工具栏显示一致样式";
     } else {
         // ========== 先检查是否完全在单个 Span 内 ==========
         bool isSingleSpan = m_formatController->isSelectionStyleConsistent();
@@ -873,7 +873,7 @@ void MainWindow::updateStyleState()
         if (isSingleSpan) {
             // 完全在单个 Span 内：所有属性都一致，直接显示
             m_ribbonBar->updateFromSelection(style, true);
-            LOG_DEBUG("  选区完全在单个 Span 内，工具栏显示一致样式");
+            qDebug() << "  选区完全在单个 Span 内，工具栏显示一致样式";
         } else {
             // ========== 跨多个 Span：获取每个属性的一致性状态 ==========
             FormatController::StyleConsistency consistency = m_formatController->getSelectionStyleConsistency();
@@ -893,11 +893,11 @@ void MainWindow::updateStyleState()
             ribbonConsistency.consistentUnderline = consistency.consistentUnderline;
             
             m_ribbonBar->updateFromSelection(style, ribbonConsistency);
-            LOG_DEBUG("  选区跨多个 Span，根据各属性一致性更新工具栏");
+            qDebug() << "  选区跨多个 Span，根据各属性一致性更新工具栏";
         }
     }
     
-    LOG_DEBUG("  已更新到 ribbonBar");
+    qDebug() << "  已更新到 ribbonBar";
 }
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
@@ -1022,15 +1022,15 @@ void MainWindow::toggleStyleAttribute(
     const std::function<void(bool)>& applyStyleFunc,
     const QString& styleName)
 {
-    LOG_DEBUG("MainWindow:" + styleName + "按钮被点击");
+    qDebug() << "MainWindow:" << styleName << "按钮被点击";
     
     CharacterStyle style;
     if (m_selection->isEmpty()) {
         // 无选区：根据当前显示样式切换
         CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-        LOG_DEBUG(QString("  无选区，getCurrentDisplayStyle() 返回的%1:%2").arg(styleName).arg(getPropertyFunc(currentStyle)));
+        qDebug() << QString("  无选区，getCurrentDisplayStyle() 返回的%1:%2").arg(styleName).arg(getPropertyFunc(currentStyle));
         bool newValue = !getPropertyFunc(currentStyle);
-        LOG_DEBUG(QString("  计算的新%1:%2").arg(styleName).arg(newValue));
+        qDebug() << QString("  计算的新%1:%2").arg(styleName).arg(newValue);
         setPropertyFunc(style, newValue);
         m_formatController->setCurrentInputStyle(style);
     } else {
@@ -1044,17 +1044,17 @@ void MainWindow::toggleStyleAttribute(
             allSet = m_formatController->isSelectionAllUnderline();
         }
         
-        LOG_DEBUG(QString("  有选区，选区内全部%1:%2").arg(styleName).arg(allSet));
+        qDebug() << QString("  有选区，选区内全部%1:%2").arg(styleName).arg(allSet);
         
         bool newValue;
         if (allSet) {
             // 选区内全部都是该样式 → 取消
             newValue = false;
-            LOG_DEBUG(QString("  选区内全部%1，设置为 false").arg(styleName));
+            qDebug() << QString("  选区内全部%1，设置为 false").arg(styleName);
         } else {
             // 选区内不一致或未设置 → 设置为 true
             newValue = true;
-            LOG_DEBUG(QString("  选区内不一致或未%1，设置为 true").arg(styleName));
+            qDebug() << QString("  选区内不一致或未%1，设置为 true").arg(styleName);
         }
         
         setPropertyFunc(style, newValue);
@@ -1067,7 +1067,7 @@ void MainWindow::applyFontProperty(
     const std::function<void(CharacterStyle&)>& setPropertyFunc,
     const QString& propertyName)
 {
-    LOG_DEBUG("MainWindow:" + propertyName + "被调用");
+    qDebug() << "MainWindow:" << propertyName << "被调用";
     CharacterStyle style;
     if (m_selection->isEmpty()) {
         setPropertyFunc(style);

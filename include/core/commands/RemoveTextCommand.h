@@ -1,7 +1,7 @@
 #ifndef REMOVETEXTCOMMAND_H
 #define REMOVETEXTCOMMAND_H
 
-#include "EditCommand.h"
+#include "ParagraphCommand.h"
 #include "core/document/CharacterStyle.h"
 #include "core/document/Span.h"
 #include <QString>
@@ -15,7 +15,7 @@ namespace QtWordEditor {
  * 该命令负责从文档的特定块中删除指定范围的文本内容，
  * 并保存被删除的文本和样式信息以便撤销操作。
  */
-class RemoveTextCommand : public EditCommand
+class RemoveTextCommand : public ParagraphCommand
 {
 public:
     /**
@@ -45,7 +45,6 @@ public:
     void undo() override;
 
 private:
-    int m_blockIndex;           ///< 目标块索引
     int m_position;             ///< 删除起始位置
     int m_length;               ///< 删除的文本长度
     QString m_removedText;      ///< 被删除的文本内容

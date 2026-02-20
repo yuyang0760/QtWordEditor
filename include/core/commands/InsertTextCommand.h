@@ -1,7 +1,7 @@
 #ifndef INSERTTEXTCOMMAND_H
 #define INSERTTEXTCOMMAND_H
 
-#include "EditCommand.h"
+#include "ParagraphCommand.h"
 #include "core/document/CharacterStyle.h"
 #include <QString>
 
@@ -13,7 +13,7 @@ namespace QtWordEditor {
  * 该命令负责在文档的特定块中插入文本内容，并支持撤销重做操作。
  * 支持与相邻的插入命令合并，提高撤销操作的用户体验。
  */
-class InsertTextCommand : public EditCommand
+class InsertTextCommand : public ParagraphCommand
 {
 public:
     /**
@@ -53,7 +53,6 @@ public:
     bool mergeWith(const QUndoCommand *other) override;
 
 private:
-    int m_blockIndex;           ///< 目标块索引
     int m_position;             ///< 插入位置
     QString m_text;             ///< 插入的文本内容
     CharacterStyle m_style;     ///< 文本字符样式

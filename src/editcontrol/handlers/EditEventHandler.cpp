@@ -4,7 +4,7 @@
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
-#include "core/utils/Logger.h"
+// 移除 Logger 头文件，使用 Qt 内置日志函数
 
 namespace QtWordEditor {
 
@@ -166,11 +166,11 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection)
         return false;
 
-    LOG_DEBUG(QString("EditEventHandler::handleMouseRelease at: (%1, %2)").arg(scenePos.x()).arg(scenePos.y()));
+    qDebug() << QString("EditEventHandler::handleMouseRelease at: (%1, %2)").arg(scenePos.x()).arg(scenePos.y());
 
     // 获取最终的选择范围
     SelectionRange range = m_selection->range();
-    LOG_DEBUG(QString("Start: 块%1，偏移%2  End: 块%3，偏移%4 ").arg(range.startBlock).arg(range.startOffset).arg(range.endBlock).arg(range.endOffset));
+    qDebug() << QString("Start: 块%1，偏移%2  End: 块%3，偏移%4 ").arg(range.startBlock).arg(range.startOffset).arg(range.endBlock).arg(range.endOffset);
 
     // 结束选择
     m_isSelecting = false;

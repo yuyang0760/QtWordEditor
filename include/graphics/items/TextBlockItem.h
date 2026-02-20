@@ -7,21 +7,16 @@
 #include <QList>
 #include "core/Global.h"
 #include "core/document/Span.h"
+#include "graphics/items/TextBlockLayoutEngine.h"
 
 namespace QtWordEditor {
 
 class ParagraphBlock;
-class TextFragment;
-class TextBlockLayoutEngine;
 
 /**
- * @brief 文本块图形项类（完全重写版）
+ * @brief 文本块图形项类（直接绘制版）
  *
- * 不再使用 QGraphicsTextItem！完全自己实现：
- * - 文本渲染（TextFragment）
- * - 文本布局（TextBlockLayoutEngine）
- * - 基线对齐（专业排版）
- *
+ * 不再使用 TextFragment！直接从 ParagraphBlock 读取 Span 列表，直接绘制！
  * 保留原有接口以确保兼容性。
  */
 class TextBlockItem : public BaseBlockItem
@@ -144,14 +139,9 @@ private:
     // ========== 内部方法 ==========
     
     /**
-     * @brief 从 ParagraphBlock 构建内容项
+     * @brief 获取段落的 Span 列表
      */
-    void buildContentItems();
-    
-    /**
-     * @brief 清除所有内容项
-     */
-    void clearContentItems();
+    QList<Span> getSpans() const;
     
     /**
      * @brief 执行布局
@@ -164,11 +154,11 @@ private:
     void applyParagraphIndent();
 
 private:
-    QList<QGraphicsItem*> m_contentItems;  ///< 所有内容项（TextFragment）
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
     qreal m_textWidth;                      ///< 文本显示宽度
     qreal m_leftIndent;                     ///< 左缩进
     qreal m_rightIndent;                    ///< 右缩进
+    QRectF m_boundingRect;                  ///< 边界矩形
 };
 
 } // namespace QtWordEditor

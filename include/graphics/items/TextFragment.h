@@ -5,6 +5,9 @@
 #include <QString>
 #include <QFont>
 #include <QColor>
+#include <QTextLayout>
+#include <QTextLine>
+#include <QList>
 #include "core/document/CharacterStyle.h"
 #include "core/Global.h"
 
@@ -18,6 +21,7 @@ namespace QtWordEditor {
  * 1. 文本测量（宽度、高度、基线）
  * 2. 文本渲染（使用 QPainter）
  * 3. 字符样式应用
+ * 4. 支持内部多行（通过 QTextLayout）
  */
 class TextFragment : public QGraphicsItem
 {
@@ -70,6 +74,20 @@ public:
      * @return 字体
      */
     QFont font() const;
+
+    // ========== 布局相关 ==========
+    
+    /**
+     * @brief 设置可用宽度（用于内部多行）
+     * @param width 可用宽度
+     */
+    void setAvailableWidth(qreal width);
+    
+    /**
+     * @brief 获取可用宽度
+     * @return 可用宽度
+     */
+    qreal availableWidth() const;
 
     // ========== 尺寸和基线 ==========
     
@@ -134,11 +152,14 @@ private:
 
 private:
     QString m_text;           ///< 文本内容
-    CharacterStyle m_style;   ///< 字符样式
+    CharacterStyle m_style;     ///< 字符样式
     QFont m_font;             ///< 字体
     QColor m_textColor;       ///< 文本颜色
     QRectF m_boundingRect;    ///< 边界矩形
     qreal m_baseline;         ///< 基线位置
+    qreal m_availableWidth;    ///< 可用宽度（用于内部多行）
+    QTextLayout m_textLayout;  ///< 用于布局计算
+    QList<QTextLine> m_textLines;  ///< 多行信息
 };
 
 } // namespace QtWordEditor

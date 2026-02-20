@@ -6,6 +6,7 @@
 
 #include "ui/dialogs/PageSetupDialog.h"
 #include "core/utils/Constants.h"
+#include "core/utils/Logger.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -18,7 +19,6 @@
 #include <QButtonGroup>
 #include <QFrame>
 #include <QTextEdit>
-#include <QDebug>
 #include <tuple>
 
 namespace QtWordEditor {
@@ -165,11 +165,6 @@ public:
         ).arg(orientationText, pageSizeText, marginsText);
         
         previewTextEdit->setHtml(html);
-        
-        qDebug() << "[PageSetupDialog] Preview updated:"
-                 << "orientation:" << (portrait ? "portrait" : "landscape")
-                 << "size:" << width << "x" << height << "mm"
-                 << "margins:" << left << right << top << bottom << "mm";
     }
     
     /**
@@ -209,8 +204,6 @@ PageSetupDialog::PageSetupDialog(QWidget *parent)
     : QDialog(parent)
     , d(new Private)
 {
-    qDebug() << "[PageSetupDialog] Constructing dialog";
-    
     // 设置对话框属性
     setWindowTitle(tr("Page Setup"));
     setMinimumSize(500, 650);
@@ -374,8 +367,6 @@ PageSetupDialog::PageSetupDialog(QWidget *parent)
     
     // 初始化预览
     d->updatePreview();
-    
-    qDebug() << "[PageSetupDialog] Dialog constructed successfully";
 }
 
 /**
@@ -383,7 +374,6 @@ PageSetupDialog::PageSetupDialog(QWidget *parent)
  */
 PageSetupDialog::~PageSetupDialog()
 {
-    qDebug() << "[PageSetupDialog] Destructing dialog";
 }
 
 /**
@@ -393,11 +383,9 @@ void PageSetupDialog::connectSignals()
 {
     // 按钮连接
     connect(d->okButton, &QPushButton::clicked, this, [this]() {
-        qDebug() << "[PageSetupDialog] OK button clicked";
         accept();
     });
     connect(d->cancelButton, &QPushButton::clicked, this, [this]() {
-        qDebug() << "[PageSetupDialog] Cancel button clicked";
         reject();
     });
     
@@ -445,8 +433,6 @@ void PageSetupDialog::onPageSizePresetChanged(int index)
     PageSizePreset preset = d->pageSizeCombo->itemData(index).value<PageSizePreset>();
     d->isSettingFromPreset = true;
     
-    qDebug() << "[PageSetupDialog] Page size preset changed to:" << static_cast<int>(preset);
-    
     // 获取预设尺寸
     QPair<qreal, qreal> size = d->getPageSizeForPreset(preset);
     
@@ -479,7 +465,6 @@ void PageSetupDialog::onOrientationChanged()
     d->isSettingFromPreset = true;
     
     bool isPortrait = d->portraitRadio->isChecked();
-    qDebug() << "[PageSetupDialog] Orientation changed:" << (isPortrait ? "portrait" : "landscape");
     
     // 交换宽高
     qreal width = d->pageWidthSpin->value();
@@ -503,8 +488,6 @@ void PageSetupDialog::onMarginPresetChanged(int index)
     
     MarginPreset preset = d->marginPresetCombo->itemData(index).value<MarginPreset>();
     d->isSettingFromPreset = true;
-    
-    qDebug() << "[PageSetupDialog] Margin preset changed to:" << static_cast<int>(preset);
     
     // 获取预设边距
     auto margins = d->getMarginsForPreset(preset);
@@ -533,9 +516,6 @@ void PageSetupDialog::onCustomSizeChanged()
     d->pageSizeCombo->setCurrentIndex(d->pageSizeCombo->findData(QVariant::fromValue(PageSizePreset::Custom)));
     d->isSettingFromPreset = false;
     
-    qDebug() << "[PageSetupDialog] Custom size changed:"
-             << d->pageWidthSpin->value() << "x" << d->pageHeightSpin->value() << "mm";
-    
     d->updatePreview();
 }
 
@@ -552,12 +532,6 @@ void PageSetupDialog::onCustomMarginChanged()
     d->marginPresetCombo->setCurrentIndex(d->marginPresetCombo->findData(QVariant::fromValue(MarginPreset::Custom)));
     d->isSettingFromPreset = false;
     
-    qDebug() << "[PageSetupDialog] Custom margins changed:"
-             << "L:" << d->marginLeftSpin->value()
-             << "R:" << d->marginRightSpin->value()
-             << "T:" << d->marginTopSpin->value()
-             << "B:" << d->marginBottomSpin->value();
-    
     d->updatePreview();
 }
 
@@ -569,11 +543,6 @@ void PageSetupDialog::onCustomMarginChanged()
  */
 PageSetup PageSetupDialog::getPageSetup(const PageSetup &initial, QWidget *parent)
 {
-    qDebug() << "[PageSetupDialog] Opening dialog with initial setup:"
-             << "size:" << initial.pageWidth << "x" << initial.pageHeight
-             << "margins:" << initial.marginLeft << initial.marginRight << initial.marginTop << initial.marginBottom
-             << "portrait:" << initial.portrait;
-    
     PageSetupDialog dialog(parent);
     dialog.d->initialSetup = initial;
     
@@ -599,14 +568,9 @@ PageSetup PageSetupDialog::getPageSetup(const PageSetup &initial, QWidget *paren
     // 显示对话框
     if (dialog.exec() == QDialog::Accepted) {
         PageSetup result = dialog.selectedSetup();
-        qDebug() << "[PageSetupDialog] Dialog accepted, returning setup:"
-                 << "size:" << result.pageWidth << "x" << result.pageHeight
-                 << "margins:" << result.marginLeft << result.marginRight << result.marginTop << result.marginBottom
-                 << "portrait:" << result.portrait;
         return result;
     }
     
-    qDebug() << "[PageSetupDialog] Dialog rejected, returning initial setup";
     return initial;
 }
 

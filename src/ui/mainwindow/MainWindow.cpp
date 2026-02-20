@@ -493,11 +493,11 @@ void MainWindow::newDocument()
         m_document->addSection(section);
         
         ParagraphBlock *para1 = new ParagraphBlock(section);
-        para1->setText("这是第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！");
+        para1->setText("这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过页面的宽度，这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。");
         section->addBlock(para1);
         
         ParagraphBlock *para2 = new ParagraphBlock(section);
-        para2->setText("这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。");
+        para2->setText("这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。让我们继续输入一些文字，看看第二段是否也能正常换行！");
         section->addBlock(para2);
         
         qreal pageWidth = Constants::PAGE_WIDTH;

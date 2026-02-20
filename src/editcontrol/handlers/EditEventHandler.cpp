@@ -4,7 +4,7 @@
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
-#include <QDebug>
+#include "core/utils/Logger.h"
 
 namespace QtWordEditor {
 
@@ -141,13 +141,13 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection || !m_isSelecting)
         return false;
 
-    qDebug() << "EditEventHandler::handleMouseMove at:" << scenePos;
+    LOG_DEBUG(QString("EditEventHandler::handleMouseMove at: (%1, %2)").arg(scenePos.x()).arg(scenePos.y()));
 
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
 
-    qDebug() << "  光标位置: 块" << cursorPos.blockIndex << "，偏移" << cursorPos.offset;
-    qDebug() << "  选择起始: 块" << m_selectionStartBlock << "，偏移" << m_selectionStartOffset;
+    LOG_DEBUG(QString("  光标位置: 块%1，偏移%2").arg(cursorPos.blockIndex).arg(cursorPos.offset));
+    LOG_DEBUG(QString("  选择起始: 块%1，偏移%2").arg(m_selectionStartBlock).arg(m_selectionStartOffset));
 
     // 更新选择范围
     m_selection->setRange(
@@ -157,7 +157,7 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
         cursorPos.offset
     );
 
-    qDebug() << "  选择范围已设置";
+    LOG_DEBUG("  选择范围已设置");
 
     // 更新光标位置（到选择的终点）
     m_cursor->setPosition(cursorPos);
@@ -173,15 +173,15 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection)
         return false;
 
-    qDebug() << "EditEventHandler::handleMouseRelease at:" << scenePos;
+    LOG_DEBUG(QString("EditEventHandler::handleMouseRelease at: (%1, %2)").arg(scenePos.x()).arg(scenePos.y()));
 
     // 获取最终的选择范围
     SelectionRange range = m_selection->range();
-    qDebug() << "  最终选择范围:";
-    qDebug() << "    Anchor: 块" << range.anchorBlock << "，偏移" << range.anchorOffset;
-    qDebug() << "    Focus: 块" << range.focusBlock << "，偏移" << range.focusOffset;
-    qDebug() << "    Start: 块" << range.startBlock << "，偏移" << range.startOffset;
-    qDebug() << "    End: 块" << range.endBlock << "，偏移" << range.endOffset;
+    LOG_DEBUG("  最终选择范围:");
+    LOG_DEBUG(QString("    Anchor: 块%1，偏移%2").arg(range.anchorBlock).arg(range.anchorOffset));
+    LOG_DEBUG(QString("    Focus: 块%1，偏移%2").arg(range.focusBlock).arg(range.focusOffset));
+    LOG_DEBUG(QString("    Start: 块%1，偏移%2").arg(range.startBlock).arg(range.startOffset));
+    LOG_DEBUG(QString("    End: 块%1，偏移%2").arg(range.endBlock).arg(range.endOffset));
 
     // 结束选择
     m_isSelecting = false;

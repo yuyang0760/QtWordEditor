@@ -38,14 +38,14 @@ void FormatController::applyCharacterStyle(const CharacterStyle &style)
     
     range.normalize();
     
-    // ========== 添加调试输出 ==========
-    qDebug() << "FormatController::applyCharacterStyle - 开始应用样式";
-    qDebug() << "  范围: 块" << range.startBlock << "偏移" << range.startOffset 
-             << "到块" << range.endBlock << "偏移" << range.endOffset;
-    qDebug() << "  要应用的样式:";
-    qDebug() << "    加粗:" << style.bold();
-    qDebug() << "    斜体:" << style.italic();
-    qDebug() << "    下划线:" << style.underline();
+    LOG_DEBUG("FormatController::applyCharacterStyle - 开始应用样式");
+    LOG_DEBUG(QString("  范围: 块%1 偏移%2 到块%3 偏移%4")
+        .arg(range.startBlock).arg(range.startOffset)
+        .arg(range.endBlock).arg(range.endOffset));
+    LOG_DEBUG("  要应用的样式:");
+    LOG_DEBUG(QString("    加粗: %1").arg(style.bold()));
+    LOG_DEBUG(QString("    斜体: %1").arg(style.italic()));
+    LOG_DEBUG(QString("    下划线: %1").arg(style.underline()));
     
     // 遍历选择范围内的每个块
     for (int blockIndex = range.startBlock; blockIndex <= range.endBlock; ++blockIndex) {
@@ -64,7 +64,8 @@ void FormatController::applyCharacterStyle(const CharacterStyle &style)
         if (startOffset >= endOffset)
             continue;
         
-        qDebug() << "  处理块" << blockIndex << ": 偏移" << startOffset << "到" << endOffset;
+        LOG_DEBUG(QString("  处理块%1: 偏移%2 到%3")
+            .arg(blockIndex).arg(startOffset).arg(endOffset));
         
         // 对于选择范围内的每个位置，获取原样式并合并
         // 这里我们不再只获取起始位置，而是让 ParagraphBlock::setStyle 自己处理
@@ -75,7 +76,7 @@ void FormatController::applyCharacterStyle(const CharacterStyle &style)
         m_document->undoStack()->push(cmd);
     }
     
-    qDebug() << "FormatController::applyCharacterStyle - 样式应用完成";
+    LOG_DEBUG("FormatController::applyCharacterStyle - 样式应用完成");
 }
 
 void FormatController::applyNamedCharacterStyle(const QString &styleName)
@@ -90,29 +91,29 @@ void FormatController::applyNamedCharacterStyle(const QString &styleName)
 
 void FormatController::setFont(const QFont &font)
 {
-    qDebug() << "FormatController::setFont - 被调用，字体:" << font;
+    LOG_DEBUG("FormatController::setFont - 被调用，字体: " + font.family());
     applySingleProperty([&font](CharacterStyle& style) {
         style.setFont(font);
     });
-    qDebug() << "  setFont 完成";
+    LOG_DEBUG("  setFont 完成");
 }
 
 void FormatController::setFontFamily(const QString &family)
 {
-    qDebug() << "FormatController::setFontFamily - 被调用，字体族:" << family;
+    LOG_DEBUG("FormatController::setFontFamily - 被调用，字体族: " + family);
     applySingleProperty([&family](CharacterStyle& style) {
         style.setFontFamily(family);
     });
-    qDebug() << "  setFontFamily 完成";
+    LOG_DEBUG("  setFontFamily 完成");
 }
 
 void FormatController::setFontSize(int size)
 {
-    qDebug() << "FormatController::setFontSize - 被调用，字号:" << size;
+    LOG_DEBUG(QString("FormatController::setFontSize - 被调用，字号: %1").arg(size));
     applySingleProperty([size](CharacterStyle& style) {
         style.setFontSize(size);
     });
-    qDebug() << "  setFontSize 完成";
+    LOG_DEBUG("  setFontSize 完成");
 }
 
 void FormatController::setBold(bool bold)
@@ -367,10 +368,11 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     bool hasSelection = (m_selection && !m_selection->isEmpty());
     if (hasSelection) {
         // ========== 有选区的情况 ==========
-        qDebug() << "FormatController::getCurrentDisplayStyle - 有选区";
+        LOG_DEBUG("FormatController::getCurrentDisplayStyle - 有选区");
         SelectionRange range = m_selection->range();
-        qDebug() << "  选区: Anchor(" << range.anchorBlock << "," << range.anchorOffset << ")" 
-                 << ", Focus(" << range.focusBlock << "," << range.focusOffset << ")";
+        LOG_DEBUG(QString("  选区: Anchor(%1, %2), Focus(%3, %4)")
+            .arg(range.anchorBlock).arg(range.anchorOffset)
+            .arg(range.focusBlock).arg(range.focusOffset));
         
         // 检查选区是否在单个块内
         if (range.startBlock >= 0 && range.startBlock == range.endBlock) {
@@ -388,12 +390,12 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                     // 检查 span 是否完全包含选区
                     if (spanStart <= range.startOffset && spanEnd >= range.endOffset) {
                         spanIndex = i;
-                        qDebug() << "  选区完全在 Span " << i << " 内: [" << spanStart << "," << spanEnd << "] "
-                                 << (span.style().bold() ? "[加粗]" : "[正常]");
+                        LOG_DEBUG(QString("  选区完全在 Span %1 内: [%2, %3] %4")
+                            .arg(i).arg(spanStart).arg(spanEnd)
+                            .arg(span.style().bold() ? "[加粗]" : "[正常]"));
                         result = span.style();
-                        qDebug() << "  获取到该 Span 的样式: 加粗=" << result.bold() 
-                                 << ", 斜体=" << result.italic() 
-                                 << ", 下划线=" << result.underline();
+                        LOG_DEBUG(QString("  获取到该 Span 的样式: 加粗=%1, 斜体=%2, 下划线=%3")
+                            .arg(result.bold()).arg(result.italic()).arg(result.underline()));
                         return result;
                     }
                     
@@ -401,7 +403,7 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                 }
                 
                 // ========== 如果选区跨多个 Span，返回默认空样式 ==========
-                qDebug() << "  选区跨多个 Span，返回默认空样式";
+                LOG_DEBUG("  选区跨多个 Span，返回默认空样式");
                 return result;
             }
         }
@@ -409,18 +411,19 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
         // ========== 无选区的情况：使用光标前一个字符的样式 ==========
         if (m_cursor) {
             CursorPosition targetPos = m_cursor->position();
-            qDebug() << "FormatController::getCurrentDisplayStyle - 无选区，光标位置: (" << targetPos.blockIndex << "," << targetPos.offset << ")";
+            LOG_DEBUG(QString("FormatController::getCurrentDisplayStyle - 无选区，光标位置: (%1, %2)")
+                .arg(targetPos.blockIndex).arg(targetPos.offset));
             
             int targetBlock = targetPos.blockIndex;
             int targetOffset = targetPos.offset - 1;
             
-            qDebug() << "  计算目标位置: 块 " << targetBlock << "，偏移 " << targetOffset << " (原 offset=" << targetPos.offset << "-1)";
+            LOG_DEBUG(QString("  计算目标位置: 块 %1，偏移 %2 (原 offset=%3-1)")
+                .arg(targetBlock).arg(targetOffset).arg(targetPos.offset));
             
             if (targetOffset >= 0) {
                 result = getStyleAtPosition(targetBlock, targetOffset);
-                qDebug() << "  获取到的样式: 加粗=" << result.bold() 
-                         << ", 斜体=" << result.italic() 
-                         << ", 下划线=" << result.underline();
+                LOG_DEBUG(QString("  获取到的样式: 加粗=%1, 斜体=%2, 下划线=%3")
+                    .arg(result.bold()).arg(result.italic()).arg(result.underline()));
             } else if (targetBlock > 0) {
                 targetBlock = targetBlock - 1;
                 Block *prevBlock = m_document->block(targetBlock);
@@ -429,12 +432,13 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                     if (prevParaBlock) {
                         targetOffset = prevParaBlock->length() - 1;
                         result = getStyleAtPosition(targetBlock, targetOffset);
-                        qDebug() << "  调整目标位置到前一个块，获取到的样式: 加粗=" << result.bold();
+                        LOG_DEBUG(QString("  调整目标位置到前一个块，获取到的样式: 加粗=%1")
+                            .arg(result.bold()));
                     }
                 }
             }
         } else {
-            qWarning() << "FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象";
+            LOG_WARNING("FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象");
         }
     }
 
@@ -453,7 +457,7 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
     QList<CharacterStyle> selectedStyles = collectSelectionStyles();
     
     if (selectedStyles.isEmpty()) {
-        qDebug() << "FormatController::getSelectionStyleConsistency - 没有找到任何 Span";
+        LOG_DEBUG("FormatController::getSelectionStyleConsistency - 没有找到任何 Span");
         return consistency;
     }
     
@@ -469,9 +473,10 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
     
     if (selectedStyles.size() <= 1) {
         // 只有一个 Span，所有属性都一致
-        qDebug() << "FormatController::getSelectionStyleConsistency - 只有 " << selectedStyles.size() << " 个 Span，所有属性都一致";
-        qDebug() << "  一致的属性值：加粗=" << consistency.consistentBold
-                 << ", 斜体=" << consistency.consistentItalic;
+        LOG_DEBUG(QString("FormatController::getSelectionStyleConsistency - 只有 %1 个 Span，所有属性都一致")
+            .arg(selectedStyles.size()));
+        LOG_DEBUG(QString("  一致的属性值：加粗=%1, 斜体=%2")
+            .arg(consistency.consistentBold).arg(consistency.consistentItalic));
         return consistency;
     }
     
@@ -482,42 +487,47 @@ FormatController::StyleConsistency FormatController::getSelectionStyleConsistenc
         // 检查字体
         if (consistency.fontFamilyConsistent && currentStyle.fontFamily() != firstStyle.fontFamily()) {
             consistency.fontFamilyConsistent = false;
-            qDebug() << "  字体不一致：" << firstStyle.fontFamily() << " vs " << currentStyle.fontFamily();
+            LOG_DEBUG(QString("  字体不一致：%1 vs %2")
+                .arg(firstStyle.fontFamily()).arg(currentStyle.fontFamily()));
         }
         
         // 检查字号
         if (consistency.fontSizeConsistent && currentStyle.fontSize() != firstStyle.fontSize()) {
             consistency.fontSizeConsistent = false;
-            qDebug() << "  字号不一致：" << firstStyle.fontSize() << " vs " << currentStyle.fontSize();
+            LOG_DEBUG(QString("  字号不一致：%1 vs %2")
+                .arg(firstStyle.fontSize()).arg(currentStyle.fontSize()));
         }
         
         // 检查粗体
         if (consistency.boldConsistent && currentStyle.bold() != firstStyle.bold()) {
             consistency.boldConsistent = false;
-            qDebug() << "  粗体不一致：" << firstStyle.bold() << " vs " << currentStyle.bold();
+            LOG_DEBUG(QString("  粗体不一致：%1 vs %2")
+                .arg(firstStyle.bold()).arg(currentStyle.bold()));
         }
         
         // 检查斜体
         if (consistency.italicConsistent && currentStyle.italic() != firstStyle.italic()) {
             consistency.italicConsistent = false;
-            qDebug() << "  斜体不一致：" << firstStyle.italic() << " vs " << currentStyle.italic();
+            LOG_DEBUG(QString("  斜体不一致：%1 vs %2")
+                .arg(firstStyle.italic()).arg(currentStyle.italic()));
         }
         
         // 检查下划线
         if (consistency.underlineConsistent && currentStyle.underline() != firstStyle.underline()) {
             consistency.underlineConsistent = false;
-            qDebug() << "  下划线不一致：" << firstStyle.underline() << " vs " << currentStyle.underline();
+            LOG_DEBUG(QString("  下划线不一致：%1 vs %2")
+                .arg(firstStyle.underline()).arg(currentStyle.underline()));
         }
     }
     
-    qDebug() << "FormatController::getSelectionStyleConsistency - 一致性检查结果："
-             << "字体=" << consistency.fontFamilyConsistent
-             << ", 字号=" << consistency.fontSizeConsistent
-             << ", 粗体=" << consistency.boldConsistent
-             << ", 斜体=" << consistency.italicConsistent
-             << ", 下划线=" << consistency.underlineConsistent;
-    qDebug() << "  一致的属性值：加粗=" << consistency.consistentBold
-             << ", 斜体=" << consistency.consistentItalic;
+    LOG_DEBUG(QString("FormatController::getSelectionStyleConsistency - 一致性检查结果：字体=%1, 字号=%2, 粗体=%3, 斜体=%4, 下划线=%5")
+        .arg(consistency.fontFamilyConsistent)
+        .arg(consistency.fontSizeConsistent)
+        .arg(consistency.boldConsistent)
+        .arg(consistency.italicConsistent)
+        .arg(consistency.underlineConsistent));
+    LOG_DEBUG(QString("  一致的属性值：加粗=%1, 斜体=%2")
+        .arg(consistency.consistentBold).arg(consistency.consistentItalic));
     
     return consistency;
 }
@@ -537,7 +547,7 @@ bool FormatController::isSelectionAllBold() const
     bool result = checkSelectionAll([](const CharacterStyle& style) {
         return style.bold();
     });
-    qDebug() << "FormatController::isSelectionAllBold - 结果:" << result;
+    LOG_DEBUG(QString("FormatController::isSelectionAllBold - 结果: %1").arg(result));
     return result;
 }
 
@@ -546,7 +556,7 @@ bool FormatController::isSelectionAllItalic() const
     bool result = checkSelectionAll([](const CharacterStyle& style) {
         return style.italic();
     });
-    qDebug() << "FormatController::isSelectionAllItalic - 结果:" << result;
+    LOG_DEBUG(QString("FormatController::isSelectionAllItalic - 结果: %1").arg(result));
     return result;
 }
 
@@ -555,7 +565,7 @@ bool FormatController::isSelectionAllUnderline() const
     bool result = checkSelectionAll([](const CharacterStyle& style) {
         return style.underline();
     });
-    qDebug() << "FormatController::isSelectionAllUnderline - 结果:" << result;
+    LOG_DEBUG(QString("FormatController::isSelectionAllUnderline - 结果: %1").arg(result));
     return result;
 }
 
@@ -620,8 +630,7 @@ QList<CharacterStyle> FormatController::collectSelectionStyles() const
         int blockStartOffset = (blockIndex == range.startBlock) ? range.startOffset : 0;
         int blockEndOffset = (blockIndex == range.endBlock) ? range.endOffset : paraBlock->length();
         
-        qDebug() << "FormatController::collectSelectionStyles - 处理块" << blockIndex 
-                 << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
+        LOG_DEBUG(QString("FormatController::collectSelectionStyles - 处理块%1: 偏移%2到%3").arg(blockIndex).arg(blockStartOffset).arg(blockEndOffset));
         
         // 收集当前块中与选区重叠的 Span
         int currentOffset = 0;
@@ -633,12 +642,11 @@ QList<CharacterStyle> FormatController::collectSelectionStyles() const
             // 检查 span 是否与选区重叠
             if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
                 result.append(span.style());
-                qDebug() << "  包含块" << blockIndex << "的 Span " << i 
-                         << ": 加粗=" << span.style().bold() 
-                         << ", 斜体=" << span.style().italic()
-                         << ", 下划线=" << span.style().underline()
-                         << ", 字体=" << span.style().fontFamily()
-                         << ", 字号=" << span.style().fontSize();
+                LOG_DEBUG(QString("  包含块%1的 Span %2: 加粗=%3, 斜体=%4, 下划线=%5, 字体=%6, 字号=%7")
+                    .arg(blockIndex).arg(i)
+                    .arg(span.style().bold()).arg(span.style().italic())
+                    .arg(span.style().underline()).arg(span.style().fontFamily())
+                    .arg(span.style().fontSize()));
             }
             
             currentOffset = spanEnd;

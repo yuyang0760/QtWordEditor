@@ -3,12 +3,13 @@
 #include "core/document/ParagraphStyle.h"
 #include "core/document/CharacterStyle.h"
 #include "core/utils/Constants.h"
-#include "graphics/items/TextFragment.h"
+#include "core/utils/Logger.h"
 #include "graphics/items/TextBlockLayoutEngine.h"
-#include <QDebug>
 #include <QFont>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QTextLayout>
+#include <QTextLine>
 
 namespace QtWordEditor {
 
@@ -18,20 +19,20 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
     , m_textWidth(Constants::PAGE_WIDTH - 2 * Constants::PAGE_MARGIN)
     , m_leftIndent(0)
     , m_rightIndent(0)
+    , m_boundingRect(0, 0, 0, 0)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, false);
     
-    // 从 ParagraphBlock 读取初始文本
+    // 从 ParagraphBlock 读取初始内容并布局
     if (block) {
-        buildContentItems();
+        applyParagraphIndent();
         performLayout();
     }
 }
 
 TextBlockItem::~TextBlockItem()
 {
-    clearContentItems();
     delete m_layoutEngine;
 }
 
@@ -79,11 +80,9 @@ void TextBlockItem::setPlainText(const QString &text)
 QString TextBlockItem::toPlainText() const
 {
     QString result;
-    for (QGraphicsItem *item : m_contentItems) {
-        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
-        if (fragment) {
-            result += fragment->text();
-        }
+    QList<Span> spans = getSpans();
+    for (const Span &span : spans) {
+        result += span.text();
     }
     return result;
 }
@@ -95,10 +94,39 @@ QRectF TextBlockItem::boundingRect() const
 
 void TextBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(painter);
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    // 子项会自动绘制
+    
+    // 获取布局项
+    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
+    
+    // 绘制每个 LayoutItem
+    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
+        painter->save();
+        painter->translate(item.position + QPointF(m_leftIndent, 0));  // 加上左缩进
+        
+        // 使用 QTextLayout 绘制
+        QTextLayout textLayout(item.text, item.font);
+        textLayout.beginLayout();
+        
+        qreal currentY = 0;
+        while (true) {
+            QTextLine line = textLayout.createLine();
+            if (!line.isValid()) break;
+            
+            line.setLineWidth(m_textWidth - m_leftIndent - m_rightIndent);
+            line.setPosition(QPointF(0, currentY));
+            currentY += line.height();
+        }
+        textLayout.endLayout();
+        
+        // 绘制
+        painter->setFont(item.font);
+        painter->setPen(item.style.textColor());
+        textLayout.draw(painter, QPointF(0, 0));
+        
+        painter->restore();
+    }
 }
 
 void TextBlockItem::updateGeometry()
@@ -112,48 +140,26 @@ void TextBlockItem::updateBlock()
     if (!para)
         return;
     
-    buildContentItems();
     applyParagraphIndent();
     performLayout();
 }
 
-void TextBlockItem::buildContentItems()
+QList<Span> TextBlockItem::getSpans() const
 {
-    // 清除旧的内容项
-    clearContentItems();
-    
+    QList<Span> spans;
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
-    if (!para)
-        return;
-    
-    qDebug() << "TextBlockItem::buildContentItems - 开始，块ID:" << para->blockId();
-    qDebug() << "  spanCount:" << para->spanCount();
-    
-    // 为每个 Span 创建一个 TextFragment
-    for (int i = 0; i < para->spanCount(); ++i) {
-        Span span = para->span(i);
-        CharacterStyle style = span.style();
-        
-        qDebug() << "  处理 span " << i << ": text=[" << span.text() << "], 加粗:" << style.bold();
-        
-        // 创建 TextFragment 并添加到内容项列表
-        TextFragment *fragment = new TextFragment(span.text(), style, this);
-        m_contentItems << fragment;
+    if (para) {
+        for (int i = 0; i < para->spanCount(); ++i) {
+            spans << para->span(i);
+        }
     }
-    
-    qDebug() << "TextBlockItem::buildContentItems - 完成，创建了" << m_contentItems.size() << "个片段";
-}
-
-void TextBlockItem::clearContentItems()
-{
-    // 删除所有内容项
-    qDeleteAll(m_contentItems);
-    m_contentItems.clear();
+    return spans;
 }
 
 void TextBlockItem::performLayout()
 {
-    if (m_contentItems.isEmpty()) {
+    QList<Span> spans = getSpans();
+    if (spans.isEmpty()) {
         m_boundingRect = QRectF(0, 0, m_textWidth, 0);
         return;
     }
@@ -173,29 +179,10 @@ void TextBlockItem::performLayout()
     m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::WrapAnywhere);
     
     // 执行布局
-    m_layoutEngine->layout(m_contentItems);
-    
-    // 定位所有内容项（加上左缩进偏移）
-    qDebug() << "TextBlockItem::performLayout - 开始定位内容项";
-    for (QGraphicsItem *item : m_contentItems) {
-        QPointF pos = m_layoutEngine->positionForItem(item);
-        QPointF finalPos = QPointF(pos.x() + m_leftIndent, pos.y());
-        item->setPos(finalPos);
-        
-        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
-        if (fragment) {
-            qDebug() << "  TextFragment: text=" << fragment->text().left(10) << "...";
-            qDebug() << "    布局位置:" << pos << "，最终位置:" << finalPos;
-            QFontMetricsF fm(fragment->font());
-            qDebug() << "    baseline:" << fragment->baseline() << "，ascent:" << fm.ascent();
-        }
-    }
-    qDebug() << "TextBlockItem::performLayout - 内容项定位完成";
+    m_layoutEngine->layout(spans);
     
     // 更新边界矩形
     m_boundingRect = QRectF(0, 0, m_textWidth, m_layoutEngine->totalHeight());
-    
-    qDebug() << "TextBlockItem::performLayout - 完成，boundingRect:" << m_boundingRect;
 }
 
 void TextBlockItem::applyParagraphIndent()
@@ -209,41 +196,30 @@ void TextBlockItem::applyParagraphIndent()
     ParagraphStyle style = para->paragraphStyle();
     m_leftIndent = style.leftIndent();
     m_rightIndent = style.rightIndent();
-    
-    qDebug() << "TextBlockItem::applyParagraphIndent - 左缩进:" << m_leftIndent << "右缩进:" << m_rightIndent;
 }
 
 int TextBlockItem::hitTest(const QPointF &localPos) const
 {
-    // 减去左缩进
+    // 调整坐标（减去左缩进）
     QPointF adjustedPos = localPos - QPointF(m_leftIndent, 0);
     
-    // 调用布局引擎的 hitTest
-    TextBlockLayoutEngine::CursorHitResult result = m_layoutEngine->hitTest(adjustedPos, m_contentItems);
+    QList<Span> spans = getSpans();
+    TextBlockLayoutEngine::CursorHitResult result = m_layoutEngine->hitTest(adjustedPos, spans);
     
     return result.globalOffset;
 }
 
 TextBlockItem::CursorVisualInfo TextBlockItem::cursorPositionAt(int globalOffset) const
 {
-    CursorVisualInfo info;
-    info.position = QPointF(0, 0);
-    info.height = 20;
+    QList<Span> spans = getSpans();
+    TextBlockLayoutEngine::CursorVisualResult visualResult = 
+        m_layoutEngine->cursorPositionAt(globalOffset, spans);
     
-    qDebug() << "TextBlockItem::cursorPositionAt - globalOffset:" << globalOffset;
+    TextBlockItem::CursorVisualInfo result;
+    result.position = visualResult.position + QPointF(m_leftIndent, 0);  // 加上左缩进
+    result.height = visualResult.height;
     
-    // 调用布局引擎的 cursorPositionAt
-    TextBlockLayoutEngine::CursorVisualResult result = m_layoutEngine->cursorPositionAt(globalOffset, m_contentItems);
-    
-    qDebug() << "  布局引擎返回: position:" << result.position << "height:" << result.height;
-    
-    // 加上左缩进
-    info.position = result.position + QPointF(m_leftIndent, 0);
-    info.height = result.height;
-    
-    qDebug() << "  最终返回: position:" << info.position << "height:" << info.height;
-    
-    return info;
+    return result;
 }
 
 } // namespace QtWordEditor

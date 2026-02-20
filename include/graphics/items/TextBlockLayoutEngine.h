@@ -2,27 +2,23 @@
 #define TEXTBLOCKLAYOUTENGINE_H
 
 #include <QList>
-#include <QRectF>
 #include <QPointF>
-#include <QHash>
-#include <QGraphicsItem>
+#include <QRectF>
+#include <QString>
+#include <QFont>
+#include <QTextLine>
+#include <QFontMetricsF>
 #include "core/document/ParagraphStyle.h"
-#include "core/Global.h"
+#include "core/document/CharacterStyle.h"
+#include "core/document/Span.h"
 
 namespace QtWordEditor {
 
-class TextFragment;
-
 /**
- * @brief 文本块布局引擎
+ * @brief 文本块布局引擎类
  *
- * 这是完全重写 TextBlockItem 的核心！
- * 负责：
- * 1. 文本测量和换行
- * 2. 文本对齐
- * 3. 基线对齐（专业排版）
- * 4. 对象定位（嵌入公式）
- * 5. 计算整体尺寸
+ * 负责文本的测量、换行、对齐和基线对齐等排版工作
+ * 直接基于 Span 工作，不需要 QGraphicsItem！
  */
 class TextBlockLayoutEngine
 {
@@ -32,8 +28,49 @@ public:
      */
     enum class WrapMode {
         NoWrap,         ///< 不换行
-        WordWrap,       ///< 单词换行
-        WrapAnywhere    ///< 字符换行
+        WrapAtWordBoundary,  ///< 在单词边界换行
+        WrapAnywhere    ///< 任意位置换行
+    };
+
+    /**
+     * @brief 单个内容项的信息（对应一个 Span）
+     */
+    struct LayoutItem {
+        int spanIndex;              ///< 对应的 Span 索引
+        QString text;               ///< 文本内容
+        CharacterStyle style;       ///< 字符样式
+        qreal width;                ///< 宽度
+        qreal height;               ///< 高度
+        qreal baseline;             ///< 基线位置
+        QPointF position;           ///< 位置（相对于 TextBlockItem 的左上角）
+        QFont font;                 ///< 字体（用于绘制）
+    };
+
+    /**
+     * @brief 行信息
+     */
+    struct LineInfo {
+        QRectF rect;              ///< 行的矩形
+        qreal maxBaseline;        ///< 该行的最大基线
+        QList<int> itemIndices;   ///< 该行包含的 LayoutItem 的索引
+    };
+
+    /**
+     * @brief 光标命中结果
+     */
+    struct CursorHitResult {
+        int globalOffset;         ///< 全局字符偏移（从段落开头算起）
+        int lineIndex;            ///< 所在行索引
+        int itemIndex;            ///< 所在 LayoutItem 索引
+        int offsetInItem;         ///< 在 LayoutItem 中的偏移
+    };
+
+    /**
+     * @brief 光标视觉位置结果
+     */
+    struct CursorVisualResult {
+        QPointF position;         ///< 视觉位置（相对于段落）
+        qreal height;             ///< 光标高度
     };
 
     /**
@@ -46,11 +83,9 @@ public:
      */
     ~TextBlockLayoutEngine();
 
-    // ========== 布局设置 ==========
-    
     /**
      * @brief 设置可用宽度
-     * @param width 宽度
+     * @param width 可用宽度
      */
     void setAvailableWidth(qreal width);
     
@@ -66,97 +101,74 @@ public:
      */
     void setWrapMode(WrapMode mode);
 
-    // ========== 布局执行 ==========
-    
     /**
      * @brief 执行布局
-     * @param items 所有内容项（TextFragment + MathFormulaGraphicsItem）
+     * @param spans 段落的 Span 列表
      */
-    void layout(const QList<QGraphicsItem*> &items);
-    
-    /**
-     * @brief 清除布局结果
-     */
-    void clear();
+    void layout(const QList<Span> &spans);
 
-    // ========== 布局结果获取 ==========
-    
     /**
-     * @brief 获取计算后的总高度
-     * @return 高度
+     * @brief 获取布局后的所有项
+     * @return 布局项列表
      */
-    qreal totalHeight() const;
+    const QList<LayoutItem> &layoutItems() const;
     
     /**
-     * @brief 获取计算后的总宽度
-     * @return 宽度
+     * @brief 获取布局后的所有行
+     * @return 行信息列表
+     */
+    const QList<LineInfo> &lines() const;
+    
+    /**
+     * @brief 获取总宽度
+     * @return 总宽度
      */
     qreal totalWidth() const;
     
     /**
-     * @brief 获取某个项的位置
-     * @param item 项指针
-     * @return 位置（相对于 TextBlockItem）
+     * @brief 获取总高度
+     * @return 总高度
      */
-    QPointF positionForItem(QGraphicsItem *item) const;
-    
-    /**
-     * @brief 获取所有行的信息
-     * @return 行列表
-     */
-    QList<QRectF> lines() const;
+    qreal totalHeight() const;
 
     // ========== 光标位置计算 ==========
     
     /**
-     * @brief 光标位置信息
+     * @brief 根据局部坐标找到光标位置
+     * @param localPos 相对于段落的局部坐标
+     * @param spans 段落的 Span 列表
+     * @return 命中结果
      */
-    struct CursorHitResult {
-        TextFragment *fragment;   ///< 命中的 TextFragment
-        int offset;               ///< 在该 fragment 中的字符偏移
-        int globalOffset;         ///< 全局字符偏移（从段落开头算起）
-    };
+    CursorHitResult hitTest(const QPointF &localPos, const QList<Span> &spans) const;
     
     /**
-     * @brief 根据局部坐标找到光标位置信息
-     * @param localPos 相对于 TextBlockItem 的局部坐标
-     * @param items 所有内容项列表（用于计算全局偏移）
-     * @return 光标位置信息
+     * @brief 根据全局偏移找到光标视觉位置
+     * @param globalOffset 全局字符偏移（从段落开头算起）
+     * @param spans 段落的 Span 列表
+     * @return 视觉位置结果
      */
-    CursorHitResult hitTest(const QPointF &localPos, const QList<QGraphicsItem*> &items) const;
-    
-    /**
-     * @brief 光标视觉位置信息
-     */
-    struct CursorVisualResult {
-        QPointF position;         ///< 视觉位置（相对于 TextBlockItem）
-        qreal height;             ///< 光标高度
-    };
-    
-    /**
-     * @brief 根据全局字符偏移找到视觉位置
-     * @param globalOffset 全局字符偏移
-     * @param items 所有内容项列表
-     * @return 视觉位置信息
-     */
-    CursorVisualResult cursorPositionAt(int globalOffset, const QList<QGraphicsItem*> &items) const;
+    CursorVisualResult cursorPositionAt(int globalOffset, const QList<Span> &spans) const;
 
 private:
     /**
-     * @brief 一行的信息
+     * @brief 从 CharacterStyle 创建 QFont
+     * @param style 字符样式
+     * @return QFont
      */
-    struct LineInfo {
-        QRectF rect;              ///< 行的矩形
-        qreal maxBaseline;        ///< 该行的最大基线（用于对齐）
-        QList<QGraphicsItem*> items;  ///< 该行的所有项
-    };
-
-    // ========== 内部布局方法 ==========
+    QFont createFontFromStyle(const CharacterStyle &style) const;
     
     /**
-     * @brief 将项分配到行
+     * @brief 计算单个 Span 的布局（内部多行）
+     * @param span Span 对象
+     * @param availableWidth 可用宽度
+     * @return LayoutItem
      */
-    void assignItemsToLines(const QList<QGraphicsItem*> &items);
+    LayoutItem calculateLayoutItem(const Span &span, qreal availableWidth) const;
+    
+    /**
+     * @brief 将项分配到行（处理多个 Span 的换行）
+     */
+    void assignItemsToLines();
     
     /**
      * @brief 计算每一行的基线
@@ -174,32 +186,17 @@ private:
     void positionItems();
     
     /**
-     * @brief 计算整体尺寸
+     * @brief 清除所有布局结果
      */
-    void calculateTotalSize();
-    
-    /**
-     * @brief 获取项的宽度
-     */
-    qreal itemWidth(QGraphicsItem *item) const;
-    
-    /**
-     * @brief 获取项的高度
-     */
-    qreal itemHeight(QGraphicsItem *item) const;
-    
-    /**
-     * @brief 获取项的基线
-     */
-    qreal itemBaseline(QGraphicsItem *item) const;
+    void clear();
 
 private:
-    qreal m_availableWidth;          ///< 可用宽度
-    ParagraphStyle m_paragraphStyle; ///< 段落样式
+    qreal m_availableWidth;         ///< 可用宽度
+    ParagraphStyle m_paragraphStyle;///< 段落样式
     WrapMode m_wrapMode;             ///< 换行模式
     
-    QList<LineInfo> m_lines;         ///< 所有行的信息
-    QHash<QGraphicsItem*, QPointF> m_itemPositions;  ///< 项的位置
+    QList<LayoutItem> m_layoutItems;///< 所有布局项（对应 Span）
+    QList<LineInfo> m_lines;        ///< 所有行信息
     qreal m_totalWidth;              ///< 总宽度
     qreal m_totalHeight;             ///< 总高度
 };

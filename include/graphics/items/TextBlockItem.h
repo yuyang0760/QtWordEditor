@@ -106,6 +106,9 @@ private:
     /** @brief 从块数据应用富文本格式 */
     void applyRichTextFromBlock();
     
+    /** @brief 应用段落缩进（左缩进、右缩进） */
+    void applyParagraphIndent();
+    
     QGraphicsTextItem *m_textItem;  ///< 内部文本图形项
     qreal m_textWidth;              ///< 文本显示宽度
 };

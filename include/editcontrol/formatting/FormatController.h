@@ -5,6 +5,7 @@
 #include <functional>
 #include "core/document/CharacterStyle.h"
 #include "core/document/ParagraphStyle.h"
+#include "core/utils/Constants.h"
 #include "core/Global.h"
 
 namespace QtWordEditor {
@@ -265,6 +266,18 @@ public:
      * @param space 段后间距值
      */
     void setSpaceAfter(qreal space);
+    
+    /**
+     * @brief 设置悬挂缩进
+     * @param indent 悬挂缩进值（默认 36 点 = 0.5 英寸）
+     * 悬挂缩进：除第一行外的其他行都向右缩进
+     */
+    void setHangingIndent(qreal indent = Constants::HANGING_INDENT_VALUE);
+    
+    /**
+     * @brief 清除悬挂缩进（恢复正常状态）
+     */
+    void clearHangingIndent();
     
     /**
      * @brief 获取当前选区内的段落样式

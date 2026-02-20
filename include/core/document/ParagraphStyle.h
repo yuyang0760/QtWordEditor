@@ -16,7 +16,8 @@ enum class ParagraphAlignment {
     AlignLeft,      ///< 左对齐
     AlignCenter,    ///< 居中对齐
     AlignRight,     ///< 右对齐
-    AlignJustify    ///< 两端对齐
+    AlignJustify,   ///< 两端对齐
+    AlignDistributed ///< 分散对齐
 };
 
 /**

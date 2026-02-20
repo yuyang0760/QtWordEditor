@@ -8,13 +8,13 @@ class ParagraphStyleData : public QSharedData
 {
 public:
     ParagraphStyleData()
-        : m_alignment(QtWordEditor::ParagraphAlignment::AlignLeft)
-        , m_firstLineIndent(0.0)
-        , m_leftIndent(0.0)
-        , m_rightIndent(0.0)
+        : m_alignment(QtWordEditor::Constants::DEFAULT_ALIGNMENT)
+        , m_firstLineIndent(QtWordEditor::Constants::DEFAULT_FIRST_LINE_INDENT)
+        , m_leftIndent(QtWordEditor::Constants::DEFAULT_LEFT_INDENT)
+        , m_rightIndent(QtWordEditor::Constants::DEFAULT_RIGHT_INDENT)
         , m_spaceBefore(QtWordEditor::Constants::DEFAULT_SPACE_BEFORE)
         , m_spaceAfter(QtWordEditor::Constants::DEFAULT_SPACE_AFTER)
-        , m_lineHeight(100)
+        , m_lineHeight(QtWordEditor::Constants::DEFAULT_LINE_HEIGHT_PERCENT)
         , m_propertySetFlags()
     {
     }
@@ -190,16 +190,16 @@ void ParagraphStyle::clearProperty(ParagraphStyleProperty property)
     // 将属性恢复为默认值
     switch (property) {
         case ParagraphStyleProperty::Alignment:
-            d->m_alignment = ParagraphAlignment::AlignLeft;
+            d->m_alignment = QtWordEditor::Constants::DEFAULT_ALIGNMENT;
             break;
         case ParagraphStyleProperty::FirstLineIndent:
-            d->m_firstLineIndent = 0.0;
+            d->m_firstLineIndent = QtWordEditor::Constants::DEFAULT_FIRST_LINE_INDENT;
             break;
         case ParagraphStyleProperty::LeftIndent:
-            d->m_leftIndent = 0.0;
+            d->m_leftIndent = QtWordEditor::Constants::DEFAULT_LEFT_INDENT;
             break;
         case ParagraphStyleProperty::RightIndent:
-            d->m_rightIndent = 0.0;
+            d->m_rightIndent = QtWordEditor::Constants::DEFAULT_RIGHT_INDENT;
             break;
         case ParagraphStyleProperty::SpaceBefore:
             d->m_spaceBefore = QtWordEditor::Constants::DEFAULT_SPACE_BEFORE;
@@ -208,7 +208,7 @@ void ParagraphStyle::clearProperty(ParagraphStyleProperty property)
             d->m_spaceAfter = QtWordEditor::Constants::DEFAULT_SPACE_AFTER;
             break;
         case ParagraphStyleProperty::LineHeight:
-            d->m_lineHeight = 100;
+            d->m_lineHeight = QtWordEditor::Constants::DEFAULT_LINE_HEIGHT_PERCENT;
             break;
     }
 }

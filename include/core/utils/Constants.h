@@ -3,6 +3,7 @@
 
 #include <QtGlobal>
 #include <QColor>
+#include "core/document/ParagraphStyle.h"
 
 namespace QtWordEditor {
 
@@ -26,12 +27,28 @@ constexpr int RIBBON_BAR_HEIGHT = 140;
 constexpr int PAGE_TOP_SPACING = 20;
 
 // ==========================================
+// 段落对齐方式常量
+// ==========================================
+// 默认对齐方式
+constexpr ParagraphAlignment DEFAULT_ALIGNMENT = ParagraphAlignment::AlignLeft;
+
+// ==========================================
 // 段落样式相关常量
 // ==========================================
 // 默认段前间距
 constexpr qreal DEFAULT_SPACE_BEFORE = 6.0;
 // 默认段后间距
 constexpr qreal DEFAULT_SPACE_AFTER = 6.0;
+// 默认行高百分比 (100% = 1倍行距)
+constexpr int DEFAULT_LINE_HEIGHT_PERCENT = 100;
+// 默认首行缩进 (2个字符，约 24 点，以 12pt 字体计算)
+constexpr qreal DEFAULT_FIRST_LINE_INDENT = 24.0;
+// 默认左缩进
+constexpr qreal DEFAULT_LEFT_INDENT = 0.0;
+// 默认右缩进
+constexpr qreal DEFAULT_RIGHT_INDENT = 0.0;
+// 悬挂缩进预设值 (36 点 = 0.5 英寸)
+constexpr qreal HANGING_INDENT_VALUE = 36.0;
 
 // ==========================================
 // 字体相关常量

@@ -275,6 +275,29 @@ void FormatController::setSpaceAfter(qreal space)
     });
 }
 
+void FormatController::setHangingIndent(qreal indent)
+{
+    // 悬挂缩进的实现原理：
+    // 1. 设置左缩进为悬挂缩进值
+    // 2. 设置首行缩进为负值（-悬挂缩进值）
+    // 这样第一行正常显示，其他行都向右缩进
+    ParagraphStyle style;
+    style.setLeftIndent(indent);
+    style.setFirstLineIndent(-indent);
+    applyParagraphStyle(style);
+}
+
+void FormatController::clearHangingIndent()
+{
+    // 清除悬挂缩进：
+    // 1. 左缩进恢复为 0
+    // 2. 首行缩进恢复为默认值
+    ParagraphStyle style;
+    style.setLeftIndent(0.0);
+    style.setFirstLineIndent(Constants::DEFAULT_FIRST_LINE_INDENT);
+    applyParagraphStyle(style);
+}
+
 ParagraphStyle FormatController::getCurrentParagraphStyle() const
 {
     ParagraphStyle result;

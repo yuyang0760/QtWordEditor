@@ -1,4 +1,5 @@
 #include "core/utils/Logger.h"
+#include <iostream>
 
 namespace QtWordEditor {
 
@@ -18,29 +19,29 @@ void Logger::debug(const QString& message)
 {
 #ifdef QT_DEBUG
     if (s_debugEnabled) {
-        qDebug() << "[DEBUG]" << message;
+        std::cout << "[DEBUG] " << message.toStdString() << std::endl;
     }
 #endif
 }
 
 void Logger::debug(const char* message)
 {
-    debug(QString::fromLatin1(message));
+    debug(QString::fromUtf8(message));
 }
 
 void Logger::info(const QString& message)
 {
-    qInfo() << "[INFO]" << message;
+    std::cout << "[INFO] " << message.toStdString() << std::endl;
 }
 
 void Logger::warning(const QString& message)
 {
-    qWarning() << "[WARNING]" << message;
+    std::cout << "[WARNING] " << message.toStdString() << std::endl;
 }
 
 void Logger::error(const QString& message)
 {
-    qCritical() << "[ERROR]" << message;
+    std::cerr << "[ERROR] " << message.toStdString() << std::endl;
 }
 
 } // namespace QtWordEditor

@@ -73,6 +73,12 @@ public:
      * @param block 要更新的块
      */
     void updateSingleTextItem(Block *block);
+    
+    /**
+     * @brief 重新计算所有文本块的位置
+     * 根据每个块的实际高度排列，解决段落重叠问题
+     */
+    void updateBlockPositions();
 
     // ========== 光标相关方法 ==========
     

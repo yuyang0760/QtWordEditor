@@ -26,6 +26,14 @@ constexpr int RIBBON_BAR_HEIGHT = 140;
 constexpr int PAGE_TOP_SPACING = 20;
 
 // ==========================================
+// 段落样式相关常量
+// ==========================================
+// 默认段前间距
+constexpr qreal DEFAULT_SPACE_BEFORE = 6.0;
+// 默认段后间距
+constexpr qreal DEFAULT_SPACE_AFTER = 6.0;
+
+// ==========================================
 // 字体相关常量
 // ==========================================
 // 默认字体

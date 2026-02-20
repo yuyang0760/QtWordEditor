@@ -1,4 +1,5 @@
 #include "core/document/ParagraphStyle.h"
+#include "core/utils/Constants.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -11,8 +12,8 @@ public:
         , m_firstLineIndent(0.0)
         , m_leftIndent(0.0)
         , m_rightIndent(0.0)
-        , m_spaceBefore(0.0)
-        , m_spaceAfter(0.0)
+        , m_spaceBefore(QtWordEditor::Constants::DEFAULT_SPACE_BEFORE)
+        , m_spaceAfter(QtWordEditor::Constants::DEFAULT_SPACE_AFTER)
         , m_lineHeight(100)
         , m_propertySetFlags()
     {
@@ -201,10 +202,10 @@ void ParagraphStyle::clearProperty(ParagraphStyleProperty property)
             d->m_rightIndent = 0.0;
             break;
         case ParagraphStyleProperty::SpaceBefore:
-            d->m_spaceBefore = 0.0;
+            d->m_spaceBefore = QtWordEditor::Constants::DEFAULT_SPACE_BEFORE;
             break;
         case ParagraphStyleProperty::SpaceAfter:
-            d->m_spaceAfter = 0.0;
+            d->m_spaceAfter = QtWordEditor::Constants::DEFAULT_SPACE_AFTER;
             break;
         case ParagraphStyleProperty::LineHeight:
             d->m_lineHeight = 100;

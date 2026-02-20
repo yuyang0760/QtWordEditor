@@ -4,6 +4,7 @@
 #include "core/document/Block.h"
 #include "core/document/ParagraphBlock.h"
 #include "core/document/Page.h"
+#include "core/document/ParagraphStyle.h"
 #include "core/utils/Constants.h"
 #include "graphics/items/BaseBlockItem.h"
 #include "graphics/items/TextBlockItem.h"
@@ -91,6 +92,9 @@ void DocumentScene::rebuildFromDocument()
                 // 初始化当前页的文本项列表
                 QVector<QGraphicsTextItem*> pageTextItems;
                 
+                // 记录当前页的所有文本块项，用于后续计算位置
+                QVector<TextBlockItem*> pageBlockItems;
+                
                 for (int blockIdx = 0; blockIdx < page->blockCount(); ++blockIdx) {
                     Block *block = page->block(blockIdx);
                   //  QDebug() << "    块" << blockIdx << "指针:" << block;
@@ -104,21 +108,42 @@ void DocumentScene::rebuildFromDocument()
                         // 创建 TextBlockItem
                         TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
                         
-                        // 设置位置
-                        qreal textX = Constants::PAGE_MARGIN;
-                        qreal textY = Constants::PAGE_MARGIN + blockIdx * 30;
-                        textBlockItem->setPos(textX, textY);
-                        
                         // 添加到场景
                         addItem(textBlockItem);
                         
-                        // 添加到 m_blockItems 和 m_pageTextItems
+                        // 添加到 m_blockItems、m_pageTextItems 和 pageBlockItems
                         m_blockItems.insert(block, textBlockItem);
                         pageTextItems.append(textBlockItem->textItem());
+                        pageBlockItems.append(textBlockItem);
                         
-                      //  QDebug() << ">>>>>>>>>>      文本块项位置:" << textX << "," << textY;
                       //  QDebug() << ">>>>>>>>>>      文本项边界矩形:" << textBlockItem->textItem()->boundingRect();
                     }
+                }
+                
+                // 根据每个块的实际高度计算位置，考虑段前和段后间距
+                qreal currentY = Constants::PAGE_MARGIN;
+                for (int i = 0; i < pageBlockItems.size(); ++i) {
+                    TextBlockItem *textBlockItem = pageBlockItems[i];
+                    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(textBlockItem->block());
+                    
+                    qreal textX = Constants::PAGE_MARGIN;
+                    qreal spaceBefore = 0.0;
+                    
+                    // 只有第一个块之后的块才添加段前间距
+                    if (i > 0 && paraBlock) {
+                        spaceBefore = paraBlock->paragraphStyle().spaceBefore();
+                    }
+                    
+                    // 应用段前间距
+                    currentY += spaceBefore;
+                    
+                    // 设置块的位置
+                    textBlockItem->setPos(textX, currentY);
+                    
+                    // 下一个块从当前块的底部开始，加上段后间距
+                    qreal blockHeight = textBlockItem->boundingRect().height();
+                    qreal spaceAfter = paraBlock ? paraBlock->paragraphStyle().spaceAfter() : 0.0;
+                    currentY += blockHeight + spaceAfter;
                 }
                 
                 // 将当前页的文本项列表添加到全局列表
@@ -150,6 +175,73 @@ void DocumentScene::updateAllTextItems()
             item->updateBlock();
         }
     }
+    // 更新所有块的位置
+    updateBlockPositions();
+}
+
+void DocumentScene::updateBlockPositions()
+{
+    if (!m_document) {
+        return;
+    }
+
+    // 遍历文档中的所有节
+    for (int sectionIdx = 0; sectionIdx < m_document->sectionCount(); ++sectionIdx) {
+        Section *section = m_document->section(sectionIdx);
+        if (!section) {
+            continue;
+        }
+
+        // 遍历节中的所有页面
+        for (int pageIdx = 0; pageIdx < section->pageCount(); ++pageIdx) {
+            Page *page = section->page(pageIdx);
+            if (!page) {
+                continue;
+            }
+
+            // 收集当前页面的所有文本块项
+            QVector<TextBlockItem*> pageBlockItems;
+            for (int blockIdx = 0; blockIdx < page->blockCount(); ++blockIdx) {
+                Block *block = page->block(blockIdx);
+                if (!block) {
+                    continue;
+                }
+                auto it = m_blockItems.find(block);
+                if (it != m_blockItems.end()) {
+                    TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+                    if (textBlockItem) {
+                        pageBlockItems.append(textBlockItem);
+                    }
+                }
+            }
+
+            // 根据每个块的实际高度重新计算位置，考虑段前和段后间距
+            qreal currentY = Constants::PAGE_MARGIN;
+            for (int i = 0; i < pageBlockItems.size(); ++i) {
+                TextBlockItem *textBlockItem = pageBlockItems[i];
+                ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(textBlockItem->block());
+                
+                qreal textX = Constants::PAGE_MARGIN;
+                qreal spaceBefore = 0.0;
+                
+                // 只有第一个块之后的块才添加段前间距
+                if (i > 0 && paraBlock) {
+                    spaceBefore = paraBlock->paragraphStyle().spaceBefore();
+                }
+                
+                // 应用段前间距
+                currentY += spaceBefore;
+                
+                // 设置块的位置
+                textBlockItem->setPos(textX, currentY);
+                
+                // 下一个块从当前块的底部开始，加上段后间距
+                qreal blockHeight = textBlockItem->boundingRect().height();
+                qreal spaceAfter = paraBlock ? paraBlock->paragraphStyle().spaceAfter() : 0.0;
+                currentY += blockHeight + spaceAfter;
+            }
+        }
+    }
 }
 
 void DocumentScene::updateSingleTextItem(Block *block)
@@ -160,6 +252,8 @@ void DocumentScene::updateSingleTextItem(Block *block)
     if (it != m_blockItems.end() && it.value()) {
         it.value()->updateBlock();
     }
+    // 更新所有块的位置
+    updateBlockPositions();
 }
 
 void DocumentScene::clearPages()

@@ -154,6 +154,15 @@ public:
      * @return 视觉位置结果
      */
     CursorVisualResult cursorPositionAt(int globalOffset, const QList<Span> &spans) const;
+    
+    /**
+     * @brief 计算选择矩形（按行合并，确保背景色连续）
+     * @param startOffset 选择起始偏移
+     * @param endOffset 选择结束偏移
+     * @param spans 段落的 Span 列表
+     * @return 选择矩形列表（按行连续）
+     */
+    QList<QRectF> selectionRects(int startOffset, int endOffset, const QList<Span> &spans) const;
 
 private:
     /**

@@ -388,6 +388,113 @@ qreal TextBlockLayoutEngine::totalHeight() const
     return m_totalHeight;
 }
 
+QList<QRectF> TextBlockLayoutEngine::selectionRects(int startOffset, int endOffset, const QList<Span> &spans) const
+{
+    Q_UNUSED(spans);
+    QList<QRectF> rects;
+    
+    // 归一化偏移
+    int normalizedStart = qMin(startOffset, endOffset);
+    int normalizedEnd = qMax(startOffset, endOffset);
+    
+    if (normalizedStart >= normalizedEnd) {
+        return rects;
+    }
+    
+    // 按行处理，确保选择背景色连续
+    for (int lineIdx = 0; lineIdx < m_lines.size(); ++lineIdx) {
+        const LineInfo &lineInfo = m_lines[lineIdx];
+        
+        // 找到这一行的最小和最大全局偏移
+        int lineMinOffset = INT_MAX;
+        int lineMaxOffset = -1;
+        
+        // 遍历这一行的所有 item
+        for (int itemIndex : lineInfo.itemIndices) {
+            const LayoutItem &item = m_layoutItems[itemIndex];
+            lineMinOffset = qMin(lineMinOffset, item.globalStartOffset);
+            lineMaxOffset = qMax(lineMaxOffset, item.globalEndOffset);
+        }
+        
+        // 检查这一行是否与选择范围重叠
+        if (lineMaxOffset <= normalizedStart || lineMinOffset >= normalizedEnd) {
+            continue;
+        }
+        
+        // 计算这一行在选择范围内的起始和结束位置
+        int selStartInLine = qMax(normalizedStart, lineMinOffset);
+        int selEndInLine = qMin(normalizedEnd, lineMaxOffset);
+        
+        // 找到选择起始位置对应的 item 和 X 坐标
+        qreal startX = 0;
+        qreal endX = 0;
+        bool foundStart = false;
+        bool foundEnd = false;
+        
+        // 先找起始位置
+        for (int itemIndex : lineInfo.itemIndices) {
+            const LayoutItem &item = m_layoutItems[itemIndex];
+            
+            if (!foundStart && selStartInLine >= item.globalStartOffset && selStartInLine <= item.globalEndOffset) {
+                // 找到起始位置所在的 item
+                int offsetInItem = selStartInLine - item.globalStartOffset;
+                QTextLayout textLayout(item.text, item.font);
+                textLayout.beginLayout();
+                QTextLine textLine = textLayout.createLine();
+                textLine.setLineWidth(item.width);
+                textLayout.endLayout();
+                startX = item.position.x() + textLine.cursorToX(offsetInItem);
+                foundStart = true;
+            }
+            
+            if (!foundEnd && selEndInLine >= item.globalStartOffset && selEndInLine <= item.globalEndOffset) {
+                // 找到结束位置所在的 item
+                int offsetInItem = selEndInLine - item.globalStartOffset;
+                QTextLayout textLayout(item.text, item.font);
+                textLayout.beginLayout();
+                QTextLine textLine = textLayout.createLine();
+                textLine.setLineWidth(item.width);
+                textLayout.endLayout();
+                endX = item.position.x() + textLine.cursorToX(offsetInItem);
+                foundEnd = true;
+            }
+            
+            if (foundStart && foundEnd) {
+                break;
+            }
+        }
+        
+        // 如果起始或结束位置没有找到（比如在整行都被选中的情况下），使用行的边界
+        if (!foundStart) {
+            // 整行从开头选中，使用第一个 item 的 x 位置
+            if (!lineInfo.itemIndices.isEmpty()) {
+                const LayoutItem &firstItem = m_layoutItems[lineInfo.itemIndices.first()];
+                startX = firstItem.position.x();
+            }
+        }
+        
+        if (!foundEnd) {
+            // 整行选中到末尾，使用最后一个 item 的 x + width 位置
+            if (!lineInfo.itemIndices.isEmpty()) {
+                const LayoutItem &lastItem = m_layoutItems[lineInfo.itemIndices.last()];
+                endX = lastItem.position.x() + lastItem.width;
+            }
+        }
+        
+        // 创建这一行的连续选择矩形
+        QRectF lineSelectionRect(
+            startX,
+            lineInfo.rect.top(),
+            endX - startX,
+            lineInfo.rect.height()
+        );
+        
+        rects << lineSelectionRect;
+    }
+    
+    return rects;
+}
+
 TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPointF &localPos, const QList<Span> &spans) const
 {
     Q_UNUSED(spans);

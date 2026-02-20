@@ -75,15 +75,15 @@ QColor DebugConsole::colorForType(LogMessageType type)
 {
     switch (type) {
         case LogMessageType::Debug:
-            return QColor(100, 100, 100);   // 灰色
+            return QColor(0, 0, 0);          // 黑色，用户要求
         case LogMessageType::Info:
-            return QColor(0, 100, 200);     // 蓝色
+            return QColor(0, 150, 255);     // 亮蓝色，更鲜艳
         case LogMessageType::Warning:
-            return QColor(200, 150, 0);     // 橙色
+            return QColor(255, 165, 0);     // 标准橙色，更鲜艳
         case LogMessageType::Error:
-            return QColor(200, 0, 0);        // 红色
+            return QColor(255, 0, 0);        // 纯红色，更鲜艳
         case LogMessageType::Critical:
-            return QColor(150, 0, 100);      // 深红色
+            return QColor(255, 0, 127);      // 亮玫红色，更鲜艳
     }
     return QColor(0, 0, 0);
 }
@@ -110,7 +110,9 @@ void DebugConsole::enqueueMessage(const QString &text, LogMessageType type)
     QMutexLocker locker(&m_mutex);
     
     LogMessage msg;
-    msg.text = text;
+    // 添加消息类型前缀，如 [DEBUG]、[INFO] 等
+    QString prefix = "[" + typeName(type) + "] ";
+    msg.text = prefix + text;
     msg.type = type;
     msg.color = colorForType(type);
     

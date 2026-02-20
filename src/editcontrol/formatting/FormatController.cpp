@@ -368,11 +368,7 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     bool hasSelection = (m_selection && !m_selection->isEmpty());
     if (hasSelection) {
         // ========== 有选区的情况 ==========
-        LOG_DEBUG("FormatController::getCurrentDisplayStyle - 有选区");
         SelectionRange range = m_selection->range();
-        LOG_DEBUG(QString("  选区: Anchor(%1, %2), Focus(%3, %4)")
-            .arg(range.anchorBlock).arg(range.anchorOffset)
-            .arg(range.focusBlock).arg(range.focusOffset));
         
         // 检查选区是否在单个块内
         if (range.startBlock >= 0 && range.startBlock == range.endBlock) {
@@ -411,14 +407,11 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
         // ========== 无选区的情况：使用光标前一个字符的样式 ==========
         if (m_cursor) {
             CursorPosition targetPos = m_cursor->position();
-            LOG_DEBUG(QString("FormatController::getCurrentDisplayStyle - 无选区，光标位置: (%1, %2)")
+            LOG_DEBUG(QString("getCurrentDisplayStyle - 无选区，光标位置: (%1, %2)")
                 .arg(targetPos.blockIndex).arg(targetPos.offset));
             
             int targetBlock = targetPos.blockIndex;
             int targetOffset = targetPos.offset - 1;
-            
-            LOG_DEBUG(QString("  计算目标位置: 块 %1，偏移 %2 (原 offset=%3-1)")
-                .arg(targetBlock).arg(targetOffset).arg(targetPos.offset));
             
             if (targetOffset >= 0) {
                 result = getStyleAtPosition(targetBlock, targetOffset);
@@ -432,13 +425,11 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                     if (prevParaBlock) {
                         targetOffset = prevParaBlock->length() - 1;
                         result = getStyleAtPosition(targetBlock, targetOffset);
-                        LOG_DEBUG(QString("  调整目标位置到前一个块，获取到的样式: 加粗=%1")
-                            .arg(result.bold()));
                     }
                 }
             }
         } else {
-            LOG_WARNING("FormatController::getCurrentDisplayStyle(): 无选区且无 Cursor 对象");
+            LOG_WARNING("getCurrentDisplayStyle(): 无选区且无 Cursor 对象");
         }
     }
 

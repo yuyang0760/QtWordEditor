@@ -141,13 +141,8 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection || !m_isSelecting)
         return false;
 
-    LOG_DEBUG(QString("EditEventHandler::handleMouseMove at: (%1, %2)").arg(scenePos.x()).arg(scenePos.y()));
-
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
-
-    LOG_DEBUG(QString("  光标位置: 块%1，偏移%2").arg(cursorPos.blockIndex).arg(cursorPos.offset));
-    LOG_DEBUG(QString("  选择起始: 块%1，偏移%2").arg(m_selectionStartBlock).arg(m_selectionStartOffset));
 
     // 更新选择范围
     m_selection->setRange(
@@ -156,8 +151,6 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
         cursorPos.blockIndex,
         cursorPos.offset
     );
-
-    LOG_DEBUG("  选择范围已设置");
 
     // 更新光标位置（到选择的终点）
     m_cursor->setPosition(cursorPos);
@@ -177,11 +170,7 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
 
     // 获取最终的选择范围
     SelectionRange range = m_selection->range();
-    LOG_DEBUG("  最终选择范围:");
-    LOG_DEBUG(QString("    Anchor: 块%1，偏移%2").arg(range.anchorBlock).arg(range.anchorOffset));
-    LOG_DEBUG(QString("    Focus: 块%1，偏移%2").arg(range.focusBlock).arg(range.focusOffset));
-    LOG_DEBUG(QString("    Start: 块%1，偏移%2").arg(range.startBlock).arg(range.startOffset));
-    LOG_DEBUG(QString("    End: 块%1，偏移%2").arg(range.endBlock).arg(range.endOffset));
+    LOG_DEBUG(QString("Start: 块%1，偏移%2  End: 块%3，偏移%4 ").arg(range.startBlock).arg(range.startOffset).arg(range.endBlock).arg(range.endOffset));
 
     // 结束选择
     m_isSelecting = false;

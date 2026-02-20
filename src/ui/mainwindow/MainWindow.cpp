@@ -91,7 +91,7 @@ void MainWindow::setDocument(Document *document)
 
 void MainWindow::setupUi()
 {
-    resize(1200, 700);
+    resize(1300, 700);
     
     // 窗口居中显示
     QScreen *screen = QGuiApplication::primaryScreen();
@@ -856,7 +856,7 @@ void MainWindow::updateStyleState()
     bool hasSelection = (m_selection && !m_selection->isEmpty());
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
-    LOG_DEBUG(QString("  从 formatController 收到样式: 加粗=%1, 斜体=%2, 下划线=%3, 有选区=%4")
+    LOG_DEBUG(QString("加粗=%1, 斜体=%2, 下划线=%3, 有选区=%4")
         .arg(style.bold())
         .arg(style.italic())
         .arg(style.underline())
@@ -918,6 +918,7 @@ void MainWindow::setupDebugConsole()
 {
     m_debugConsoleDock = new QDockWidget(tr("调试控制台"), this);
     m_debugConsoleDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    m_debugConsoleDock->setMinimumWidth(500);  // 设置最小宽度为 400 像素，更宽一些
     
     QWidget *dockContent = new QWidget(m_debugConsoleDock);
     QVBoxLayout *dockLayout = new QVBoxLayout(dockContent);

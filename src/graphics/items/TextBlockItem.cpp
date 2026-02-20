@@ -189,57 +189,14 @@ QList<QRectF> TextBlockItem::selectionRects(int startOffset, int endOffset) cons
         return rects;
     }
     
-    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
+    // 使用 TextBlockLayoutEngine 的新方法，按行计算选择矩形，确保背景色连续
+    QList<QRectF> engineRects = m_layoutEngine->selectionRects(startOffset, endOffset, spans);
     
-    // 归一化偏移
-    int normalizedStart = qMin(startOffset, endOffset);
-    int normalizedEnd = qMax(startOffset, endOffset);
-    
-    LOG_DEBUG(QString("TextBlockItem::selectionRects start=%1, end=%2").arg(normalizedStart).arg(normalizedEnd));
-    
-    if (normalizedStart >= normalizedEnd) {
-        return rects;
-    }
-    
-    // 遍历所有 item，找到重叠的部分
-    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
-        LOG_DEBUG(QString("  检查 item: spanIndex=%1, globalStart=%2, globalEnd=%3, text=%4")
-                    .arg(item.spanIndex).arg(item.globalStartOffset).arg(item.globalEndOffset).arg(item.text));
-        
-        // 检查是否与选择范围重叠
-        if (item.globalEndOffset <= normalizedStart || item.globalStartOffset >= normalizedEnd) {
-            continue;
-        }
-        
-        // 计算在这个 item 内的选择范围
-        int selStartInItem = qMax(normalizedStart, item.globalStartOffset) - item.globalStartOffset;
-        int selEndInItem = qMin(normalizedEnd, item.globalEndOffset) - item.globalStartOffset;
-        
-        LOG_DEBUG(QString("    重叠! selStartInItem=%1, selEndInItem=%2, item.text.length()=%3")
-                    .arg(selStartInItem).arg(selEndInItem).arg(item.text.length()));
-        
-        // 直接使用这个 item 的文本片段来计算选择范围
-        QTextLayout textLayout(item.text, item.font);
-        textLayout.beginLayout();
-        QTextLine textLine = textLayout.createLine();
-        textLine.setLineWidth(item.width);  // 这个 item 的宽度已经确定了！
-        textLayout.endLayout();
-        
-        qreal startX = textLine.cursorToX(selStartInItem);
-        qreal endX = textLine.cursorToX(selEndInItem);
-        
-        LOG_DEBUG(QString("    startX=%1, endX=%2, width=%3").arg(startX).arg(endX).arg(endX - startX));
-        
-        // 创建选择矩形（加上左缩进）
-        QRectF rect(
-            m_leftIndent + item.position.x() + startX,
-            item.position.y(),
-            endX - startX,
-            item.height
-        );
-        LOG_DEBUG(QString("    添加矩形: x=%1, y=%2, w=%3, h=%4")
-                    .arg(rect.x()).arg(rect.y()).arg(rect.width()).arg(rect.height()));
-        rects << rect;
+    // 加上左缩进
+    for (const QRectF &rect : engineRects) {
+        QRectF adjustedRect = rect;
+        adjustedRect.translate(m_leftIndent, 0);
+        rects << adjustedRect;
     }
     
     return rects;

@@ -11,19 +11,25 @@
 namespace QtWordEditor {
 
 class ParagraphBlock;
+class TextFragment;
+class TextBlockLayoutEngine;
 
 /**
- * @brief 文本块图形项类，将段落块渲染为格式化文本
+ * @brief 文本块图形项类（完全重写版）
  *
- * 该类负责在图形场景中显示段落块的内容，支持：
- * 1. 富文本格式显示
- * 2. 文本宽度和字体设置
- * 3. 几何形状的动态更新
- * 4. 与底层数据块的同步
+ * 不再使用 QGraphicsTextItem！完全自己实现：
+ * - 文本渲染（TextFragment）
+ * - 文本布局（TextBlockLayoutEngine）
+ * - 基线对齐（专业排版）
+ *
+ * 保留原有接口以确保兼容性。
  */
 class TextBlockItem : public BaseBlockItem
 {
 public:
+    // 类型 ID
+    enum { Type = UserType + 1001 };
+
     /**
      * @brief 构造函数
      * @param block 关联的段落块对象
@@ -44,7 +50,7 @@ public:
     
     /**
      * @brief 获取内部的文本图形项
-     * @return 指向QGraphicsTextItem的指针
+     * @return 指向QGraphicsTextItem的指针（为了兼容性保留，返回nullptr）
      */
     QGraphicsTextItem *textItem() const;
     
@@ -91,26 +97,54 @@ public:
     QRectF boundingRect() const override;
     
     /**
+     * @brief 绘制图形项
+     * @param painter 画家指针
+     * @param option 样式选项
+     * @param widget 窗口指针
+     */
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    
+    /**
      * @brief 更新几何形状
      * 重新计算和设置图形项的几何属性
      */
     void updateGeometry();
+    
+    /**
+     * @brief 获取类型
+     * @return 类型ID
+     */
+    int type() const override { return Type; }
 
 private:
-    /** @brief 初始化内部文本图形项 */
-    void initializeTextItem();
+    // ========== 内部方法 ==========
     
-    /** @brief 更新边界矩形 */
-    void updateBoundingRect();
+    /**
+     * @brief 从 ParagraphBlock 构建内容项
+     */
+    void buildContentItems();
     
-    /** @brief 从块数据应用富文本格式 */
-    void applyRichTextFromBlock();
+    /**
+     * @brief 清除所有内容项
+     */
+    void clearContentItems();
     
-    /** @brief 应用段落缩进（左缩进、右缩进） */
+    /**
+     * @brief 执行布局
+     */
+    void performLayout();
+    
+    /**
+     * @brief 应用段落缩进（左缩进、右缩进）
+     */
     void applyParagraphIndent();
-    
-    QGraphicsTextItem *m_textItem;  ///< 内部文本图形项
-    qreal m_textWidth;              ///< 文本显示宽度
+
+private:
+    QList<QGraphicsItem*> m_contentItems;  ///< 所有内容项（TextFragment）
+    TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
+    qreal m_textWidth;                      ///< 文本显示宽度
+    qreal m_leftIndent;                     ///< 左缩进
+    qreal m_rightIndent;                    ///< 右缩进
 };
 
 } // namespace QtWordEditor

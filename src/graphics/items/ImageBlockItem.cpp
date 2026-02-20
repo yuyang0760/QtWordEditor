@@ -1,6 +1,7 @@
 #include "graphics/items/ImageBlockItem.h"
 #include "core/document/ImageBlock.h"
 #include <QDebug>
+#include <QPainter>
 
 namespace QtWordEditor {
 
@@ -12,6 +13,19 @@ ImageBlockItem::ImageBlockItem(ImageBlock *block, QGraphicsItem *parent)
 
 ImageBlockItem::~ImageBlockItem()
 {
+}
+
+QRectF ImageBlockItem::boundingRect() const
+{
+    return m_boundingRect;
+}
+
+void ImageBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    // m_pixmapItem 作为子项会自动绘制
 }
 
 void ImageBlockItem::updateBlock()
@@ -28,7 +42,10 @@ void ImageBlockItem::updateBlock()
         if (size.isValid()) {
             m_pixmapItem->setScale(size.width() / image.width());
         }
-        m_pixmapItem->setPos(m_block->boundingRect().topLeft());
+        m_pixmapItem->setPos(0, 0);
+        
+        // 更新边界矩形
+        m_boundingRect = QRectF(0, 0, size.width(), size.height());
     }
 }
 

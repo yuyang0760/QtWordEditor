@@ -5,8 +5,9 @@
 namespace QtWordEditor {
 
 BaseBlockItem::BaseBlockItem(Block *block, QGraphicsItem *parent)
-    : QGraphicsRectItem(parent)
+    : QGraphicsItem(parent)
     , m_block(block)
+    , m_boundingRect(0, 0, 0, 0)
 {
 }
 

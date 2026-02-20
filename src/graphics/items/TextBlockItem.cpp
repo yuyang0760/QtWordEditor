@@ -3,78 +3,49 @@
 #include "core/document/ParagraphStyle.h"
 #include "core/document/CharacterStyle.h"
 #include "core/utils/Constants.h"
+#include "graphics/items/TextFragment.h"
+#include "graphics/items/TextBlockLayoutEngine.h"
 #include <QDebug>
 #include <QFont>
 #include <QFontMetrics>
-#include <QTextDocument>
-#include <QTextOption>
-#include <QTextCursor>
-#include <QTextCharFormat>
+#include <QPainter>
 
 namespace QtWordEditor {
 
 TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
     : BaseBlockItem(block, parent)
-    , m_textItem(new QGraphicsTextItem(this))
+    , m_layoutEngine(new TextBlockLayoutEngine())
     , m_textWidth(Constants::PAGE_WIDTH - 2 * Constants::PAGE_MARGIN)
+    , m_leftIndent(0)
+    , m_rightIndent(0)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, false);
     
-    initializeTextItem();
-    
-    // 从 ParagraphBlock 读取初始文本（支持富文本）
+    // 从 ParagraphBlock 读取初始文本
     if (block) {
-        applyRichTextFromBlock();
+        buildContentItems();
+        performLayout();
     }
-    
-    updateBoundingRect();
 }
 
 TextBlockItem::~TextBlockItem()
 {
-}
-
-void TextBlockItem::initializeTextItem()
-{
-    // 设置文本宽度以启用自动换行
-    m_textItem->setTextWidth(m_textWidth);
-    
-    // 禁用 QGraphicsTextItem 的默认文档边距
-    m_textItem->document()->setDocumentMargin(0);
-    
-    // 验证边距是否正确设置
-    // qDebug() << "TextBlockItem::initializeTextItem - 文档边距:" << m_textItem->document()->documentMargin();
-    
-    // 设置文本换行选项：按字符换行，不是单词边界
-    QTextOption option = m_textItem->document()->defaultTextOption();
-    option.setWrapMode(QTextOption::WrapAnywhere);
-    m_textItem->document()->setDefaultTextOption(option);
-    
-    // 设置默认字体
-    QFont font;  // 使用系统默认字体
-    font.setPointSize(Constants::DefaultFontSize);
-    m_textItem->setFont(font);
-    
-    // 内部 m_textItem 相对于 TextBlockItem 的位置是 (0,0)
-    m_textItem->setPos(0, 0);
-    // qDebug() << "TextBlockItem::initializeTextItem - 文本项位置:" << m_textItem->pos();
-    
-    // 应用段落缩进
-    applyParagraphIndent();
+    clearContentItems();
+    delete m_layoutEngine;
 }
 
 QGraphicsTextItem *TextBlockItem::textItem() const
 {
-    return m_textItem;
+    // 为了兼容性保留此接口，但返回 nullptr，因为不再使用 QGraphicsTextItem
+    return nullptr;
 }
 
 void TextBlockItem::setTextWidth(qreal width)
 {
     if (m_textWidth != width) {
         m_textWidth = width;
-        m_textItem->setTextWidth(width);
-        updateBoundingRect();
+        performLayout();
     }
 }
 
@@ -85,55 +56,54 @@ qreal TextBlockItem::textWidth() const
 
 void TextBlockItem::setFont(const QFont &font)
 {
-    m_textItem->setFont(font);
-    updateBoundingRect();
+    Q_UNUSED(font);
+    // 此方法为了兼容性保留，但不再使用
+    // 字体现在由 CharacterStyle 管理
 }
 
 QFont TextBlockItem::font() const
 {
-    return m_textItem->font();
+    // 返回默认字体，为了兼容性
+    QFont font;
+    font.setPointSize(Constants::DefaultFontSize);
+    return font;
 }
 
 void TextBlockItem::setPlainText(const QString &text)
 {
-    m_textItem->setPlainText(text);
-    updateBoundingRect();
+    Q_UNUSED(text);
+    // 此方法为了兼容性保留
+    // 文本内容现在通过 ParagraphBlock 管理
 }
 
 QString TextBlockItem::toPlainText() const
 {
-    return m_textItem->toPlainText();
+    QString result;
+    for (QGraphicsItem *item : m_contentItems) {
+        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+        if (fragment) {
+            result += fragment->text();
+        }
+    }
+    return result;
 }
 
 QRectF TextBlockItem::boundingRect() const
 {
-    return QGraphicsRectItem::boundingRect();
+    return m_boundingRect;
+}
+
+void TextBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    // 子项会自动绘制
 }
 
 void TextBlockItem::updateGeometry()
 {
-    updateBoundingRect();
-}
-
-void TextBlockItem::updateBoundingRect()
-{
-    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
-    qreal leftIndent = 0;
-    qreal rightIndent = 0;
-    
-    // 如果有段落块，获取缩进值
-    if (para) {
-        ParagraphStyle style = para->paragraphStyle();
-        leftIndent = style.leftIndent();
-        rightIndent = style.rightIndent();
-    }
-    
-    QRectF textRect = m_textItem->boundingRect();
-    
-    // 整体宽度 = 左缩进 + 文本宽度 + 右缩进
-    qreal totalWidth = leftIndent + textRect.width() + rightIndent;
-    
-    setRect(0, 0, totalWidth, textRect.height());
+    performLayout();
 }
 
 void TextBlockItem::updateBlock()
@@ -142,130 +112,79 @@ void TextBlockItem::updateBlock()
     if (!para)
         return;
     
-    applyRichTextFromBlock();
-    applyParagraphIndent();  // 应用段落缩进
-    updateBoundingRect();
+    buildContentItems();
+    applyParagraphIndent();
+    performLayout();
 }
 
-void TextBlockItem::applyRichTextFromBlock()
+void TextBlockItem::buildContentItems()
 {
+    // 清除旧的内容项
+    clearContentItems();
+    
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
     if (!para)
         return;
     
-    qDebug() << "TextBlockItem::applyRichTextFromBlock - 开始应用，块ID:" << para->blockId();
+    qDebug() << "TextBlockItem::buildContentItems - 开始，块ID:" << para->blockId();
     qDebug() << "  spanCount:" << para->spanCount();
     
-    // 获取段落样式
-    ParagraphStyle paraStyle = para->paragraphStyle();
-    qreal firstLineIndent = paraStyle.firstLineIndent();
-    ParagraphAlignment alignment = paraStyle.alignment();
-    
-    // 构建 HTML 字符串，给每个 Span 添加边框
-    QString html;
-    QList<QString> borderColors = {
-        "#ff6666",  // 浅红色
-        "#66ff66",  // 浅绿色
-        "#e6e89c"   // 浅蓝色
-    };
-    
-    // 添加外层 div，应用首行缩进和对齐方式
-    QString divStyleString;
-    QStringList styleList;
-    
-    // 应用首行缩进
-    if (!qFuzzyIsNull(firstLineIndent)) {
-        styleList << QString("text-indent: %1pt").arg(firstLineIndent);
-    }
-    
-    // 应用对齐方式
-    switch (alignment) {
-        case ParagraphAlignment::AlignLeft:
-            styleList << "text-align: left";
-            break;
-        case ParagraphAlignment::AlignCenter:
-            styleList << "text-align: center";
-            break;
-        case ParagraphAlignment::AlignRight:
-            styleList << "text-align: right";
-            break;
-        case ParagraphAlignment::AlignJustify:
-            styleList << "text-align: justify";
-            break;
-        case ParagraphAlignment::AlignDistributed:
-            // 分散对齐在 CSS 中使用 text-align: justify 并配合 text-justify: distribute
-            styleList << "text-align: justify";
-            styleList << "text-justify: distribute";
-            break;
-    }
-    
-    divStyleString = styleList.join("; ");
-    html += QString("<div style=\"%1\">").arg(divStyleString);
-    
+    // 为每个 Span 创建一个 TextFragment
     for (int i = 0; i < para->spanCount(); ++i) {
         Span span = para->span(i);
         CharacterStyle style = span.style();
         
         qDebug() << "  处理 span " << i << ": text=[" << span.text() << "], 加粗:" << style.bold();
         
-        QString escapedText = span.text().toHtmlEscaped();
-        QString color = borderColors[i % borderColors.size()];
-        
-        // 构建带边框的 span，同时添加字体和字号样式
-        QString styleString = QString("border: 2px solid %1; background-color: %1; padding: 0px 2px;").arg(color);
-        
-        // 添加字体族
-        if (!style.fontFamily().isEmpty()) {
-            styleString += QString(" font-family: '%1';").arg(style.fontFamily());
-        }
-        
-        // 添加字号
-        if (style.fontSize() > 0) {
-            styleString += QString(" font-size: %1pt;").arg(style.fontSize());
-        }
-        
-        html += QString("<span style=\"%1\">").arg(styleString);
-        
-        // 添加粗体标记
-        if (style.bold()) {
-            html += "<b>";
-        }
-        
-        // 添加斜体标记
-        if (style.italic()) {
-            html += "<i>";
-        }
-        
-        // 添加下划线标记
-        if (style.underline()) {
-            html += "<u>";
-        }
-        
-        html += escapedText;
-        
-        // 关闭标记
-        if (style.underline()) {
-            html += "</u>";
-        }
-        if (style.italic()) {
-            html += "</i>";
-        }
-        if (style.bold()) {
-            html += "</b>";
-        }
-        
-        html += "</span>";
+        // 创建 TextFragment 并添加到内容项列表
+        TextFragment *fragment = new TextFragment(span.text(), style, this);
+        m_contentItems << fragment;
     }
     
-    // 关闭外层 div
-    html += "</div>";
+    qDebug() << "TextBlockItem::buildContentItems - 完成，创建了" << m_contentItems.size() << "个片段";
+}
+
+void TextBlockItem::clearContentItems()
+{
+    // 删除所有内容项
+    qDeleteAll(m_contentItems);
+    m_contentItems.clear();
+}
+
+void TextBlockItem::performLayout()
+{
+    if (m_contentItems.isEmpty()) {
+        m_boundingRect = QRectF(0, 0, m_textWidth, 0);
+        return;
+    }
     
-    qDebug() << "  生成的 HTML:" << html;
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
+    if (para) {
+        m_layoutEngine->setParagraphStyle(para->paragraphStyle());
+    }
     
-    // 使用 HTML 设置文本
-    m_textItem->setHtml(html);
+    // 计算可用宽度（减去缩进）
+    qreal availableWidth = m_textWidth - m_leftIndent - m_rightIndent;
+    if (availableWidth < 10.0) {
+        availableWidth = 10.0;
+    }
     
-    qDebug() << "TextBlockItem::applyRichTextFromBlock - 完成";
+    m_layoutEngine->setAvailableWidth(availableWidth);
+    m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::WrapAnywhere);
+    
+    // 执行布局
+    m_layoutEngine->layout(m_contentItems);
+    
+    // 定位所有内容项（加上左缩进偏移）
+    for (QGraphicsItem *item : m_contentItems) {
+        QPointF pos = m_layoutEngine->positionForItem(item);
+        item->setPos(pos.x() + m_leftIndent, pos.y());
+    }
+    
+    // 更新边界矩形
+    m_boundingRect = QRectF(0, 0, m_textWidth, m_layoutEngine->totalHeight());
+    
+    qDebug() << "TextBlockItem::performLayout - 完成，boundingRect:" << m_boundingRect;
 }
 
 void TextBlockItem::applyParagraphIndent()
@@ -277,22 +196,10 @@ void TextBlockItem::applyParagraphIndent()
     
     // 获取段落样式中的缩进值
     ParagraphStyle style = para->paragraphStyle();
-    qreal leftIndent = style.leftIndent();
-    qreal rightIndent = style.rightIndent();
+    m_leftIndent = style.leftIndent();
+    m_rightIndent = style.rightIndent();
     
-    // 1. 计算文本实际可用宽度 = 页面内容宽度 - 左缩进 - 右缩进
-    qreal availableWidth = m_textWidth - leftIndent - rightIndent;
-    
-    // 最小宽度保护，防止缩进过大导致宽度为负
-    if (availableWidth < 10.0) {
-        availableWidth = 10.0;
-    }
-    
-    // 2. 设置文本宽度
-    m_textItem->setTextWidth(availableWidth);
-    
-    // 3. 调整文本项位置（向右偏移左缩进值）
-    m_textItem->setPos(leftIndent, 0);
+    qDebug() << "TextBlockItem::applyParagraphIndent - 左缩进:" << m_leftIndent << "右缩进:" << m_rightIndent;
 }
 
 } // namespace QtWordEditor

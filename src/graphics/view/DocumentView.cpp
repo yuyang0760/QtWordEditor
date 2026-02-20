@@ -7,6 +7,8 @@
 #include <QInputMethod>
 #include <QGuiApplication>
 #include <QDebug>
+#include <QMenu>
+#include <QContextMenuEvent>
 
 namespace QtWordEditor {
 
@@ -189,6 +191,18 @@ QVariant DocumentView::inputMethodQuery(Qt::InputMethodQuery query) const
     default:
         return QGraphicsView::inputMethodQuery(query);
     }
+}
+
+void DocumentView::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu menu(this);
+    
+    // 添加段落设置菜单项
+    QAction *paragraphAction = menu.addAction(tr("段落(&P)..."));
+    connect(paragraphAction, &QAction::triggered, this, &DocumentView::contextMenuParagraphRequested);
+    
+    // 在鼠标位置显示菜单
+    menu.exec(event->globalPos());
 }
 
 } // namespace QtWordEditor

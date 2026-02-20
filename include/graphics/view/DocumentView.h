@@ -82,6 +82,9 @@ signals:
     
     /** @brief 缩放比例变化时发出的信号 */
     void zoomChanged(qreal zoom);
+    
+    /** @brief 右键菜单请求显示段落设置 */
+    void contextMenuParagraphRequested();
 
 public:
     /** @brief 更新鼠标位置显示 */
@@ -161,6 +164,13 @@ protected:
      * @return 查询结果
      */
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
+
+protected:
+    /**
+     * @brief 处理右键菜单事件
+     * @param event 上下文菜单事件对象
+     */
+    void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
     qreal m_zoom;              ///< 当前缩放比例

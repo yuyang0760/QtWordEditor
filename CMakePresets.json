@@ -20,7 +20,7 @@
         {
             "name": "Debug",
             "configurePreset": "Debug",
-            "jobs": 6
+            "jobs": 8
         }
     ]
 }

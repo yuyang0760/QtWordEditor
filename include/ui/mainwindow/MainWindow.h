@@ -124,6 +124,9 @@ private slots:
     /** @brief 页面设置 */
     void pageSetup();
     
+    /** @brief 段落设置 */
+    void paragraphSettings();
+    
     /** @brief 更新窗口标题 */
     void updateWindowTitle();
     

@@ -21,6 +21,7 @@
 #include "ui/ribbon/RibbonBar.h"
 #include "ui/dialogs/PageSetupDialog.h"
 #include "ui/dialogs/StyleManagerDialog.h"
+#include "ui/dialogs/ParagraphDialog.h"
 #include "ui/widgets/DebugConsole.h"
 #include <QMenuBar>
 #include <QToolBar>
@@ -248,6 +249,10 @@ void MainWindow::setupUi()
     connect(m_view, &DocumentView::inputMethodReceived,
             m_editEventHandler, &EditEventHandler::handleInputMethod);
     
+    // 连接右键菜单事件
+    connect(m_view, &DocumentView::contextMenuParagraphRequested,
+            this, &MainWindow::paragraphSettings);
+    
     // 连接选择更新信号
     connect(m_editEventHandler, &EditEventHandler::selectionNeedsUpdate,
             this, [this]() {
@@ -395,9 +400,7 @@ void MainWindow::createActions()
     });
 
     QAction *paragraphAct = new QAction(tr("&Paragraph..."), this);
-    connect(paragraphAct, &QAction::triggered, this, [this]() {
-      //  QDebug() << "段落对话框（占位）";
-    });
+    connect(paragraphAct, &QAction::triggered, this, &MainWindow::paragraphSettings);
 
     QAction *imageAct = new QAction(tr("&Image..."), this);
     connect(imageAct, &QAction::triggered, this, [this]() {
@@ -778,6 +781,22 @@ void MainWindow::pageSetup()
       //  QDebug() << "  边距:" << newSetup.marginLeft << newSetup.marginRight << newSetup.marginTop << newSetup.marginBottom << "mm";
       //  QDebug() << "  纵向:" << newSetup.portrait;
     }
+}
+
+void MainWindow::paragraphSettings()
+{
+    if (!m_formatController) {
+        return;
+    }
+    
+    // 获取当前段落样式
+    ParagraphStyle initialStyle = m_formatController->getCurrentParagraphStyle();
+    
+    // 打开段落设置对话框
+    ParagraphStyle newStyle = ParagraphDialog::getStyle(initialStyle, this);
+    
+    // 应用新样式
+    m_formatController->applyParagraphStyle(newStyle);
 }
 
 void MainWindow::switchToChinese()

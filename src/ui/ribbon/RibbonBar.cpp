@@ -1,12 +1,12 @@
 #include "ui/ribbon/RibbonBar.h"
 #include "core/styles/StyleManager.h"
+#include "core/utils/Logger.h"
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QToolButton>
 #include <QAction>
-#include <QDebug>
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QMenu>
@@ -401,12 +401,12 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, bool styleConsi
 
 void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleConsistency &consistency)
 {
-    qDebug() << "RibbonBar::updateFromSelection - 各属性一致性："
-             << "字体=" << consistency.fontFamilyConsistent
-             << ", 字号=" << consistency.fontSizeConsistent
-             << ", 粗体=" << consistency.boldConsistent
-             << ", 斜体=" << consistency.italicConsistent
-             << ", 下划线=" << consistency.underlineConsistent;
+    LOG_DEBUG(QString("RibbonBar::updateFromSelection - 各属性一致性：字体=%1, 字号=%2, 粗体=%3, 斜体=%4, 下划线=%5")
+        .arg(consistency.fontFamilyConsistent)
+        .arg(consistency.fontSizeConsistent)
+        .arg(consistency.boldConsistent)
+        .arg(consistency.italicConsistent)
+        .arg(consistency.underlineConsistent));
 
     // 使用 QSignalBlocker 防止信号循环
     QSignalBlocker fontBlocker(d->fontCombo);
@@ -431,50 +431,50 @@ void RibbonBar::updateFromSelection(const CharacterStyle &style, const StyleCons
             font.setFamily(fontFamily);
             d->fontCombo->setCurrentFont(font);
         }
-        qDebug() << "  字体一致，设置字体:" << fontFamily;
+        LOG_DEBUG(QString("  字体一致，设置字体:%1").arg(fontFamily));
     } else {
         d->fontCombo->setCurrentIndex(-1);
-        qDebug() << "  字体不一致，清空";
+        LOG_DEBUG("  字体不一致，清空");
     }
     
     // ========== 更新字号 ==========
     if (consistency.fontSizeConsistent) {
         int fontSize = consistency.consistentFontSize;
         d->fontSizeCombo->setCurrentText(QString::number(fontSize));
-        qDebug() << "  字号一致，设置字号:" << fontSize;
+        LOG_DEBUG(QString("  字号一致，设置字号:%1").arg(fontSize));
     } else {
         d->fontSizeCombo->setCurrentIndex(-1);
-        qDebug() << "  字号不一致，清空";
+        LOG_DEBUG("  字号不一致，清空");
     }
     
     // ========== 更新粗体 ==========
     if (consistency.boldConsistent) {
         bool bold = consistency.consistentBold;
         d->boldAction->setChecked(bold);
-        qDebug() << "  粗体一致，设置:" << bold;
+        LOG_DEBUG(QString("  粗体一致，设置:%1").arg(bold));
     } else {
         d->boldAction->setChecked(false);
-        qDebug() << "  粗体不一致，取消选中";
+        LOG_DEBUG("  粗体不一致，取消选中");
     }
     
     // ========== 更新斜体 ==========
     if (consistency.italicConsistent) {
         bool italic = consistency.consistentItalic;
         d->italicAction->setChecked(italic);
-        qDebug() << "  斜体一致，设置:" << italic;
+        LOG_DEBUG(QString("  斜体一致，设置:%1").arg(italic));
     } else {
         d->italicAction->setChecked(false);
-        qDebug() << "  斜体不一致，取消选中";
+        LOG_DEBUG("  斜体不一致，取消选中");
     }
     
     // ========== 更新下划线 ==========
     if (consistency.underlineConsistent) {
         bool underline = consistency.consistentUnderline;
         d->underlineAction->setChecked(underline);
-        qDebug() << "  下划线一致，设置:" << underline;
+        LOG_DEBUG(QString("  下划线一致，设置:%1").arg(underline));
     } else {
         d->underlineAction->setChecked(false);
-        qDebug() << "  下划线不一致，取消选中";
+        LOG_DEBUG("  下划线不一致，取消选中");
     }
 }
 

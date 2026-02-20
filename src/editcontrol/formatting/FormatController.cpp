@@ -7,7 +7,7 @@
 #include "core/commands/SetCharacterStyleCommand.h"
 #include "core/commands/SetParagraphStyleCommand.h"
 #include "core/styles/StyleManager.h"
-#include <QDebug>
+#include "core/utils/Logger.h"
 
 namespace QtWordEditor {
 

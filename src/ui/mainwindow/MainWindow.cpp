@@ -10,6 +10,7 @@
 #include "core/document/Page.h"
 #include "core/layout/PageBuilder.h"
 #include "core/utils/Constants.h"
+#include "core/utils/Logger.h"
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -36,7 +37,6 @@
 #include <QCloseEvent>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QDebug>
 #include <QFontMetrics>
 #include <QTextDocument>
 #include <QTextCursor>
@@ -134,45 +134,18 @@ void MainWindow::setupUi()
     mainLayout->addWidget(viewContainer);
 
     connect(m_styleManager, &StyleManager::characterStyleChanged,
-            this, [this](const QString &styleName) {
-        Q_UNUSED(styleName);
-        if (m_scene) {
-            m_scene->updateAllTextItems();
-        }
-        // 刷新 RibbonBar 的样式列表
-        if (m_ribbonBar) {
-            m_ribbonBar->refreshStyleLists();
-        }
-    });
+            this, &MainWindow::onStyleChanged);
 
     connect(m_styleManager, &StyleManager::paragraphStyleChanged,
-            this, [this](const QString &styleName) {
-        Q_UNUSED(styleName);
-        if (m_scene) {
-            m_scene->updateAllTextItems();
-        }
-        // 刷新 RibbonBar 的样式列表
-        if (m_ribbonBar) {
-            m_ribbonBar->refreshStyleLists();
-        }
-    });
+            this, &MainWindow::onStyleChanged);
 
     connect(m_styleManager, &StyleManager::stylesChanged,
-            this, [this]() {
-      //  QDebug() << "样式变化 - 更新所有文本项（多个样式可能被修改）";
-        if (m_scene) {
-            m_scene->updateAllTextItems();
-        }
-        // 刷新 RibbonBar 的样式列表
-        if (m_ribbonBar) {
-            m_ribbonBar->refreshStyleLists();
-        }
-    });
+            this, &MainWindow::onStyleChanged);
 
     // 连接 RibbonBar 样式按钮信号
     connect(m_ribbonBar, &RibbonBar::fontChanged,
             this, [this](const QFont &font) {
-        qDebug() << "字体变化（来自功能区）:" << font;
+        LOG_DEBUG("字体变化（来自功能区）:" + font.family());
         // 只设置字体族，不改变字号！
         CharacterStyle style;
         style.clearAllProperties();
@@ -200,107 +173,33 @@ void MainWindow::setupUi()
     });
 
     connect(m_ribbonBar, &RibbonBar::boldChanged,
-            this, [this](bool /* bold */) {
-        qDebug() << "MainWindow: 加粗按钮被点击";
-        
-        CharacterStyle style;
-        if (m_selection->isEmpty()) {
-            // 无选区：根据当前显示样式切换
-            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-            qDebug() << "  无选区，getCurrentDisplayStyle() 返回的加粗:" << currentStyle.bold();
-            bool newBold = !currentStyle.bold();
-            qDebug() << "  计算的新加粗:" << newBold;
-            style.setBold(newBold);
-            m_formatController->setCurrentInputStyle(style);
-        } else {
-            // 有选区：检查选区内是否全部都是加粗
-            bool allBold = m_formatController->isSelectionAllBold();
-            
-            qDebug() << "  有选区，选区内全部加粗:" << allBold;
-            
-            bool newBold;
-            if (allBold) {
-                // 选区内全部都是加粗 → 取消加粗
-                newBold = false;
-                qDebug() << "  选区内全部加粗，设置为 false";
-            } else {
-                // 选区内不一致或未加粗 → 设置为加粗
-                newBold = true;
-                qDebug() << "  选区内不一致或未加粗，设置为 true";
-            }
-            
-            style.setBold(newBold);
-            m_formatController->setBold(newBold);
-        }
-        updateStyleState();
+            this, [this]() {
+        toggleStyleAttribute(
+            [](const CharacterStyle& s) { return s.bold(); },
+            [](CharacterStyle& s, bool v) { s.setBold(v); },
+            [this](bool v) { m_formatController->setBold(v); },
+            "加粗"
+        );
     });
 
     connect(m_ribbonBar, &RibbonBar::italicChanged,
-            this, [this](bool /* italic */) {
-        qDebug() << "MainWindow: 斜体按钮被点击";
-        
-        CharacterStyle style;
-        if (m_selection->isEmpty()) {
-            // 无选区：根据当前显示样式切换
-            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-            bool newItalic = !currentStyle.italic();
-            style.setItalic(newItalic);
-            m_formatController->setCurrentInputStyle(style);
-        } else {
-            // 有选区：检查选区内是否全部都是斜体
-            bool allItalic = m_formatController->isSelectionAllItalic();
-            
-            qDebug() << "  有选区，选区内全部斜体:" << allItalic;
-            
-            bool newItalic;
-            if (allItalic) {
-                // 选区内全部都是斜体 → 取消斜体
-                newItalic = false;
-                qDebug() << "  选区内全部斜体，设置为 false";
-            } else {
-                // 选区内不一致或未斜体 → 设置为斜体
-                newItalic = true;
-                qDebug() << "  选区内不一致或未斜体，设置为 true";
-            }
-            
-            style.setItalic(newItalic);
-            m_formatController->setItalic(newItalic);
-        }
-        updateStyleState();
+            this, [this]() {
+        toggleStyleAttribute(
+            [](const CharacterStyle& s) { return s.italic(); },
+            [](CharacterStyle& s, bool v) { s.setItalic(v); },
+            [this](bool v) { m_formatController->setItalic(v); },
+            "斜体"
+        );
     });
 
     connect(m_ribbonBar, &RibbonBar::underlineChanged,
-            this, [this](bool /* underline */) {
-        qDebug() << "MainWindow: 下划线按钮被点击";
-        
-        CharacterStyle style;
-        if (m_selection->isEmpty()) {
-            // 无选区：根据当前显示样式切换
-            CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
-            bool newUnderline = !currentStyle.underline();
-            style.setUnderline(newUnderline);
-            m_formatController->setCurrentInputStyle(style);
-        } else {
-            // 有选区：检查选区内是否全部都有下划线
-            bool allUnderline = m_formatController->isSelectionAllUnderline();
-            
-            qDebug() << "  有选区，选区内全部下划线:" << allUnderline;
-            
-            bool newUnderline;
-            if (allUnderline) {
-                // 选区内全部都有下划线 → 取消下划线
-                newUnderline = false;
-                qDebug() << "  选区内全部下划线，设置为 false";
-            } else {
-                // 选区内不一致或无下划线 → 设置为下划线
-                newUnderline = true;
-                qDebug() << "  选区内不一致或无下划线，设置为 true";
-            }
-            
-            style.setUnderline(newUnderline);
-            m_formatController->setUnderline(newUnderline);
-        }
-        updateStyleState();
+            this, [this]() {
+        toggleStyleAttribute(
+            [](const CharacterStyle& s) { return s.underline(); },
+            [](CharacterStyle& s, bool v) { s.setUnderline(v); },
+            [this](bool v) { m_formatController->setUnderline(v); },
+            "下划线"
+        );
     });
 
     // 连接 RibbonBar 样式选择信号
@@ -397,9 +296,9 @@ void MainWindow::setupUi()
     // 连接选择完成信号（鼠标松开时）到样式状态更新
     connect(m_editEventHandler, &EditEventHandler::selectionFinished,
             this, [this]() {
-                qDebug() << "MainWindow: 收到 selectionFinished 信号，更新样式状态";
-                updateStyleState();
-            });
+        LOG_DEBUG("MainWindow: 收到 selectionFinished 信号，更新样式状态");
+        updateStyleState();
+    });
 
     m_currentZoom = 100.0;
     
@@ -943,20 +842,21 @@ void MainWindow::updateStyleState()
         return;
     }
     
-    qDebug() << "MainWindow::updateStyleState - 开始更新样式";
+    LOG_DEBUG("MainWindow::updateStyleState - 开始更新样式");
     
     bool hasSelection = (m_selection && !m_selection->isEmpty());
     CharacterStyle style = m_formatController->getCurrentDisplayStyle();
     
-    qDebug() << "  从 formatController 收到样式: 加粗=" << style.bold() 
-             << ", 斜体=" << style.italic() 
-             << ", 下划线=" << style.underline()
-             << ", 有选区=" << hasSelection;
+    LOG_DEBUG(QString("  从 formatController 收到样式: 加粗=%1, 斜体=%2, 下划线=%3, 有选区=%4")
+        .arg(style.bold())
+        .arg(style.italic())
+        .arg(style.underline())
+        .arg(hasSelection));
     
     if (!hasSelection) {
         // ========== 无选区：所有属性都一致 ==========
         m_ribbonBar->updateFromSelection(style, true);
-        qDebug() << "  无选区，工具栏显示一致样式";
+        LOG_DEBUG("  无选区，工具栏显示一致样式");
     } else {
         // ========== 先检查是否完全在单个 Span 内 ==========
         bool isSingleSpan = m_formatController->isSelectionStyleConsistent();
@@ -964,7 +864,7 @@ void MainWindow::updateStyleState()
         if (isSingleSpan) {
             // 完全在单个 Span 内：所有属性都一致，直接显示
             m_ribbonBar->updateFromSelection(style, true);
-            qDebug() << "  选区完全在单个 Span 内，工具栏显示一致样式";
+            LOG_DEBUG("  选区完全在单个 Span 内，工具栏显示一致样式");
         } else {
             // ========== 跨多个 Span：获取每个属性的一致性状态 ==========
             FormatController::StyleConsistency consistency = m_formatController->getSelectionStyleConsistency();
@@ -984,11 +884,11 @@ void MainWindow::updateStyleState()
             ribbonConsistency.consistentUnderline = consistency.consistentUnderline;
             
             m_ribbonBar->updateFromSelection(style, ribbonConsistency);
-            qDebug() << "  选区跨多个 Span，根据各属性一致性更新工具栏";
+            LOG_DEBUG("  选区跨多个 Span，根据各属性一致性更新工具栏");
         }
     }
     
-    qDebug() << "  已更新到 ribbonBar";
+    LOG_DEBUG("  已更新到 ribbonBar");
 }
 
 QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
@@ -1102,6 +1002,82 @@ void MainWindow::setupCustomStatusBar()
     
     // 将自定义部件添加到状态栏
     statusBar()->addWidget(m_statusBarWidget, 1);
+}
+
+// ========== 辅助方法实现 ==========
+
+void MainWindow::toggleStyleAttribute(
+    const std::function<bool(const CharacterStyle&)>& getPropertyFunc,
+    const std::function<void(CharacterStyle&, bool)>& setPropertyFunc,
+    const std::function<void(bool)>& applyStyleFunc,
+    const QString& styleName)
+{
+    LOG_DEBUG("MainWindow:" + styleName + "按钮被点击");
+    
+    CharacterStyle style;
+    if (m_selection->isEmpty()) {
+        // 无选区：根据当前显示样式切换
+        CharacterStyle currentStyle = m_formatController->getCurrentDisplayStyle();
+        LOG_DEBUG(QString("  无选区，getCurrentDisplayStyle() 返回的%1:%2").arg(styleName).arg(getPropertyFunc(currentStyle)));
+        bool newValue = !getPropertyFunc(currentStyle);
+        LOG_DEBUG(QString("  计算的新%1:%2").arg(styleName).arg(newValue));
+        setPropertyFunc(style, newValue);
+        m_formatController->setCurrentInputStyle(style);
+    } else {
+        // 有选区：检查选区内是否全部都是该样式
+        bool allSet = false;
+        if (styleName == "加粗") {
+            allSet = m_formatController->isSelectionAllBold();
+        } else if (styleName == "斜体") {
+            allSet = m_formatController->isSelectionAllItalic();
+        } else if (styleName == "下划线") {
+            allSet = m_formatController->isSelectionAllUnderline();
+        }
+        
+        LOG_DEBUG(QString("  有选区，选区内全部%1:%2").arg(styleName).arg(allSet));
+        
+        bool newValue;
+        if (allSet) {
+            // 选区内全部都是该样式 → 取消
+            newValue = false;
+            LOG_DEBUG(QString("  选区内全部%1，设置为 false").arg(styleName));
+        } else {
+            // 选区内不一致或未设置 → 设置为 true
+            newValue = true;
+            LOG_DEBUG(QString("  选区内不一致或未%1，设置为 true").arg(styleName));
+        }
+        
+        setPropertyFunc(style, newValue);
+        applyStyleFunc(newValue);
+    }
+    updateStyleState();
+}
+
+void MainWindow::applyFontProperty(
+    const std::function<void(CharacterStyle&)>& setPropertyFunc,
+    const QString& propertyName)
+{
+    LOG_DEBUG("MainWindow:" + propertyName + "被调用");
+    CharacterStyle style;
+    if (m_selection->isEmpty()) {
+        setPropertyFunc(style);
+        m_formatController->setCurrentInputStyle(style);
+    } else {
+        setPropertyFunc(style);
+        m_formatController->applyCharacterStyle(style);
+    }
+    updateStyleState();
+}
+
+void MainWindow::onStyleChanged()
+{
+    if (m_scene) {
+        m_scene->updateAllTextItems();
+    }
+    // 刷新 RibbonBar 的样式列表
+    if (m_ribbonBar) {
+        m_ribbonBar->refreshStyleLists();
+    }
 }
 
 } // namespace QtWordEditor

@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <functional>
 #include "core/Global.h"
 #include "ui/dialogs/PageSetupDialog.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -68,6 +69,13 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private slots:
+    // ========== 样式操作辅助槽函数 ==========
+    
+    /**
+     * @brief 样式变化时的统一处理
+     */
+    void onStyleChanged();
+
     // ========== 文件操作槽函数 ==========
     
     /** @brief 创建新文档 */
@@ -168,6 +176,30 @@ private:
     
     /** @brief 重新翻译界面文本 */
     void retranslateUi();
+    
+    // ========== 样式操作辅助方法 ==========
+    
+    /**
+     * @brief 切换样式属性（粗体/斜体/下划线）
+     * @param getPropertyFunc 获取当前属性值的函数
+     * @param setPropertyFunc 设置属性的函数
+     * @param applyStyleFunc 应用样式的函数
+     * @param styleName 样式名称（用于调试）
+     */
+    void toggleStyleAttribute(
+        const std::function<bool(const CharacterStyle&)>& getPropertyFunc,
+        const std::function<void(CharacterStyle&, bool)>& setPropertyFunc,
+        const std::function<void(bool)>& applyStyleFunc,
+        const QString& styleName);
+    
+    /**
+     * @brief 应用字体属性
+     * @param setPropertyFunc 设置属性的函数
+     * @param propertyName 属性名称（用于调试）
+     */
+    void applyFontProperty(
+        const std::function<void(CharacterStyle&)>& setPropertyFunc,
+        const QString& propertyName);
 
     Document *m_document;                   ///< 当前文档
     DocumentScene *m_scene;                 ///< 文档场景

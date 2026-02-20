@@ -65,6 +65,9 @@ signals:
 private:
     // Helper to maintain span consistency after modification
     void mergeAdjacentSpans();
+    
+    // Helper to validate position and length parameters
+    bool validatePositionAndLength(int& position, int& length) const;
 
 private:
     QList<Span> m_spans;

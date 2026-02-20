@@ -253,6 +253,9 @@ void DocumentScene::updateBlockPositions()
             }
         }
     }
+    
+    // 强制刷新整个场景，确保所有位置更新都显示出来
+    update();
 }
 
 void DocumentScene::updateSingleTextItem(Block *block)

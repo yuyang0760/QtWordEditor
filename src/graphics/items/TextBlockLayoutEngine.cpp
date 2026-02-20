@@ -85,7 +85,8 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
         item.fullSpanText = spanText;
         item.style = span.style();
         item.font = font;
-        item.width = fontMetrics.horizontalAdvance(spanText);
+        // 使用 QTextLayout 计算宽度，比 QFontMetricsF 更准确，特别是对于斜体字体
+        item.width = textLine.naturalTextWidth();
         item.height = textLine.height();
         item.ascent = textLine.ascent();
         item.descent = textLine.descent();
@@ -133,7 +134,14 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
             // 新行的第一个 item，尝试找到能放下的最大字符数
             for (int i = 1; i <= currentItem.text.length(); ++i) {
                 QString testText = currentItem.text.left(i);
-                qreal testWidth = fontMetrics.horizontalAdvance(testText);
+                // 使用 QTextLayout 计算测试文本宽度
+                QTextLayout testLayout(testText, currentItem.font);
+                testLayout.beginLayout();
+                QTextLine testLine = testLayout.createLine();
+                testLine.setLineWidth(std::numeric_limits<qreal>::max());
+                testLayout.endLayout();
+                qreal testWidth = testLine.naturalTextWidth();
+                
                 if (testWidth <= m_availableWidth) {
                     charsToFit = i;
                     textToFit = testText;
@@ -145,7 +153,14 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
             // 不是新行的第一个 item，尝试找到能放下的最大字符数
             for (int i = 1; i <= currentItem.text.length(); ++i) {
                 QString testText = currentItem.text.left(i);
-                qreal testWidth = fontMetrics.horizontalAdvance(testText);
+                // 使用 QTextLayout 计算测试文本宽度
+                QTextLayout testLayout(testText, currentItem.font);
+                testLayout.beginLayout();
+                QTextLine testLine = testLayout.createLine();
+                testLine.setLineWidth(std::numeric_limits<qreal>::max());
+                testLayout.endLayout();
+                qreal testWidth = testLine.naturalTextWidth();
+                
                 if (testWidth <= remainingWidth) {
                     charsToFit = i;
                     textToFit = testText;
@@ -169,7 +184,13 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
             newItem.fullSpanText = currentItem.fullSpanText;
             newItem.style = currentItem.style;
             newItem.font = currentItem.font;
-            newItem.width = fontMetrics.horizontalAdvance(textToFit);
+            // 使用 QTextLayout 计算宽度
+            QTextLayout tempLayout(textToFit, currentItem.font);
+            tempLayout.beginLayout();
+            QTextLine tempLine = tempLayout.createLine();
+            tempLine.setLineWidth(std::numeric_limits<qreal>::max());
+            tempLayout.endLayout();
+            newItem.width = tempLine.naturalTextWidth();
             newItem.height = currentItem.height;
             newItem.ascent = currentItem.ascent;
             newItem.descent = currentItem.descent;
@@ -186,7 +207,13 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
                 // 还有剩余字符，更新 currentItem 为剩余部分
                 QString remainingText = currentItem.text.mid(charsToFit);
                 currentItem.text = remainingText;
-                currentItem.width = fontMetrics.horizontalAdvance(remainingText);
+                // 使用 QTextLayout 计算剩余部分的宽度
+                QTextLayout remainingLayout(remainingText, currentItem.font);
+                remainingLayout.beginLayout();
+                QTextLine remainingLine = remainingLayout.createLine();
+                remainingLine.setLineWidth(std::numeric_limits<qreal>::max());
+                remainingLayout.endLayout();
+                currentItem.width = remainingLine.naturalTextWidth();
                 currentItem.startOffsetInSpan += charsToFit;
                 currentItem.globalStartOffset += charsToFit;
                 

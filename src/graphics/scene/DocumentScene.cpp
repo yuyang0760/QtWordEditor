@@ -379,11 +379,44 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
         blockIndex >= 0 && blockIndex < m_pageTextItems[pageIndex].size()) {
         QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIndex];
         if (textItem) {
-            // 使用 mapFromScene 转换坐标到 textItem 的局部坐标
-            QPointF localPos = textItem->mapFromScene(scenePos);
-            
-            // 使用 hitTest 获取准确位置
-            pos.offset = textItem->document()->documentLayout()->hitTest(localPos, Qt::FuzzyHit);
+            QTextDocument *doc = textItem->document();
+            if (doc) {
+                // 使用 mapFromScene 转换坐标到 textItem 的局部坐标
+                QPointF localPos = textItem->mapFromScene(scenePos);
+                
+                // 获取文本项的边界矩形
+                QRectF itemRect = textItem->boundingRect();
+                
+                // 首先尝试使用 hitTest 获取准确位置
+                int offset = doc->documentLayout()->hitTest(localPos, Qt::FuzzyHit);
+                
+                // 判断鼠标是否在文本项的下方（Y 坐标超出文本项高度）
+                // 或者 hitTest 返回 -1（表示在文本外部）
+                bool isBelowTextItem = localPos.y() > itemRect.height();
+                bool isOutsideText = (offset == -1 || offset > doc->characterCount());
+                
+                if (isBelowTextItem || isOutsideText) {
+                    // 遍历文档的所有块，找到合适的块
+                    QTextBlock block = doc->firstBlock();
+                    while (block.isValid()) {
+                        QTextLayout *layout = block.layout();
+                        if (layout && layout->lineCount() > 0) {
+                            // 获取该块的最后一行
+                            QTextLine lastLine = layout->lineAt(layout->lineCount() - 1);
+                            
+                            // 使用鼠标的 X 坐标（相对于 textItem）在最后一行查找最近的字符位置
+                            offset = lastLine.xToCursor(localPos.x());
+                            
+                            // 确保 offset 不超出文档范围
+                            offset = qBound(0, offset, doc->characterCount() - 1);
+                        }
+                        // 只处理第一个块（QGraphicsTextItem 通常只有一个块）
+                        break;
+                    }
+                }
+                
+                pos.offset = offset;
+            }
         }
     }
     

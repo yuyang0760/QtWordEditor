@@ -106,6 +106,9 @@ private slots:
     
     /** @brief 处理自定义边距变化 */
     void onCustomMarginChanged();
+    
+    /** @brief 连接信号和槽 */
+    void connectSignals();
 
 private:
     class Private;                    ///< 私有实现类

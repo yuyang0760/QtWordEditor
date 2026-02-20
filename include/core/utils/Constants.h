@@ -17,6 +17,48 @@ constexpr qreal PAGE_WIDTH = 595.0;   // A4 纸宽度 (210mm)
 constexpr qreal PAGE_HEIGHT = 842.0;  // A4 纸高度 (297mm)
 constexpr qreal PAGE_MARGIN = 72.0;   // 页边距 (1 英寸 = 72 点)
 
+// 页面尺寸预设 (单位：毫米)
+// A4: 210 × 297 mm
+constexpr qreal PAGE_SIZE_A4_WIDTH = 210.0;
+constexpr qreal PAGE_SIZE_A4_HEIGHT = 297.0;
+// A3: 297 × 420 mm
+constexpr qreal PAGE_SIZE_A3_WIDTH = 297.0;
+constexpr qreal PAGE_SIZE_A3_HEIGHT = 420.0;
+// A5: 148 × 210 mm
+constexpr qreal PAGE_SIZE_A5_WIDTH = 148.0;
+constexpr qreal PAGE_SIZE_A5_HEIGHT = 210.0;
+// Letter: 215.9 × 279.4 mm (8.5 × 11 英寸)
+constexpr qreal PAGE_SIZE_LETTER_WIDTH = 215.9;
+constexpr qreal PAGE_SIZE_LETTER_HEIGHT = 279.4;
+// Legal: 215.9 × 355.6 mm (8.5 × 14 英寸)
+constexpr qreal PAGE_SIZE_LEGAL_WIDTH = 215.9;
+constexpr qreal PAGE_SIZE_LEGAL_HEIGHT = 355.6;
+// Tabloid: 279.4 × 431.8 mm (11 × 17 英寸)
+constexpr qreal PAGE_SIZE_TABLOID_WIDTH = 279.4;
+constexpr qreal PAGE_SIZE_TABLOID_HEIGHT = 431.8;
+
+// 边距预设 (单位：毫米)
+// Normal: 20 mm
+constexpr qreal MARGIN_NORMAL = 20.0;
+// Narrow: 12.7 mm (0.5 英寸)
+constexpr qreal MARGIN_NARROW = 12.7;
+// Moderate: 25.4 mm (1 英寸)
+constexpr qreal MARGIN_MODERATE = 25.4;
+// Wide: 50.8 mm (2 英寸)
+constexpr qreal MARGIN_WIDE = 50.8;
+
+// 页面尺寸控件范围
+constexpr qreal PAGE_SIZE_MIN = 50.0;
+constexpr qreal PAGE_SIZE_MAX = 500.0;
+constexpr int PAGE_SIZE_DECIMALS = 1;
+constexpr qreal PAGE_SIZE_STEP = 1.0;
+
+// 边距控件范围
+constexpr qreal MARGIN_MIN = 0.0;
+constexpr qreal MARGIN_MAX = 100.0;
+constexpr int MARGIN_DECIMALS = 1;
+constexpr qreal MARGIN_STEP = 1.0;
+
 // ==========================================
 // 界面布局相关常量
 // ==========================================

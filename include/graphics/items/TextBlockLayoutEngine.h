@@ -33,17 +33,23 @@ public:
     };
 
     /**
-     * @brief 单个内容项的信息（对应一个 Span）
+     * @brief 单个内容项的信息（对应一个 Span 的某一行片段）
      */
     struct LayoutItem {
         int spanIndex;              ///< 对应的 Span 索引
-        QString text;               ///< 文本内容
+        QString text;               ///< 文本内容（可能是 Span 的某一行）
+        QString fullSpanText;       ///< 整个 Span 的完整文本
         CharacterStyle style;       ///< 字符样式
         qreal width;                ///< 宽度
         qreal height;               ///< 高度
-        qreal baseline;             ///< 基线位置
+        qreal ascent;               ///< 上升高度（从基线到顶部）
+        qreal descent;              ///< 下降高度（从基线到底部）
         QPointF position;           ///< 位置（相对于 TextBlockItem 的左上角）
         QFont font;                 ///< 字体（用于绘制）
+        int startOffsetInSpan;      ///< 在原 Span 中的起始偏移
+        int endOffsetInSpan;        ///< 在原 Span 中的结束偏移
+        int globalStartOffset;      ///< 全局起始偏移（从段落开头算起）
+        int globalEndOffset;        ///< 全局结束偏移
     };
 
     /**
@@ -158,32 +164,10 @@ private:
     QFont createFontFromStyle(const CharacterStyle &style) const;
     
     /**
-     * @brief 计算单个 Span 的布局（内部多行）
-     * @param span Span 对象
-     * @param availableWidth 可用宽度
-     * @return LayoutItem
+     * @brief 完成一行的布局
      */
-    LayoutItem calculateLayoutItem(const Span &span, qreal availableWidth) const;
-    
-    /**
-     * @brief 将项分配到行（处理多个 Span 的换行）
-     */
-    void assignItemsToLines();
-    
-    /**
-     * @brief 计算每一行的基线
-     */
-    void calculateLineBaselines();
-    
-    /**
-     * @brief 应用文本对齐
-     */
-    void applyAlignment();
-    
-    /**
-     * @brief 定位所有项
-     */
-    void positionItems();
+    void finishLine(QList<int> &itemIndices, QList<LayoutItem> &allItems, 
+                    qreal lineWidth, qreal lineY, qreal lineHeight, qreal lineMaxAscent);
     
     /**
      * @brief 清除所有布局结果

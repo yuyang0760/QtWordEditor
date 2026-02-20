@@ -176,10 +176,21 @@ void TextBlockItem::performLayout()
     m_layoutEngine->layout(m_contentItems);
     
     // 定位所有内容项（加上左缩进偏移）
+    qDebug() << "TextBlockItem::performLayout - 开始定位内容项";
     for (QGraphicsItem *item : m_contentItems) {
         QPointF pos = m_layoutEngine->positionForItem(item);
-        item->setPos(pos.x() + m_leftIndent, pos.y());
+        QPointF finalPos = QPointF(pos.x() + m_leftIndent, pos.y());
+        item->setPos(finalPos);
+        
+        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+        if (fragment) {
+            qDebug() << "  TextFragment: text=" << fragment->text().left(10) << "...";
+            qDebug() << "    布局位置:" << pos << "，最终位置:" << finalPos;
+            QFontMetricsF fm(fragment->font());
+            qDebug() << "    baseline:" << fragment->baseline() << "，ascent:" << fm.ascent();
+        }
     }
+    qDebug() << "TextBlockItem::performLayout - 内容项定位完成";
     
     // 更新边界矩形
     m_boundingRect = QRectF(0, 0, m_textWidth, m_layoutEngine->totalHeight());
@@ -200,6 +211,39 @@ void TextBlockItem::applyParagraphIndent()
     m_rightIndent = style.rightIndent();
     
     qDebug() << "TextBlockItem::applyParagraphIndent - 左缩进:" << m_leftIndent << "右缩进:" << m_rightIndent;
+}
+
+int TextBlockItem::hitTest(const QPointF &localPos) const
+{
+    // 减去左缩进
+    QPointF adjustedPos = localPos - QPointF(m_leftIndent, 0);
+    
+    // 调用布局引擎的 hitTest
+    TextBlockLayoutEngine::CursorHitResult result = m_layoutEngine->hitTest(adjustedPos, m_contentItems);
+    
+    return result.globalOffset;
+}
+
+TextBlockItem::CursorVisualInfo TextBlockItem::cursorPositionAt(int globalOffset) const
+{
+    CursorVisualInfo info;
+    info.position = QPointF(0, 0);
+    info.height = 20;
+    
+    qDebug() << "TextBlockItem::cursorPositionAt - globalOffset:" << globalOffset;
+    
+    // 调用布局引擎的 cursorPositionAt
+    TextBlockLayoutEngine::CursorVisualResult result = m_layoutEngine->cursorPositionAt(globalOffset, m_contentItems);
+    
+    qDebug() << "  布局引擎返回: position:" << result.position << "height:" << result.height;
+    
+    // 加上左缩进
+    info.position = result.position + QPointF(m_leftIndent, 0);
+    info.height = result.height;
+    
+    qDebug() << "  最终返回: position:" << info.position << "height:" << info.height;
+    
+    return info;
 }
 
 } // namespace QtWordEditor

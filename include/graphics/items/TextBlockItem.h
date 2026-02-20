@@ -116,6 +116,30 @@ public:
      */
     int type() const override { return Type; }
 
+    // ========== 光标位置计算 ==========
+    
+    /**
+     * @brief 根据相对于 TextBlockItem 的局部坐标获取全局字符偏移
+     * @param localPos 局部坐标
+     * @return 全局字符偏移（从段落开头算起）
+     */
+    int hitTest(const QPointF &localPos) const;
+    
+    /**
+     * @brief 光标视觉位置信息
+     */
+    struct CursorVisualInfo {
+        QPointF position;  ///< 视觉位置（相对于 TextBlockItem）
+        qreal height;      ///< 光标高度
+    };
+    
+    /**
+     * @brief 根据全局字符偏移获取视觉位置
+     * @param globalOffset 全局字符偏移
+     * @return 视觉位置信息
+     */
+    CursorVisualInfo cursorPositionAt(int globalOffset) const;
+
 private:
     // ========== 内部方法 ==========
     

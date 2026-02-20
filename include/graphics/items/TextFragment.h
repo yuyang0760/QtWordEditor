@@ -64,6 +64,12 @@ public:
      * @param style 字符样式
      */
     void setStyle(const CharacterStyle &style);
+    
+    /**
+     * @brief 获取字体
+     * @return 字体
+     */
+    QFont font() const;
 
     // ========== 尺寸和基线 ==========
     
@@ -84,6 +90,28 @@ public:
      * @return 基线位置
      */
     qreal baseline() const;
+
+    // ========== 光标位置计算 ==========
+    
+    /**
+     * @brief 根据局部坐标获取字符偏移
+     * @param localPos 局部坐标
+     * @return 字符偏移（0 到 text().length()）
+     */
+    int hitTest(const QPointF &localPos) const;
+    
+    /**
+     * @brief 根据字符偏移获取光标位置（局部坐标）
+     * @param offset 字符偏移
+     * @return 光标位置（局部坐标）
+     */
+    QPointF cursorPositionAt(int offset) const;
+    
+    /**
+     * @brief 获取光标高度
+     * @return 光标高度
+     */
+    qreal cursorHeight() const;
 
     // ========== QGraphicsItem 接口 ==========
     

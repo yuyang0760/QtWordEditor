@@ -106,6 +106,41 @@ public:
      */
     QList<QRectF> lines() const;
 
+    // ========== 光标位置计算 ==========
+    
+    /**
+     * @brief 光标位置信息
+     */
+    struct CursorHitResult {
+        TextFragment *fragment;   ///< 命中的 TextFragment
+        int offset;               ///< 在该 fragment 中的字符偏移
+        int globalOffset;         ///< 全局字符偏移（从段落开头算起）
+    };
+    
+    /**
+     * @brief 根据局部坐标找到光标位置信息
+     * @param localPos 相对于 TextBlockItem 的局部坐标
+     * @param items 所有内容项列表（用于计算全局偏移）
+     * @return 光标位置信息
+     */
+    CursorHitResult hitTest(const QPointF &localPos, const QList<QGraphicsItem*> &items) const;
+    
+    /**
+     * @brief 光标视觉位置信息
+     */
+    struct CursorVisualResult {
+        QPointF position;         ///< 视觉位置（相对于 TextBlockItem）
+        qreal height;             ///< 光标高度
+    };
+    
+    /**
+     * @brief 根据全局字符偏移找到视觉位置
+     * @param globalOffset 全局字符偏移
+     * @param items 所有内容项列表
+     * @return 视觉位置信息
+     */
+    CursorVisualResult cursorPositionAt(int globalOffset, const QList<QGraphicsItem*> &items) const;
+
 private:
     /**
      * @brief 一行的信息

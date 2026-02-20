@@ -828,25 +828,15 @@ void MainWindow::retranslateUi()
 void MainWindow::updateCursorPosition(const CursorPosition &pos)
 {
     m_currentCursorPos = pos;
-    QPointF visualPos = calculateCursorVisualPosition(pos);
     
-    // 根据光标位置的字号计算光标高度
-    qreal cursorHeight = 20.0;  // 默认值
-    if (pos.blockIndex >= 0) {
-        Block *block = m_document->block(pos.blockIndex);
-        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-        if (paraBlock) {
-            CharacterStyle style = paraBlock->styleAt(pos.offset);
-            int fontSize = style.fontSize();
-            if (fontSize > 0) {
-                // 字号为磅值，转换为像素高度（约1.2倍字号比较合适）
-                cursorHeight = fontSize * 1.2;
-            }
-        }
+    // 使用 DocumentScene 的新方法来更新光标，确保高度正确
+    if (m_scene) {
+        m_scene->updateCursorFromPosition(pos);
+        
+        // 同时获取视觉位置用于 View 的光标
+        QPointF visualPos = calculateCursorVisualPosition(pos);
+        m_view->setCursorVisualPosition(visualPos);
     }
-    
-    m_scene->updateCursor(visualPos, cursorHeight);
-    m_view->setCursorVisualPosition(visualPos);
     
     // 同时更新状态栏，显示光标位置
     updateStatusBar(m_lastScenePos, m_lastViewPos);

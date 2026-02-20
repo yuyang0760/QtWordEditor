@@ -358,70 +358,73 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
         return pos;
     }
     
+    qDebug() << "=== DocumentScene::cursorPositionAt ===";
+    qDebug() << "  场景坐标:" << scenePos;
+    
     // 先找到所在的页
     Page *page = pageAt(scenePos);
     if (!page) {
+        qDebug() << "  未找到页面";
         return pos;
     }
+    qDebug() << "  找到页面:" << page->pageNumber();
     
-    // 简单计算：根据Y坐标计算块索引
-    qreal pageSpacing = 30.0;
-    qreal pageHeight = Constants::PAGE_HEIGHT;
-    int pageIndex = page->pageNumber() - 1;
-    qreal yOffset = pageIndex * (pageHeight + pageSpacing);
+    // 找到鼠标位置所在的 TextBlockItem
+    TextBlockItem *targetBlockItem = nullptr;
+    int blockIndex = 0;
     
-    qreal relativeY = scenePos.y() - yOffset - Constants::PAGE_MARGIN;
-    int blockIndex = qBound(0, qFloor(relativeY / 30.0), page->blockCount() - 1);
-    pos.blockIndex = blockIndex;
-    
-    // 使用真实的 QGraphicsTextItem
-    if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
-        blockIndex >= 0 && blockIndex < m_pageTextItems[pageIndex].size()) {
-        QGraphicsTextItem *textItem = m_pageTextItems[pageIndex][blockIndex];
-        if (textItem) {
-            QTextDocument *doc = textItem->document();
-            if (doc) {
-                // 使用 mapFromScene 转换坐标到 textItem 的局部坐标
-                QPointF localPos = textItem->mapFromScene(scenePos);
+    for (int i = 0; i < page->blockCount(); ++i) {
+        Block *block = page->block(i);
+        auto it = m_blockItems.find(block);
+        if (it != m_blockItems.end()) {
+            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+            if (textBlockItem) {
+                // 检查场景坐标是否在该块的边界内
+                QPointF blockScenePos = textBlockItem->scenePos();
+                QRectF blockRect = textBlockItem->boundingRect();
+                QRectF blockSceneRect(blockScenePos.x(), blockScenePos.y(), 
+                                       blockRect.width(), blockRect.height());
                 
-                // 获取文本项的边界矩形
-                QRectF itemRect = textItem->boundingRect();
+                qDebug() << "  块" << i << "场景位置:" << blockScenePos << "边界:" << blockSceneRect;
                 
-                // 首先尝试使用 hitTest 获取准确位置
-                int offset = doc->documentLayout()->hitTest(localPos, Qt::FuzzyHit);
-                
-                // 判断鼠标是否在文本项的下方（Y 坐标超出文本项高度）
-                // 或者 hitTest 返回 -1（表示在文本外部）
-                bool isBelowTextItem = localPos.y() > itemRect.height();
-                bool isOutsideText = (offset == -1 || offset > doc->characterCount());
-                
-                if (isBelowTextItem || isOutsideText) {
-                    // 遍历文档的所有块，找到合适的块
-                    QTextBlock block = doc->firstBlock();
-                    while (block.isValid()) {
-                        QTextLayout *layout = block.layout();
-                        if (layout && layout->lineCount() > 0) {
-                            // 获取该块的最后一行
-                            QTextLine lastLine = layout->lineAt(layout->lineCount() - 1);
-                            
-                            // 使用鼠标的 X 坐标（相对于 textItem）在最后一行查找最近的字符位置
-                            offset = lastLine.xToCursor(localPos.x());
-                            
-                            // 确保 offset 不超出文档范围
-                            offset = qBound(0, offset, doc->characterCount() - 1);
-                        }
-                        // 只处理第一个块（QGraphicsTextItem 通常只有一个块）
-                        break;
-                    }
+                if (scenePos.y() <= blockSceneRect.bottom()) {
+                    targetBlockItem = textBlockItem;
+                    blockIndex = i;
+                    qDebug() << "  选中块" << i;
+                    break;
                 }
-                
-                pos.offset = offset;
             }
         }
     }
     
-  //  QDebug() << "DocumentScene::cursorPositionAt - 场景位置:" << scenePos
-  //           << "→ 块索引:" << pos.blockIndex << "，偏移:" << pos.offset;
+    // 如果没有找到（鼠标在所有块下方），使用最后一个块
+    if (!targetBlockItem && page->blockCount() > 0) {
+        for (int i = page->blockCount() - 1; i >= 0; --i) {
+            Block *block = page->block(i);
+            auto it = m_blockItems.find(block);
+            if (it != m_blockItems.end()) {
+                TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+                if (textBlockItem) {
+                    targetBlockItem = textBlockItem;
+                    blockIndex = i;
+                    qDebug() << "  使用最后一个块" << i;
+                    break;
+                }
+            }
+        }
+    }
+    
+    pos.blockIndex = blockIndex;
+    
+    if (targetBlockItem) {
+        // 将场景坐标转换为 TextBlockItem 的局部坐标
+        QPointF localPos = targetBlockItem->mapFromScene(scenePos);
+        qDebug() << "  TextBlockItem 局部坐标:" << localPos;
+        
+        // 使用 TextBlockItem 的 hitTest 方法
+        pos.offset = targetBlockItem->hitTest(localPos);
+        qDebug() << "  字符偏移:" << pos.offset;
+    }
     
     return pos;
 }
@@ -429,102 +432,104 @@ CursorPosition DocumentScene::cursorPositionAt(const QPointF &scenePos) const
 QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) const
 {
     QPointF result(0, 0);
-  //  QDebug() << "DocumentScene::calculateCursorVisualPosition - 计算光标位置，块:" << pos.blockIndex << "，偏移:" << pos.offset;
+    qDebug() << "=== DocumentScene::calculateCursorVisualPosition ===";
+    qDebug() << "  块索引:" << pos.blockIndex << "，偏移:" << pos.offset;
     
     if (!m_document) {
-      //  QDebug() << "  文档指针为空！";
+        qDebug() << "  文档指针为空！";
         return result;
     }
     
     // 找到所在的页（简单假设：第0个section）
     Section *section = m_document->section(0);
     if (!section) {
-      //  QDebug() << "  节指针为空！";
+        qDebug() << "  节指针为空！";
         return result;
     }
     
     // 找到对应页的index：这里简化，假设每个section只有1页
     int pageIndex = 0;
     if (pageIndex < 0 || pageIndex >= section->pageCount()) {
-      //  QDebug() << "  页面索引超出范围！";
+        qDebug() << "  页面索引超出范围！";
         return result;
     }
     
     Page *page = section->page(pageIndex);
     if (!page) {
-      //  QDebug() << "  页面指针为空！";
+        qDebug() << "  页面指针为空！";
         return result;
     }
     
-    // 获取真实的 QGraphicsTextItem
-    QGraphicsTextItem *textItem = nullptr;
-    if (pageIndex >= 0 && pageIndex < m_pageTextItems.size() &&
-        pos.blockIndex >= 0 && pos.blockIndex < m_pageTextItems[pageIndex].size()) {
-        textItem = m_pageTextItems[pageIndex][pos.blockIndex];
-    }
-    
-    if (!textItem) {
-      //  QDebug() << "  文本项指针为空！页面索引:" << pageIndex 
-      //           << "页面文本项列表大小:" << m_pageTextItems.size()
-      //           << "块索引:" << pos.blockIndex;
-        if (pageIndex < m_pageTextItems.size()) {
-          //  QDebug() << "  当前页面文本项数量:" << m_pageTextItems[pageIndex].size();
+    // 获取 TextBlockItem
+    TextBlockItem *textBlockItem = nullptr;
+    if (pos.blockIndex >= 0 && pos.blockIndex < page->blockCount()) {
+        Block *block = page->block(pos.blockIndex);
+        auto it = m_blockItems.find(block);
+        if (it != m_blockItems.end()) {
+            textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
         }
+    }
+    
+    if (!textBlockItem) {
+        qDebug() << "  TextBlockItem 指针为空！";
         return result;
     }
     
-    QTextDocument *doc = textItem->document();
-    if (!doc) {
-      //  QDebug() << "  文档指针为空！";
-        return result;
+    qDebug() << "  TextBlockItem 场景位置:" << textBlockItem->scenePos();
+    
+    // 使用 TextBlockItem 的 cursorPositionAt 方法
+    TextBlockItem::CursorVisualInfo visualInfo = textBlockItem->cursorPositionAt(pos.offset);
+    qDebug() << "  光标相对位置:" << visualInfo.position << "，高度:" << visualInfo.height;
+    
+    // 获取 TextBlockItem 在场景中的位置
+    QPointF blockScenePos = textBlockItem->scenePos();
+    
+    // 计算最终的场景坐标
+    result.setX(blockScenePos.x() + visualInfo.position.x());
+    result.setY(blockScenePos.y() + visualInfo.position.y());
+    
+    qDebug() << "  最终场景坐标:" << result;
+    
+    // 更新光标高度
+    if (m_cursorItem) {
+        m_cursorItem->setPosition(result, visualInfo.height);
     }
     
-    QString text = doc->toPlainText();
-    int charOffset = qMin(pos.offset, text.length());
+    return result;
+}
+
+// ========== 新增方法：根据 CursorPosition 直接更新光标 ==========
+void DocumentScene::updateCursorFromPosition(const CursorPosition &pos)
+{
+    QPointF visualPos = calculateCursorVisualPosition(pos);
     
-  //  QDebug() << "  文本内容:" << text << "字符偏移:" << charOffset;
+    // 需要找到对应的 TextBlockItem 来获取光标高度
+    qreal cursorHeight = 20.0;
     
-    // 使用 QTextCursor 和文档布局来计算光标位置
-    QTextCursor cursor(doc);
-    cursor.setPosition(charOffset);
-    
-    QTextBlock block = cursor.block();
-    QTextLayout *layout = block.layout();
-    
-    if (!layout) {
-      //  QDebug() << "  布局指针为空！";
-        return result;
-    }
-    
-    int positionInBlock = cursor.positionInBlock();
-    
-    qreal x = 0;
-    qreal y = 0;
-    
-    if (layout->lineCount() > 0) {
-        // 找到光标所在的行
-        for (int i = 0; i < layout->lineCount(); ++i) {
-            QTextLine line = layout->lineAt(i);
-            if (positionInBlock >= line.textStart() && positionInBlock <= line.textStart() + line.textLength()) {
-                y = line.y();
-                x = line.cursorToX(positionInBlock);
-                break;
+    if (m_document && pos.blockIndex >= 0) {
+        // 找到所在的页（简单假设：第0个section）
+        Section *section = m_document->section(0);
+        if (section) {
+            int pageIndex = 0;
+            if (pageIndex >= 0 && pageIndex < section->pageCount()) {
+                Page *page = section->page(pageIndex);
+                if (page && pos.blockIndex >= 0 && pos.blockIndex < page->blockCount()) {
+                    Block *block = page->block(pos.blockIndex);
+                    auto it = m_blockItems.find(block);
+                    if (it != m_blockItems.end()) {
+                        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+                        if (textBlockItem) {
+                            TextBlockItem::CursorVisualInfo visualInfo = textBlockItem->cursorPositionAt(pos.offset);
+                            cursorHeight = visualInfo.height;
+                        }
+                    }
+                }
             }
         }
     }
     
-  //  QDebug() << "  X坐标:" << x << "Y坐标:" << y;
-    
-    // 获取 textItem 在场景中的位置（注意：它是 TextBlockItem 的子项！）
-    QPointF itemScenePos = textItem->scenePos();
-  //  QDebug() << "  文本项场景坐标:" << itemScenePos;
-    
-    result.setX(itemScenePos.x() + x);
-    result.setY(itemScenePos.y() + y);
-    
-  //  QDebug() << "  返回结果坐标:" << result;
-    
-    return result;
+    qDebug() << "DocumentScene::updateCursorFromPosition - pos:" << visualPos << "height:" << cursorHeight;
+    updateCursor(visualPos, cursorHeight);
 }
 
 QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range) const

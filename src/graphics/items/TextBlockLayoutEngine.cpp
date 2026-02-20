@@ -1,6 +1,7 @@
 #include "graphics/items/TextBlockLayoutEngine.h"
 #include "graphics/items/TextFragment.h"
 #include <QDebug>
+#include <limits>
 
 namespace QtWordEditor {
 
@@ -262,6 +263,172 @@ qreal TextBlockLayoutEngine::itemBaseline(QGraphicsItem *item) const
     
     // 其他类型的项，默认基线在底部
     return item->boundingRect().height();
+}
+
+TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPointF &localPos, const QList<QGraphicsItem*> &items) const
+{
+    CursorHitResult result;
+    result.fragment = nullptr;
+    result.offset = 0;
+    result.globalOffset = 0;
+    
+    if (m_lines.isEmpty() || items.isEmpty()) {
+        return result;
+    }
+    
+    // 首先找到鼠标所在的行
+    const LineInfo *targetLine = nullptr;
+    for (const LineInfo &line : m_lines) {
+        if (localPos.y() <= line.rect.bottom()) {
+            targetLine = &line;
+            break;
+        }
+    }
+    
+    // 如果鼠标在所有行下方，使用最后一行
+    if (!targetLine) {
+        targetLine = &m_lines.last();
+    }
+    
+    // 然后在该行中找到最接近鼠标 X 坐标的 TextFragment
+    qreal minDistance = std::numeric_limits<qreal>::max();
+    int globalOffsetCounter = 0;
+    
+    // 先计算目标行之前的所有字符数
+    for (const LineInfo &line : m_lines) {
+        if (&line == targetLine) {
+            break;
+        }
+        for (QGraphicsItem *item : line.items) {
+            TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+            if (fragment) {
+                globalOffsetCounter += fragment->text().length();
+            }
+        }
+    }
+    
+    // 遍历目标行中的项
+    for (QGraphicsItem *item : targetLine->items) {
+        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+        if (!fragment) {
+            continue;
+        }
+        
+        // 获取 fragment 的位置
+        QPointF fragmentPos = positionForItem(item);
+        
+        // 将鼠标坐标转换为 fragment 的局部坐标
+        QPointF fragmentLocalPos = localPos - fragmentPos;
+        
+        // 使用 fragment 的 hitTest
+        int fragmentOffset = fragment->hitTest(fragmentLocalPos);
+        
+        // 计算该 fragment 中这个位置的全局 X 坐标
+        QPointF cursorLocalPos = fragment->cursorPositionAt(fragmentOffset);
+        qreal globalX = fragmentPos.x() + cursorLocalPos.x();
+        qreal distance = qAbs(localPos.x() - globalX);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            result.fragment = fragment;
+            result.offset = fragmentOffset;
+            result.globalOffset = globalOffsetCounter + fragmentOffset;
+        }
+        
+        globalOffsetCounter += fragment->text().length();
+    }
+    
+    // 如果没有找到任何 fragment（理论上不应该发生），返回第一个
+    if (!result.fragment) {
+        for (QGraphicsItem *item : items) {
+            TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+            if (fragment) {
+                result.fragment = fragment;
+                result.offset = 0;
+                result.globalOffset = 0;
+                break;
+            }
+        }
+    }
+    
+    return result;
+}
+
+TextBlockLayoutEngine::CursorVisualResult TextBlockLayoutEngine::cursorPositionAt(int globalOffset, const QList<QGraphicsItem*> &items) const
+{
+    CursorVisualResult result;
+    result.position = QPointF(0, 0);
+    result.height = 20;
+    
+    qDebug() << "TextBlockLayoutEngine::cursorPositionAt - globalOffset:" << globalOffset 
+             << "items count:" << items.size();
+    
+    if (items.isEmpty()) {
+        qDebug() << "  items 为空，返回默认值";
+        return result;
+    }
+    
+    // 找到对应的 fragment 和在该 fragment 中的偏移
+    TextFragment *targetFragment = nullptr;
+    int offsetInFragment = 0;
+    int currentOffset = 0;
+    
+    for (QGraphicsItem *item : items) {
+        TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(item);
+        if (!fragment) {
+            continue;
+        }
+        
+        int fragmentLength = fragment->text().length();
+        
+        qDebug() << "  检查 fragment: currentOffset=" << currentOffset 
+                 << "fragmentLength=" << fragmentLength 
+                 << "text=" << fragment->text().left(10) << "...";
+        
+        if (globalOffset <= currentOffset + fragmentLength) {
+            targetFragment = fragment;
+            offsetInFragment = globalOffset - currentOffset;
+            qDebug() << "  找到目标 fragment: offsetInFragment=" << offsetInFragment;
+            break;
+        }
+        
+        currentOffset += fragmentLength;
+    }
+    
+    // 如果 globalOffset 超出范围，使用最后一个 fragment
+    if (!targetFragment) {
+        qDebug() << "  未找到目标，使用最后一个 fragment";
+        for (int i = items.size() - 1; i >= 0; --i) {
+            TextFragment *fragment = qgraphicsitem_cast<TextFragment*>(items[i]);
+            if (fragment) {
+                targetFragment = fragment;
+                offsetInFragment = fragment->text().length();
+                qDebug() << "  使用最后一个 fragment: offsetInFragment=" << offsetInFragment;
+                break;
+            }
+        }
+    }
+    
+    if (!targetFragment) {
+        qDebug() << "  仍未找到 fragment，返回默认值";
+        return result;
+    }
+    
+    // 获取 fragment 的位置
+    QPointF fragmentPos = positionForItem(targetFragment);
+    qDebug() << "  fragment 位置:" << fragmentPos;
+    
+    // 获取 fragment 内的光标位置
+    QPointF fragmentCursorPos = targetFragment->cursorPositionAt(offsetInFragment);
+    qDebug() << "  fragment 内光标位置:" << fragmentCursorPos;
+    
+    // 计算相对于 TextBlockItem 的位置
+    result.position = fragmentPos + fragmentCursorPos;
+    result.height = targetFragment->cursorHeight();
+    
+    qDebug() << "  最终结果: position:" << result.position << "height:" << result.height;
+    
+    return result;
 }
 
 } // namespace QtWordEditor

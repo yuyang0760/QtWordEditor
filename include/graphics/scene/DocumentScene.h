@@ -90,6 +90,12 @@ public:
     void updateCursor(const QPointF &pos, qreal height);
     
     /**
+     * @brief 根据 CursorPosition 直接更新光标（包括正确的高度）
+     * @param pos 光标位置
+     */
+    void updateCursorFromPosition(const CursorPosition &pos);
+    
+    /**
      * @brief 设置光标是否可见
      * @param visible true=显示光标，false=隐藏光标
      */

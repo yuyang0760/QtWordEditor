@@ -2,6 +2,8 @@
 #include <QPainter>
 #include <QFontMetricsF>
 #include <QDebug>
+#include <QTextLayout>
+#include <QTextLine>
 
 namespace QtWordEditor {
 
@@ -48,6 +50,11 @@ CharacterStyle TextFragment::style() const
     return m_style;
 }
 
+QFont TextFragment::font() const
+{
+    return m_font;
+}
+
 void TextFragment::setStyle(const CharacterStyle &style)
 {
     m_style = style;
@@ -70,6 +77,95 @@ qreal TextFragment::height() const
 qreal TextFragment::baseline() const
 {
     return m_baseline;
+}
+
+int TextFragment::hitTest(const QPointF &localPos) const
+{
+    QFontMetricsF fm(m_font);
+    
+    if (m_text.isEmpty()) {
+        return 0;
+    }
+    
+    qreal x = localPos.x();
+    
+    // 使用 QTextLayout 来获得更准确的 hitTest
+    QTextLayout textLayout(m_text, m_font);
+    textLayout.beginLayout();
+    QTextLine line = textLayout.createLine();
+    line.setLineWidth(100000); // 足够长的宽度，不换行
+    textLayout.endLayout();
+    
+    if (line.isValid()) {
+        // 使用 xToCursor 获取准确位置
+        int offset = line.xToCursor(x);
+        return offset;
+    }
+    
+    // 备用方案：逐个字符计算
+    int bestOffset = 0;
+    qreal minDistance = qAbs(x);
+    
+    for (int i = 0; i <= m_text.length(); ++i) {
+        QString leftPart = m_text.left(i);
+        qreal posX = fm.horizontalAdvance(leftPart);
+        qreal distance = qAbs(x - posX);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            bestOffset = i;
+        }
+    }
+    
+    return bestOffset;
+}
+
+QPointF TextFragment::cursorPositionAt(int offset) const
+{
+    QFontMetricsF fm(m_font);
+    
+    // 确保 offset 在有效范围内
+    offset = qBound(0, offset, m_text.length());
+    
+    qDebug() << "TextFragment::cursorPositionAt - offset:" << offset 
+             << "text:" << m_text.left(10) << "...";
+    qDebug() << "  baseline:" << m_baseline 
+             << "ascent:" << fm.ascent() 
+             << "descent:" << fm.descent() 
+             << "height:" << fm.height();
+    
+    // 使用 QTextLayout 来获得更准确的光标位置
+    QTextLayout textLayout(m_text, m_font);
+    textLayout.beginLayout();
+    QTextLine line = textLayout.createLine();
+    line.setLineWidth(100000); // 足够长的宽度，不换行
+    textLayout.endLayout();
+    
+    qreal x = 0;
+    if (line.isValid()) {
+        x = line.cursorToX(offset);
+    } else {
+        QString leftPart = m_text.left(offset);
+        x = fm.horizontalAdvance(leftPart);
+    }
+    
+    // Y 坐标：文本顶部位置 = 0
+    // 这样光标会从文本顶部开始，覆盖整个高度
+    qreal y = 0;
+    
+    qDebug() << "  返回位置: x=" << x << "y=" << y;
+    
+    return QPointF(x, y);
+}
+
+qreal TextFragment::cursorHeight() const
+{
+    QFontMetricsF fm(m_font);
+    qreal height = fm.height();
+    qDebug() << "TextFragment::cursorHeight - height:" << height
+             << "ascent:" << fm.ascent()
+             << "descent:" << fm.descent();
+    return height;
 }
 
 QRectF TextFragment::boundingRect() const

@@ -1,383 +1,562 @@
 调试控制台已清空
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: (0, 36)
+  计算目标位置: 块 0，偏移 35 (原 offset=36-1)
+  获取到的样式: 加粗=0, 斜体=0, 下划线=0
 MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+FormatController::getCurrentDisplayStyle - 无选区，光标位置: (0, 36)
+  计算目标位置: 块 0，偏移 35 (原 offset=36-1)
+  获取到的样式: 加粗=0, 斜体=0, 下划线=0
+  从 formatController 收到样式: 加粗=0, 斜体=0, 下划线=0, 有选区=0
+  无选区，工具栏显示一致样式
   已更新到 ribbonBar
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(101,80)
-  光标位置: 块 0 ，偏移 2
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: (203, 94)
+  光标位置: 块0，偏移36
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(98,81)
-  光标位置: 块 0 ，偏移 2
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 2 )
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: (206, 95)
+  光标位置: 块0，偏移36
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(94,81)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+EditEventHandler::handleMouseMove at: (208, 96)
+  光标位置: 块0，偏移36
+  选择起始: 块0，偏移36
+  选择范围已设置
+EditEventHandler::handleMouseMove at: (209, 97)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
 FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(86,82)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+  选区: Anchor(0, 36), Focus(0, 37)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (210, 97)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(86,82)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (212, 98)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(82,82)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (213, 98)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(81,82)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (216, 100)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(81,83)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (219, 100)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(80,83)
-  光标位置: 块 0 ，偏移 0
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (220, 101)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (223, 101)
+  光标位置: 块0，偏移37
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=37
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
+    startX=128, endX=144, width=16
+    添加矩形: x=128, y=21, w=16, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (226, 101)
+  光标位置: 块0，偏移38
+  选择起始: 块0，偏移36
   选择范围已设置
 FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(77,84)
-  光标位置: 块 0 ，偏移 0
-  选择起始: 块 0 ，偏移 2
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
+  选区: Anchor(0, 36), Focus(0, 38)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=38
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
+    startX=128, endX=160, width=32
+    添加矩形: x=128, y=21, w=32, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (229, 101)
+  光标位置: 块0，偏移38
+  选择起始: 块0，偏移36
   选择范围已设置
-EditEventHandler::handleMouseRelease at: QPointF(77,84)
+TextBlockItem::selectionRects start=36, end=38
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
+    startX=128, endX=160, width=32
+    添加矩形: x=128, y=21, w=32, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (235, 101)
+  光标位置: 块0，偏移38
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=38
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
+    startX=128, endX=160, width=32
+    添加矩形: x=128, y=21, w=32, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (238, 101)
+  光标位置: 块0，偏移38
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=38
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
+    startX=128, endX=160, width=32
+    添加矩形: x=128, y=21, w=32, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (241, 101)
+  光标位置: 块0，偏移39
+  选择起始: 块0，偏移36
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor(0, 36), Focus(0, 39)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=39
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
+    startX=128, endX=176, width=48
+    添加矩形: x=128, y=21, w=48, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (244, 101)
+  光标位置: 块0，偏移39
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=39
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
+    startX=128, endX=176, width=48
+    添加矩形: x=128, y=21, w=48, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (246, 101)
+  光标位置: 块0，偏移39
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=39
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
+    startX=128, endX=176, width=48
+    添加矩形: x=128, y=21, w=48, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (252, 101)
+  光标位置: 块0，偏移39
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=39
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
+    startX=128, endX=176, width=48
+    添加矩形: x=128, y=21, w=48, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (257, 100)
+  光标位置: 块0，偏移40
+  选择起始: 块0，偏移36
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor(0, 36), Focus(0, 40)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=40
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
+    startX=128, endX=192, width=64
+    添加矩形: x=128, y=21, w=64, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (261, 99)
+  光标位置: 块0，偏移40
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=40
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
+    startX=128, endX=192, width=64
+    添加矩形: x=128, y=21, w=64, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (266, 98)
+  光标位置: 块0，偏移40
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=40
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
+    startX=128, endX=192, width=64
+    添加矩形: x=128, y=21, w=64, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (269, 98)
+  光标位置: 块0，偏移40
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=40
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
+    startX=128, endX=192, width=64
+    添加矩形: x=128, y=21, w=64, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (271, 98)
+  光标位置: 块0，偏移40
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=40
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
+    startX=128, endX=192, width=64
+    添加矩形: x=128, y=21, w=64, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (273, 97)
+  光标位置: 块0，偏移41
+  选择起始: 块0，偏移36
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor(0, 36), Focus(0, 41)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=41
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
+    startX=128, endX=208, width=80
+    添加矩形: x=128, y=21, w=80, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (277, 97)
+  光标位置: 块0，偏移41
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=41
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
+    startX=128, endX=208, width=80
+    添加矩形: x=128, y=21, w=80, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (281, 97)
+  光标位置: 块0，偏移41
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=41
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
+    startX=128, endX=208, width=80
+    添加矩形: x=128, y=21, w=80, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (284, 97)
+  光标位置: 块0，偏移41
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=41
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
+    startX=128, endX=208, width=80
+    添加矩形: x=128, y=21, w=80, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (286, 97)
+  光标位置: 块0，偏移41
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=41
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
+    startX=128, endX=208, width=80
+    添加矩形: x=128, y=21, w=80, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (291, 97)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+FormatController::getCurrentDisplayStyle - 有选区
+  选区: Anchor(0, 36), Focus(0, 42)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (294, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (297, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (298, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (298, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (300, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (301, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (302, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseMove at: (303, 96)
+  光标位置: 块0，偏移42
+  选择起始: 块0，偏移36
+  选择范围已设置
+TextBlockItem::selectionRects start=36, end=42
+  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
+  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
+    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
+    startX=128, endX=224, width=96
+    添加矩形: x=128, y=21, w=96, h=21
+  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
+  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
+EditEventHandler::handleMouseRelease at: (303, 96)
   最终选择范围:
-    Anchor: 块 0 ，偏移 2
-    Focus: 块 0 ，偏移 0
-    Start: 块 0 ，偏移 0
-    End: 块 0 ，偏移 2
-MainWindow: 加粗按钮被点击
+    Anchor: 块0，偏移36
+    Focus: 块0，偏移42
+    Start: 块0，偏移36
+    End: 块0，偏移42
+MainWindow: 收到 selectionFinished 信号，更新样式状态
+MainWindow::updateStyleState - 开始更新样式
 FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 34 ]  [正常]  " "这是第一段测试文字。" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  getCurrentDisplayStyle() 返回的加粗: false
-  计算的新加粗: true
+  选区: Anchor(0, 36), Focus(0, 42)
+  选区完全在 Span 0 内: [0, 112] [正常]
+  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
+  从 formatController 收到样式: 加粗=0, 斜体=0, 下划线=0, 有选区=1
+FormatController::collectSelectionStyles - 处理块0: 偏移36到42
+  包含块0的 Span 0: 加粗=0, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
+FormatController::getSelectionStyleConsistency - 只有 1 个 Span，所有属性都一致
+  一致的属性值：加粗=0, 斜体=0
+  选区完全在单个 Span 内，工具栏显示一致样式
+  已更新到 ribbonBar
+MainWindow:加粗按钮被点击
+FormatController::collectSelectionStyles - 处理块0: 偏移36到42
+  包含块0的 Span 0: 加粗=0, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
+FormatController::isSelectionAllBold - 结果: 0
+  有选区，选区内全部加粗:0
+  选区内不一致或未加粗，设置为 true
 FormatController::applyCharacterStyle - 开始应用样式
-  范围: 块 0 偏移 0 到块 0 偏移 2
+  范围: 块0 偏移36 到块0 偏移42
   要应用的样式:
-    加粗: true
-    斜体: false
-    下划线: false
-  处理块 0 : 偏移 0 到 2
-ParagraphBlock::setStyle - 开始处理: 位置 0 长度 2
-  同一个 span 内处理: startSpanIndex= 0 , text=[ "这是第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 长度= 34
-    posInStartSpan= 0 , posInEndSpan= 2
-    before=[ "" ], middle=[ "这是" ], after=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ]
-    原始样式的加粗:  false
-    mergedMiddleStyle 加粗:  true
-    插入 after span, 加粗:  false
-  同一个 span 内处理完成，当前 spans 数量:  2
-  mergeAdjacentSpans 之前的 spans:
-    span  0 : text=[ "这是" ], 加粗: true
-    span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
-  mergeAdjacentSpans 之后的 spans:
-    span  0 : text=[ "这是" ], 加粗: true
-    span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
-ParagraphBlock::setStyle - 处理完成
-TextBlockItem::applyRichTextFromBlock - 开始应用，块ID: -1
-  spanCount: 2
-  处理 span  0 : text=[ "这是" ], 加粗: true
-  处理 span  1 : text=[ "第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！" ], 加粗: false
-  生成的 HTML: "<span style=\"border: 2px solid #ff6666; background-color: #ff6666; padding: 0px 2px;\"><b>这是</b></span><span style=\"border: 2px solid #66ff66; background-color: #66ff66; padding: 0px 2px;\">第一段测试文字。欢迎使用 QtWordEditor 文字编辑器！</span>"
-TextBlockItem::applyRichTextFromBlock - 完成
+    加粗: 1
+    斜体: 0
+    下划线: 0
+  处理块0: 偏移36 到42
+TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 3
+  span 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过" ] bold= false length= 36
+  span 1 : text=[ "页面的宽度，" ] bold= true length= 6
+  span 2 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 70
+  availableWidth: 451
+TextBlockLayoutEngine::layout() - 收集到的 items 数量: 6
+  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 width= 448
+  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 width= 128
+  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 width= 96
+  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 width= 372.734
+  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 width= 447.281
+  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 width= 192
+TextBlockLayoutEngine::layout() - 最终行数量: 5
+  line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+  line 1 : rect= QRectF(0,21 224x21) itemIndices= QList(1, 2)
+  line 2 : rect= QRectF(0,42 372.734x21) itemIndices= QList(3)
+  line 3 : rect= QRectF(0,63 447.281x21) itemIndices= QList(4)
+  line 4 : rect= QRectF(0,84 192x21) itemIndices= QList(5)
+TextBlockLayoutEngine::layout() - 最终 items 数量: 6
+  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
+  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 position= QPointF(0,21) width= 128
+  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 position= QPointF(128,21) width= 96
+  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 position= QPointF(0,42) width= 372.734
+  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 position= QPointF(0,63) width= 447.281
+  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 position= QPointF(0,84) width= 192
+TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 3
+  span 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过" ] bold= false length= 36
+  span 1 : text=[ "页面的宽度，" ] bold= true length= 6
+  span 2 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 70
+  availableWidth: 451
+TextBlockLayoutEngine::layout() - 收集到的 items 数量: 6
+  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 width= 448
+  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 width= 128
+  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 width= 96
+  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 width= 372.734
+  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 width= 447.281
+  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 width= 192
+TextBlockLayoutEngine::layout() - 最终行数量: 5
+  line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+  line 1 : rect= QRectF(0,21 224x21) itemIndices= QList(1, 2)
+  line 2 : rect= QRectF(0,42 372.734x21) itemIndices= QList(3)
+  line 3 : rect= QRectF(0,63 447.281x21) itemIndices= QList(4)
+  line 4 : rect= QRectF(0,84 192x21) itemIndices= QList(5)
+TextBlockLayoutEngine::layout() - 最终 items 数量: 6
+  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
+  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 position= QPointF(0,21) width= 128
+  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 position= QPointF(128,21) width= 96
+  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 position= QPointF(0,42) width= 372.734
+  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 position= QPointF(0,63) width= 447.281
+  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 position= QPointF(0,84) width= 192
 FormatController::applyCharacterStyle - 样式应用完成
 MainWindow::updateStyleState - 开始更新样式
 FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
+  选区: Anchor(0, 36), Focus(0, 42)
+  选区完全在 Span 1 内: [36, 42] [加粗]
+  获取到该 Span 的样式: 加粗=1, 斜体=0, 下划线=0
+  从 formatController 收到样式: 加粗=1, 斜体=0, 下划线=0, 有选区=1
+FormatController::collectSelectionStyles - 处理块0: 偏移36到42
+  包含块0的 Span 1: 加粗=1, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
+FormatController::getSelectionStyleConsistency - 只有 1 个 Span，所有属性都一致
+  一致的属性值：加粗=1, 斜体=0
+  选区完全在单个 Span 内，工具栏显示一致样式
   已更新到 ribbonBar
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 2 ) , Focus( 0 , 0 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  -1  (原 offset= 0 -1)
-  已在文档开头，返回默认样式
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
-  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(115,82)
-  光标位置: 块 0 ，偏移 3
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
-  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(114,82)
-  光标位置: 块 0 ，偏移 3
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: ( 0 , 3 )
-  计算目标位置: 块  0 ，偏移  2  (原 offset= 3 -1)
-  获取到的样式: 加粗= false , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= false , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(109,82)
-  光标位置: 块 0 ，偏移 2
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(101,83)
-  光标位置: 块 0 ，偏移 2
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(98,84)
-  光标位置: 块 0 ，偏移 2
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 2 )
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  1  个 Span
-  计算目标位置: 块  0 ，偏移  1  (原 offset= 2 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(94,84)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  2  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  2  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  2  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: QPointF(94,84)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  2  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseMove at: QPointF(93,84)
-  光标位置: 块 0 ，偏移 1
-  选择起始: 块 0 ，偏移 3
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor( 0 , 3 ) , Focus( 0 , 1 )
-    包含 Span  0 : [ 0 , 2 ]  [加粗]  " "这是"  "
-    包含 Span  1 : [ 2 , 34 ]  [正常]  " "第一段测试文字。欢迎" ... "
-  选区共包含  2  个 Span
-  计算目标位置: 块  0 ，偏移  0  (原 offset= 1 -1)
-  获取到的样式: 加粗= true , 斜体= false , 下划线= false
-  从 formatController 收到样式: 加粗= true , 斜体= false , 下划线= false
-  已更新到 ribbonBar
-  选择范围已设置
-EditEventHandler::handleMouseRelease at: QPointF(93,84)
-  最终选择范围:
-    Anchor: 块 0 ，偏移 3
-    Focus: 块 0 ，偏移 1
-    Start: 块 0 ，偏移 1
-    End: 块 0 ，偏移 3

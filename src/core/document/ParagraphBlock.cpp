@@ -106,8 +106,6 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
     
     int end = start + length;
     
-    LOG_DEBUG(QString("ParagraphBlock::setStyle - 开始处理: 位置%1 长度%2").arg(start).arg(length));
-    
     // 找到起始和结束的 span
     int posInStartSpan = 0;
     int startSpanIndex = findSpanIndex(start, &posInStartSpan);
@@ -120,16 +118,10 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         Span &span = m_spans[startSpanIndex];
         QString text = span.text();
         
-        LOG_DEBUG(QString("  同一个 span 内处理: startSpanIndex=%1, text=[%2], 长度=%3")
-            .arg(startSpanIndex).arg(text).arg(text.length()));
-        LOG_DEBUG(QString("    posInStartSpan=%1, posInEndSpan=%2").arg(posInStartSpan).arg(posInEndSpan));
-        
         // 分割成三个部分
         QString before = text.left(posInStartSpan);
         QString middle = text.mid(posInStartSpan, end - start);
         QString after = text.mid(posInEndSpan);
-        
-        LOG_DEBUG(QString("    before=[%1], middle=[%2], after=[%3]").arg(before).arg(middle).arg(after));
         
         // 保存原始样式的副本！防止隐式共享问题！必须在删除之前获取！
         CharacterStyle originalStyle = span.style();
@@ -137,57 +129,25 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
         // 替换原来的 span
         m_spans.removeAt(startSpanIndex);
         
-        LOG_DEBUG(QString("    原始样式的加粗: %1").arg(originalStyle.bold()));
-        
         if (!before.isEmpty()) {
-            LOG_DEBUG(QString("    插入 before span, 加粗: %1").arg(originalStyle.bold()));
             m_spans.insert(startSpanIndex, Span(before, originalStyle));
             startSpanIndex++;
         }
         
-        // ========== 修改：合并样式而不是直接替换 ==========
-        LOG_DEBUG("    合并样式：");
-        LOG_DEBUG(QString("      originalStyle - 字体族:%1，字号:%2，加粗:%3")
-            .arg(originalStyle.fontFamily())
-            .arg(originalStyle.fontSize())
-            .arg(originalStyle.bold()));
-        LOG_DEBUG(QString("      传入的 style - 字体族:%1，字号:%2，加粗:%3")
-            .arg(style.fontFamily())
-            .arg(style.fontSize())
-            .arg(style.bold()));
-        LOG_DEBUG(QString("      传入的 style 属性标记 - 字体族:%1，字号:%2，加粗:%3")
-            .arg(style.isPropertySet(CharacterStyleProperty::FontFamily))
-            .arg(style.isPropertySet(CharacterStyleProperty::FontSize))
-            .arg(style.isPropertySet(CharacterStyleProperty::Bold)));
-        
+        // 合并样式
         CharacterStyle mergedMiddleStyle = originalStyle.mergeWith(style);
-        
-        LOG_DEBUG(QString("      mergedMiddleStyle - 字体族:%1，字号:%2，加粗:%3")
-            .arg(mergedMiddleStyle.fontFamily())
-            .arg(mergedMiddleStyle.fontSize())
-            .arg(mergedMiddleStyle.bold()));
-        
         m_spans.insert(startSpanIndex, Span(middle, mergedMiddleStyle));
         startSpanIndex++;
         
         if (!after.isEmpty()) {
-            LOG_DEBUG(QString("    插入 after span, 加粗: %1").arg(originalStyle.bold()));
             m_spans.insert(startSpanIndex, Span(after, originalStyle));
         }
-        
-        LOG_DEBUG(QString("  同一个 span 内处理完成，当前 spans 数量: %1").arg(m_spans.size()));
     } else {
-        LOG_DEBUG(QString("  跨 span 处理: startSpanIndex=%1, endSpanIndex=%2")
-            .arg(startSpanIndex).arg(endSpanIndex));
-        
         // 处理起始 span
         Span &startSpan = m_spans[startSpanIndex];
         QString startText = startSpan.text();
         QString beforeStart = startText.left(posInStartSpan);
         QString afterStart = startText.mid(posInStartSpan);
-        
-        LOG_DEBUG(QString("    起始 span 文本: [%1], 长度: %2").arg(startText).arg(startText.length()));
-        LOG_DEBUG(QString("      beforeStart: [%1], afterStart: [%2]").arg(beforeStart).arg(afterStart));
         
         // 保存原始样式的副本！防止隐式共享问题！
         CharacterStyle originalStartStyle = startSpan.style();
@@ -199,12 +159,9 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
             startSpanIndex++;
         }
         
-        // ========== 修改：合并样式而不是直接替换 ==========
+        // 合并样式
         CharacterStyle mergedStartStyle = originalStartStyle.mergeWith(style);
         m_spans.insert(startSpanIndex, Span(afterStart, mergedStartStyle));
-        
-        LOG_DEBUG(QString("    起始 span 处理后, startSpanIndex 现在是: %1").arg(startSpanIndex));
-        LOG_DEBUG(QString("    当前 spans 数量: %1").arg(m_spans.size()));
         
         // 重要！因为我们删除和插入了 span，需要重新计算 endSpanIndex
         // 重新计算当前的 endSpanIndex
@@ -217,14 +174,9 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
             posInEndSpanAdjusted = m_spans.last().length();
         }
         
-        LOG_DEBUG(QString("    重新计算后的 endSpanIndex: %1, posInEndSpanAdjusted: %2")
-            .arg(adjustedEndSpanIndex).arg(posInEndSpanAdjusted));
-        
         // 处理中间的 span（完全包含在范围内的）
-        // 注意：现在中间 span 的索引范围是 startSpanIndex + 1 到 adjustedEndSpanIndex - 1
         for (int i = startSpanIndex + 1; i < adjustedEndSpanIndex; ++i) {
             if (i >= 0 && i < m_spans.size()) {
-                LOG_DEBUG(QString("      处理中间 span %1").arg(i));
                 CharacterStyle mergedMiddleStyle = m_spans[i].style().mergeWith(style);
                 m_spans[i].setStyle(mergedMiddleStyle);
             }
@@ -236,9 +188,6 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
             QString endText = endSpan.text();
             QString beforeEnd = endText.left(posInEndSpanAdjusted);
             QString afterEnd = endText.mid(posInEndSpanAdjusted);
-            
-            LOG_DEBUG(QString("    结束 span 文本: [%1], 长度: %2").arg(endText).arg(endText.length()));
-            LOG_DEBUG(QString("      beforeEnd: [%1], afterEnd: [%2]").arg(beforeEnd).arg(afterEnd));
             
             // 保存原始样式引用
             CharacterStyle originalEndStyle = endSpan.style();
@@ -255,25 +204,9 @@ void ParagraphBlock::setStyle(int start, int length, const CharacterStyle &style
                 m_spans.insert(adjustedEndSpanIndex, Span(afterEnd, originalEndStyle));
             }
         }
-        
-        LOG_DEBUG("  跨 span 处理完成");
-    }
-    
-    LOG_DEBUG("  mergeAdjacentSpans 之前的 spans:");
-    for (int i = 0; i < m_spans.size(); ++i) {
-        LOG_DEBUG(QString("    span %1: text=[%2], 加粗:%3")
-            .arg(i).arg(m_spans[i].text()).arg(m_spans[i].style().bold()));
     }
     
     mergeAdjacentSpans();
-    
-    LOG_DEBUG("  mergeAdjacentSpans 之后的 spans:");
-    for (int i = 0; i < m_spans.size(); ++i) {
-        LOG_DEBUG(QString("    span %1: text=[%2], 加粗:%3")
-            .arg(i).arg(m_spans[i].text()).arg(m_spans[i].style().bold()));
-    }
-    
-    LOG_DEBUG("ParagraphBlock::setStyle - 处理完成");
     emit textChanged();
 }
 

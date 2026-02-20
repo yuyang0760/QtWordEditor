@@ -104,7 +104,13 @@ public:
     // ========== 选择区域相关方法 ==========
     
     /**
-     * @brief 更新选择区域矩形
+     * @brief 更新选择区域（直接设置TextBlockItem的选择范围）
+     * @param range 选择范围
+     */
+    void updateSelectionFromRange(const SelectionRange &range);
+    
+    /**
+     * @brief 更新选择区域矩形（保留原有方法，用于兼容性）
      * @param rects 选择区域矩形列表
      */
     void updateSelection(const QList<QRectF> &rects);
@@ -113,9 +119,9 @@ public:
      * @brief 清除选择区域
      */
     void clearSelection();
-
+    
     /**
-     * @brief 根据选择范围计算选择区域矩形列表
+     * @brief 根据选择范围计算选择区域矩形列表（保留原有方法）
      * @param range 选择范围
      * @return 选择区域矩形列表
      */

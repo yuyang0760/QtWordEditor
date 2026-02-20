@@ -1,6 +1,7 @@
 #include "graphics/items/TextBlockLayoutEngine.h"
 #include <QTextLayout>
 #include <QTextLine>
+#include <QFontMetricsF>
 #include <limits>
 #include "core/Global.h"
 #include "core/utils/Constants.h"
@@ -42,10 +43,25 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
         return;
     }
     
-    // 第一步：为每个 Span 计算它的行，然后将所有行片段收集起来
+    // ========== 调试信息：打印传入的 spans ==========
+    qDebug() << "TextBlockLayoutEngine::layout() - 开始布局，spans 数量:" << spans.size();
+    for (int i = 0; i < spans.size(); ++i) {
+        qDebug() << "  span" << i << ":" 
+                 << "text=[" << spans[i].text() << "]" 
+                 << "bold=" << spans[i].style().bold() 
+                 << "length=" << spans[i].text().length();
+    }
+    qDebug() << "  availableWidth:" << m_availableWidth;
+    // =========================================
+    
+    // 重新设计的布局逻辑：
+    // 1. 先为每个 Span 创建完整的 item（不分割）
+    // 2. 然后逐行放置这些 items，在需要换行时再分割 item
+    
     QList<LayoutItem> allItems;
     int currentGlobalOffset = 0;
     
+    // 第一步：为每个 Span 创建完整的 item（不分割）
     for (int spanIndex = 0; spanIndex < spans.size(); ++spanIndex) {
         const Span &span = spans[spanIndex];
         QString spanText = span.text();
@@ -54,95 +70,171 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
             continue;
         }
         
-        // 为这个 Span 创建 QTextLayout
         QFont font = createFontFromStyle(span.style());
+        QFontMetricsF fontMetrics(font);
         QTextLayout textLayout(spanText, font);
         textLayout.beginLayout();
-        
-        qreal currentY = 0;
-        
-        while (true) {
-            QTextLine line = textLayout.createLine();
-            if (!line.isValid()) {
-                break;
-            }
-            
-            line.setLineWidth(m_availableWidth);
-            line.setPosition(QPointF(0, currentY));
-            
-            // 获取这一行的文本范围
-            int lineStart = line.textStart();
-            int lineEnd = lineStart + line.textLength();
-            QString lineText = spanText.mid(lineStart, lineEnd - lineStart);
-            
-            // 创建 LayoutItem
-            LayoutItem item;
-            item.spanIndex = spanIndex;
-            item.text = lineText;
-            item.fullSpanText = spanText;  // 保存整个 Span 的完整文本
-            item.style = span.style();
-            item.font = font;
-            item.width = line.width();
-            item.height = line.height();
-            item.ascent = line.ascent();
-            item.descent = line.descent();
-            item.startOffsetInSpan = lineStart;
-            item.endOffsetInSpan = lineEnd;
-            item.globalStartOffset = currentGlobalOffset + lineStart;
-            item.globalEndOffset = currentGlobalOffset + lineEnd;
-            
-            allItems << item;
-            
-            currentY += line.height();
-        }
-        
+        QTextLine textLine = textLayout.createLine();
+        textLine.setLineWidth(std::numeric_limits<qreal>::max()); // 不限制宽度，获取完整高度
         textLayout.endLayout();
+        
+        // 创建完整的 LayoutItem
+        LayoutItem item;
+        item.spanIndex = spanIndex;
+        item.text = spanText;
+        item.fullSpanText = spanText;
+        item.style = span.style();
+        item.font = font;
+        item.width = fontMetrics.horizontalAdvance(spanText);
+        item.height = textLine.height();
+        item.ascent = textLine.ascent();
+        item.descent = textLine.descent();
+        item.startOffsetInSpan = 0;
+        item.endOffsetInSpan = spanText.length();
+        item.globalStartOffset = currentGlobalOffset;
+        item.globalEndOffset = currentGlobalOffset + spanText.length();
+        
+        allItems << item;
         
         currentGlobalOffset += spanText.length();
     }
     
-    // 第二步：将这些片段分配到行（处理多个 Span 在同一行的情况）
-    // 这里我们简化处理：按顺序分配，每一行尽可能装下更多的片段
-    qreal currentX = 0;
-    qreal currentY = 0;
-    qreal currentLineMaxHeight = 0;
-    qreal currentLineMaxAscent = 0;
-    QList<int> currentLineItemIndices;
+    // 第二步：逐行放置 items，在需要换行时分割 item
+    qreal currentLineX = 0;
+    qreal currentLineY = 0;
+    QList<LayoutItem> finalItems;
+    int itemIndex = 0;
     
-    for (int itemIndex = 0; itemIndex < allItems.size(); ++itemIndex) {
-        LayoutItem &item = allItems[itemIndex];
+    while (itemIndex < allItems.size()) {
+        LayoutItem &currentItem = allItems[itemIndex];
+        QFont font = currentItem.font;
+        QFontMetricsF fontMetrics(font);
         
-        // 检查这个片段是否能放到当前行
-        if (currentX + item.width > m_availableWidth && !currentLineItemIndices.isEmpty()) {
-            // 不能放到当前行，先结束当前行
-            finishLine(currentLineItemIndices, allItems, currentX, currentY, currentLineMaxHeight, currentLineMaxAscent);
+        // 计算这个 item 还能在当前行放多少字符
+        qreal remainingWidth = m_availableWidth - currentLineX;
+        
+        if (remainingWidth <= 0) {
+            // 当前行已满，换行
+            finishLineFromItems(finalItems, currentLineY);
             
-            // 开始新行
-            currentX = 0;
-            currentY += currentLineMaxHeight;
-            currentLineMaxHeight = 0;
-            currentLineMaxAscent = 0;
-            currentLineItemIndices.clear();
+            currentLineX = 0;
+            if (!finalItems.isEmpty()) {
+                currentLineY += finalItems.last().height;
+            }
+            finalItems.clear();
+            continue;
         }
         
-        // 放到当前行
-        currentLineItemIndices << itemIndex;
-        if (item.height > currentLineMaxHeight) {
-            currentLineMaxHeight = item.height;
+        // 找到最多能放的字符数
+        int charsToFit = 0;
+        QString textToFit;
+        
+        if (currentLineX == 0) {
+            // 新行的第一个 item，尝试找到能放下的最大字符数
+            for (int i = 1; i <= currentItem.text.length(); ++i) {
+                QString testText = currentItem.text.left(i);
+                qreal testWidth = fontMetrics.horizontalAdvance(testText);
+                if (testWidth <= m_availableWidth) {
+                    charsToFit = i;
+                    textToFit = testText;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // 不是新行的第一个 item，尝试找到能放下的最大字符数
+            for (int i = 1; i <= currentItem.text.length(); ++i) {
+                QString testText = currentItem.text.left(i);
+                qreal testWidth = fontMetrics.horizontalAdvance(testText);
+                if (testWidth <= remainingWidth) {
+                    charsToFit = i;
+                    textToFit = testText;
+                } else {
+                    break;
+                }
+            }
         }
-        if (item.ascent > currentLineMaxAscent) {
-            currentLineMaxAscent = item.ascent;
+        
+        if (charsToFit == 0 && currentLineX == 0) {
+            // 即使新行也放不下一个字符，强制放一个字符
+            charsToFit = 1;
+            textToFit = currentItem.text.left(1);
         }
-        currentX += item.width;
+        
+        if (charsToFit > 0) {
+            // 创建新的 item 来放这部分文本
+            LayoutItem newItem;
+            newItem.spanIndex = currentItem.spanIndex;
+            newItem.text = textToFit;
+            newItem.fullSpanText = currentItem.fullSpanText;
+            newItem.style = currentItem.style;
+            newItem.font = currentItem.font;
+            newItem.width = fontMetrics.horizontalAdvance(textToFit);
+            newItem.height = currentItem.height;
+            newItem.ascent = currentItem.ascent;
+            newItem.descent = currentItem.descent;
+            newItem.startOffsetInSpan = currentItem.startOffsetInSpan;
+            newItem.endOffsetInSpan = currentItem.startOffsetInSpan + charsToFit;
+            newItem.globalStartOffset = currentItem.globalStartOffset;
+            newItem.globalEndOffset = currentItem.globalStartOffset + charsToFit;
+            
+            finalItems << newItem;
+            currentLineX += newItem.width;
+            
+            // 检查是否用完了这个 item 的所有字符
+            if (charsToFit < currentItem.text.length()) {
+                // 还有剩余字符，更新 currentItem 为剩余部分
+                QString remainingText = currentItem.text.mid(charsToFit);
+                currentItem.text = remainingText;
+                currentItem.width = fontMetrics.horizontalAdvance(remainingText);
+                currentItem.startOffsetInSpan += charsToFit;
+                currentItem.globalStartOffset += charsToFit;
+                
+                // 换行
+                finishLineFromItems(finalItems, currentLineY);
+                
+                currentLineX = 0;
+                if (!finalItems.isEmpty()) {
+                    currentLineY += finalItems.last().height;
+                }
+                finalItems.clear();
+            } else {
+                // 用完了这个 item，继续下一个
+                itemIndex++;
+            }
+        } else {
+            // 放不下了，换行
+            finishLineFromItems(finalItems, currentLineY);
+            
+            currentLineX = 0;
+            if (!finalItems.isEmpty()) {
+                currentLineY += finalItems.last().height;
+            }
+            finalItems.clear();
+        }
     }
     
     // 结束最后一行
-    if (!currentLineItemIndices.isEmpty()) {
-        finishLine(currentLineItemIndices, allItems, currentX, currentY, currentLineMaxHeight, currentLineMaxAscent);
+    if (!finalItems.isEmpty()) {
+        finishLineFromItems(finalItems, currentLineY);
     }
     
-    // 保存所有 LayoutItem
-    m_layoutItems = allItems;
+    // ========== 调试信息：打印最终的行和 items ==========
+    qDebug() << "TextBlockLayoutEngine::layout() - 最终行数量:" << m_lines.size();
+    for (int i = 0; i < m_lines.size(); ++i) {
+        qDebug() << "  line" << i << ":" 
+                 << "rect=" << m_lines[i].rect 
+                 << "itemIndices=" << m_lines[i].itemIndices;
+    }
+    qDebug() << "TextBlockLayoutEngine::layout() - 最终 items 数量:" << m_layoutItems.size();
+    for (int i = 0; i < m_layoutItems.size(); ++i) {
+        qDebug() << "  m_layoutItems[" << i << "]:" 
+                 << "text=[" << m_layoutItems[i].text << "]" 
+                 << "spanIndex=" << m_layoutItems[i].spanIndex 
+                 << "position=" << m_layoutItems[i].position 
+                 << "width=" << m_layoutItems[i].width;
+    }
+    // =========================================
     
     // 计算总尺寸
     m_totalWidth = m_availableWidth;
@@ -154,23 +246,99 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
 void TextBlockLayoutEngine::finishLine(QList<int> &itemIndices, QList<LayoutItem> &allItems, 
                                         qreal lineWidth, qreal lineY, qreal lineHeight, qreal lineMaxAscent)
 {
-    // 创建 LineInfo
     LineInfo lineInfo;
-    lineInfo.rect = QRectF(0, lineY, m_availableWidth, lineHeight);
+    lineInfo.rect = QRectF(0, lineY, lineWidth, lineHeight);
     lineInfo.maxBaseline = lineMaxAscent;
     lineInfo.itemIndices = itemIndices;
     
-    // 定位这一行中的每个 item
+    // 为这一行中的每个 item 设置位置（基线对齐）
     qreal currentX = 0;
     for (int itemIndex : itemIndices) {
         LayoutItem &item = allItems[itemIndex];
-        // 计算基线对齐的 Y 位置
-        qreal y = lineY + (lineMaxAscent - item.ascent);
-        item.position = QPointF(currentX, y);
+        qreal itemY = lineY + (lineMaxAscent - item.ascent);
+        item.position = QPointF(currentX, itemY);
         currentX += item.width;
     }
     
-    m_lines << lineInfo;
+    m_lines.append(lineInfo);
+}
+
+void TextBlockLayoutEngine::finishLineFromItems(QList<LayoutItem> &items, qreal lineY)
+{
+    if (items.isEmpty()) {
+        return;
+    }
+    
+    // 计算这一行的最大高度和最大 ascent
+    qreal lineMaxHeight = 0;
+    qreal lineMaxAscent = 0;
+    qreal lineWidth = 0;
+    
+    for (const LayoutItem &item : items) {
+        if (item.height > lineMaxHeight) {
+            lineMaxHeight = item.height;
+        }
+        if (item.ascent > lineMaxAscent) {
+            lineMaxAscent = item.ascent;
+        }
+        lineWidth += item.width;
+    }
+    
+    // 创建 LineInfo
+    LineInfo lineInfo;
+    lineInfo.rect = QRectF(0, lineY, lineWidth, lineMaxHeight);
+    lineInfo.maxBaseline = lineMaxAscent;
+    
+    // 为这一行中的每个 item 设置位置（基线对齐），并添加到 m_layoutItems
+    qreal currentX = 0;
+    for (LayoutItem &item : items) {
+        qreal itemY = lineY + (lineMaxAscent - item.ascent);
+        item.position = QPointF(currentX, itemY);
+        
+        // 添加到 m_layoutItems
+        lineInfo.itemIndices.append(m_layoutItems.size());
+        m_layoutItems.append(item);
+        
+        currentX += item.width;
+    }
+    
+    m_lines.append(lineInfo);
+}
+
+QFont TextBlockLayoutEngine::createFontFromStyle(const CharacterStyle &style) const
+{
+    QFont font;
+    
+    // 应用字体族
+    if (style.isPropertySet(CharacterStyleProperty::FontFamily)) {
+        font.setFamily(style.fontFamily());
+    }
+    
+    // 应用字号
+    if (style.isPropertySet(CharacterStyleProperty::FontSize)) {
+        font.setPointSizeF(style.fontSize());
+    } else {
+        font.setPointSize(Constants::DefaultFontSize);
+    }
+    
+    // 应用加粗
+    font.setBold(style.bold());
+    
+    // 应用斜体
+    font.setItalic(style.italic());
+    
+    // 应用下划线
+    font.setUnderline(style.underline());
+    
+    return font;
+}
+
+void TextBlockLayoutEngine::clear()
+{
+    m_layoutItems.clear();
+    m_lines.clear();
+    m_totalWidth = 0;
+    m_totalHeight = 0;
 }
 
 const QList<TextBlockLayoutEngine::LayoutItem> &TextBlockLayoutEngine::layoutItems() const
@@ -259,7 +427,7 @@ TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPoi
     textLayout.endLayout();
     
     qreal localX = localPos.x() - item.position.x();
-    int offsetInItem = textLine.xToCursor(localX);  // 应该用 xToCursor，不是 cursorToX！
+    int offsetInItem = textLine.xToCursor(localX);
     offsetInItem = qBound(0, offsetInItem, item.text.length());
     
     result.offsetInItem = offsetInItem;
@@ -300,57 +468,24 @@ TextBlockLayoutEngine::CursorVisualResult TextBlockLayoutEngine::cursorPositionA
     }
     
     const LayoutItem &item = m_layoutItems[foundItemIndex];
-    result.height = item.height;
     
-    // 计算在 item 中的偏移
-    int offsetInItem = globalOffset - item.globalStartOffset;
-    offsetInItem = qBound(0, offsetInItem, item.text.length());
-    
-    // 使用 QTextLayout 计算 X 位置
+    // 在 item 中计算位置
     QTextLayout textLayout(item.text, item.font);
     textLayout.beginLayout();
     QTextLine textLine = textLayout.createLine();
     textLine.setLineWidth(item.width);
     textLayout.endLayout();
     
-    qreal x = textLine.cursorToX(offsetInItem);
-    result.position = QPointF(item.position.x() + x, item.position.y());
+    int offsetInItem = globalOffset - item.globalStartOffset;
+    offsetInItem = qBound(0, offsetInItem, item.text.length());
+    
+    qreal x = item.position.x() + textLine.cursorToX(offsetInItem);
+    qreal baselineY = item.position.y() + item.ascent;
+    
+    result.position = QPointF(x, item.position.y());
+    result.height = item.height;
     
     return result;
-}
-
-QFont TextBlockLayoutEngine::createFontFromStyle(const CharacterStyle &style) const
-{
-    QFont font;
-    
-    if (!style.fontFamily().isEmpty()) {
-        font.setFamily(style.fontFamily());
-    }
-    
-    if (style.fontSize() > 0) {
-        font.setPointSize(style.fontSize());
-    } else {
-        font.setPointSize(Constants::DefaultFontSize);
-    }
-    
-    font.setBold(style.bold());
-    font.setItalic(style.italic());
-    font.setUnderline(style.underline());
-    font.setStrikeOut(style.strikeOut());
-    
-    if (!qFuzzyIsNull(style.letterSpacing())) {
-        font.setLetterSpacing(QFont::AbsoluteSpacing, style.letterSpacing());
-    }
-    
-    return font;
-}
-
-void TextBlockLayoutEngine::clear()
-{
-    m_layoutItems.clear();
-    m_lines.clear();
-    m_totalWidth = 0;
-    m_totalHeight = 0;
 }
 
 } // namespace QtWordEditor

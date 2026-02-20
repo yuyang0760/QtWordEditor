@@ -170,6 +170,11 @@ private:
                     qreal lineWidth, qreal lineY, qreal lineHeight, qreal lineMaxAscent);
     
     /**
+     * @brief 从 LayoutItem 列表完成一行的布局
+     */
+    void finishLineFromItems(QList<LayoutItem> &items, qreal lineY);
+    
+    /**
      * @brief 清除所有布局结果
      */
     void clear();

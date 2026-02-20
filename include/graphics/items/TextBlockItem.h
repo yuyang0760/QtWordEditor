@@ -161,12 +161,29 @@ private:
      */
     void applyParagraphIndent();
 
+public:
+    // ========== 选择范围 ==========
+    
+    /**
+     * @brief 设置选择范围
+     * @param startOffset 选择起始偏移
+     * @param endOffset 选择结束偏移
+     */
+    void setSelectionRange(int startOffset, int endOffset);
+    
+    /**
+     * @brief 清除选择范围
+     */
+    void clearSelection();
+
 private:
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
     qreal m_textWidth;                      ///< 文本显示宽度
     qreal m_leftIndent;                     ///< 左缩进
     qreal m_rightIndent;                    ///< 右缩进
     QRectF m_boundingRect;                  ///< 边界矩形
+    int m_selectionStartOffset;             ///< 选择起始偏移
+    int m_selectionEndOffset;               ///< 选择结束偏移
 };
 
 } // namespace QtWordEditor

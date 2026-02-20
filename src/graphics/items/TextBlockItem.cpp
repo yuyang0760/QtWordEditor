@@ -1,83 +1,31 @@
 #include "graphics/items/TextBlockItem.h"
 #include "core/document/ParagraphBlock.h"
+#include "graphics/items/TextBlockLayoutEngine.h"
 #include "core/utils/Constants.h"
-#include "core/utils/Logger.h"
 #include <QPainter>
-#include <QGraphicsSceneMouseEvent>
-#include <QTextLayout>
-#include <QTextLine>
+#include <QDebug>
+#include "core/utils/Logger.h"
 
 namespace QtWordEditor {
 
 TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
-    : BaseBlockItem(block, parent)
-    , m_layoutEngine(new TextBlockLayoutEngine())
-    , m_textWidth(800)
-    , m_leftIndent(0)
-    , m_rightIndent(0)
+    : BaseBlockItem(block, parent),
+      m_layoutEngine(new TextBlockLayoutEngine()),
+      m_textWidth(Constants::PAGE_WIDTH - 2 * Constants::PAGE_MARGIN),
+      m_leftIndent(0),
+      m_rightIndent(0),
+      m_boundingRect(0, 0, m_textWidth, 0),
+      m_selectionStartOffset(-1),
+      m_selectionEndOffset(-1)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
-    setFlag(QGraphicsItem::ItemIsFocusable, false);
-    
-    if (block) {
-        applyParagraphIndent();
-        performLayout();
-    }
+    applyParagraphIndent();
+    performLayout();
 }
 
 TextBlockItem::~TextBlockItem()
 {
     delete m_layoutEngine;
-}
-
-void TextBlockItem::setTextWidth(qreal width)
-{
-    if (!qFuzzyCompare(m_textWidth, width)) {
-        m_textWidth = width;
-        performLayout();
-        updateGeometry();
-    }
-}
-
-qreal TextBlockItem::textWidth() const
-{
-    return m_textWidth;
-}
-
-QGraphicsTextItem *TextBlockItem::textItem() const
-{
-    // 为了兼容性保留，返回 nullptr
-    return nullptr;
-}
-
-void TextBlockItem::setFont(const QFont &font)
-{
-    Q_UNUSED(font);
-    // 不再单独设置字体，字体由 Span 控制
-}
-
-QFont TextBlockItem::font() const
-{
-    // 返回默认字体
-    QFont font;
-    font.setPointSize(Constants::DefaultFontSize);
-    return font;
-}
-
-void TextBlockItem::setPlainText(const QString &text)
-{
-    Q_UNUSED(text);
-    // 不再支持直接设置纯文本，必须通过 ParagraphBlock 操作
-}
-
-QString TextBlockItem::toPlainText() const
-{
-    QList<Span> spans = getSpans();
-    QString result;
-    for (const Span &span : spans) {
-        result += span.text();
-    }
-    return result;
 }
 
 QRectF TextBlockItem::boundingRect() const
@@ -96,34 +44,33 @@ void TextBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
         return;
     }
     
-    // 用于测试的背景颜色：红、绿、蓝循环
-    QList<QColor> bgColors;
-    bgColors << QColor(255, 200, 200, 100);  // 红色半透明
-    bgColors << QColor(200, 255, 200, 100);  // 绿色半透明
-    bgColors << QColor(200, 200, 255, 100);  // 蓝色半透明
-    
     const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
-    const QList<TextBlockLayoutEngine::LineInfo> &lines = m_layoutEngine->lines();
     
     painter->save();
+    
+    // 设置高质量的渲染提示，让文字更清晰
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setRenderHint(QPainter::TextAntialiasing, true);
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    
     painter->translate(m_leftIndent, 0);  // 加上左缩进
     
-    // 第一步：先绘制每个 item 的背景色（按 spanIndex 区分）
+    // 绘制每个 item 的文字，使用QTextLayout绘制，这样文字更清晰
     for (const TextBlockLayoutEngine::LayoutItem &item : items) {
-        QColor bgColor = bgColors[item.spanIndex % bgColors.size()];
-        painter->fillRect(QRectF(item.position.x(), item.position.y(), 
-                                  item.width, item.height), bgColor);
-    }
-    
-    // 第二步：绘制每个 item 的文字
-    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
-        painter->setFont(item.font);
+        QTextLayout textLayout(item.text, item.font);
+        textLayout.setCacheEnabled(true);
+        
+        // 开始布局
+        textLayout.beginLayout();
+        QTextLine textLine = textLayout.createLine();
+        textLine.setLineWidth(item.width);
+        textLayout.endLayout();
+        
+        // 设置画笔颜色
         painter->setPen(item.style.textColor());
         
-        // 计算基线位置
-        qreal baselineY = item.position.y() + item.ascent;
-        
-        painter->drawText(QPointF(item.position.x(), baselineY), item.text);
+        // 绘制文字
+        textLine.draw(painter, QPointF(item.position.x(), item.position.y()));
     }
     
     painter->restore();
@@ -142,6 +89,7 @@ void TextBlockItem::updateBlock()
     
     applyParagraphIndent();
     performLayout();
+    update(); // 触发重绘，确保内容更新后立即显示
 }
 
 QList<Span> TextBlockItem::getSpans() const
@@ -295,6 +243,68 @@ QList<QRectF> TextBlockItem::selectionRects(int startOffset, int endOffset) cons
     }
     
     return rects;
+}
+
+QString TextBlockItem::toPlainText() const
+{
+    QString text;
+    QList<Span> spans = getSpans();
+    for (const Span &span : spans) {
+        text += span.text();
+    }
+    return text;
+}
+
+void TextBlockItem::setTextWidth(qreal width)
+{
+    if (m_textWidth != width) {
+        m_textWidth = width;
+        performLayout();
+        update();
+    }
+}
+
+void TextBlockItem::setSelectionRange(int startOffset, int endOffset)
+{
+    if (m_selectionStartOffset != startOffset || m_selectionEndOffset != endOffset) {
+        m_selectionStartOffset = startOffset;
+        m_selectionEndOffset = endOffset;
+        update();
+    }
+}
+
+void TextBlockItem::clearSelection()
+{
+    setSelectionRange(-1, -1);
+}
+
+QGraphicsTextItem *TextBlockItem::textItem() const
+{
+    // 为了兼容性保留，返回nullptr
+    return nullptr;
+}
+
+void TextBlockItem::setFont(const QFont &font)
+{
+    // 为了兼容性保留，不做任何操作
+    Q_UNUSED(font);
+}
+
+QFont TextBlockItem::font() const
+{
+    // 为了兼容性保留，返回默认字体
+    return QFont();
+}
+
+void TextBlockItem::setPlainText(const QString &text)
+{
+    // 为了兼容性保留，不做任何操作
+    Q_UNUSED(text);
+}
+
+qreal TextBlockItem::textWidth() const
+{
+    return m_textWidth;
 }
 
 } // namespace QtWordEditor

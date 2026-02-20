@@ -108,11 +108,18 @@ void DocumentScene::rebuildFromDocument()
                         // 创建 TextBlockItem
                         TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
                         
+                        // 连接信号：当 ParagraphBlock 的 textChanged 时，更新 TextBlockItem
+                        connect(paraBlock, &ParagraphBlock::textChanged, 
+                                this, [this, block]() {
+                                    updateSingleTextItem(block);
+                                });
+                        
                         // 设置文本宽度（页面宽度减去左右边距）
                         qreal availableWidth = Constants::PAGE_WIDTH - 2 * Constants::PAGE_MARGIN;
                         textBlockItem->setTextWidth(availableWidth);
                         
-                        // 添加到场景
+                        // 添加到场景，设置较高的z-order，确保绘制在选择项上面（文字在上面，背景在下面）
+                        textBlockItem->setZValue(10);
                         addItem(textBlockItem);
                         
                         // 添加到 m_blockItems、m_pageTextItems 和 pageBlockItems
@@ -306,19 +313,98 @@ void DocumentScene::setCursorVisible(bool visible)
     }
 }
 
+void DocumentScene::updateSelectionFromRange(const SelectionRange &range)
+{
+    // 先清除所有TextBlockItem的选择范围
+    clearSelection();
+    
+    if (!m_document) {
+        return;
+    }
+    
+    // 归一化选择范围
+    SelectionRange normalizedRange = range;
+    normalizedRange.normalize();
+    
+    // 简单假设只有一个section和一个page
+    Section *section = m_document->section(0);
+    if (!section) {
+        return;
+    }
+    
+    int pageIndex = 0;
+    if (pageIndex < 0 || pageIndex >= section->pageCount()) {
+        return;
+    }
+    
+    Page *page = section->page(pageIndex);
+    if (!page) {
+        return;
+    }
+    
+    // 遍历选择范围内的所有块，设置选择范围
+    for (int blockIdx = normalizedRange.startBlock; blockIdx <= normalizedRange.endBlock; ++blockIdx) {
+        // 检查是否超出范围
+        if (blockIdx < 0 || blockIdx >= page->blockCount()) {
+            continue;
+        }
+        
+        // 获取对应的 TextBlockItem
+        Block *block = page->block(blockIdx);
+        auto it = m_blockItems.find(block);
+        if (it == m_blockItems.end()) {
+            continue;
+        }
+        
+        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+        if (!textBlockItem) {
+            continue;
+        }
+        
+        // 确定当前块的选择起始和结束偏移
+        QString fullText = textBlockItem->toPlainText();
+        int startOffset = 0;
+        int endOffset = fullText.length();
+        
+        if (blockIdx == normalizedRange.startBlock) {
+            startOffset = qMin(normalizedRange.startOffset, fullText.length());
+        }
+        if (blockIdx == normalizedRange.endBlock) {
+            endOffset = qMin(normalizedRange.endOffset, fullText.length());
+        }
+        
+        // 设置TextBlockItem的选择范围
+        textBlockItem->setSelectionRange(startOffset, endOffset);
+    }
+}
+
 void DocumentScene::updateSelection(const QList<QRectF> &rects)
 {
+    // 保留原有方法，用于兼容性
     if (!m_selectionItem) {
         m_selectionItem = new SelectionItem();
+        m_selectionItem->setZValue(5);
         addItem(m_selectionItem);
     }
     m_selectionItem->setRects(rects);
+    update();
 }
 
 void DocumentScene::clearSelection()
 {
+    // 清除SelectionItem（保留用于兼容性）
     if (m_selectionItem) {
         m_selectionItem->clear();
+    }
+    
+    // 清除所有TextBlockItem的选择范围
+    for (BaseBlockItem *item : m_blockItems) {
+        if (item) {
+            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(item);
+            if (textBlockItem) {
+                textBlockItem->clearSelection();
+            }
+        }
     }
 }
 

@@ -12,6 +12,8 @@
 namespace QtWordEditor {
 
 class ParagraphBlock;
+class MathItem;
+class MathSpan;
 
 /**
  * @brief 文本块图形项类（直接绘制版）
@@ -176,6 +178,13 @@ public:
      */
     void clearSelection();
 
+    // ========== MathItem 管理 ==========
+    
+    /**
+     * @brief 清除所有 MathItem
+     */
+    void clearMathItems();
+
 private:
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
     qreal m_textWidth;                      ///< 文本显示宽度
@@ -184,6 +193,7 @@ private:
     QRectF m_boundingRect;                  ///< 边界矩形
     int m_selectionStartOffset;             ///< 选择起始偏移
     int m_selectionEndOffset;               ///< 选择结束偏移
+    QList<QGraphicsItem*> m_mathItems;     ///< MathItem 子项列表
 };
 
 } // namespace QtWordEditor

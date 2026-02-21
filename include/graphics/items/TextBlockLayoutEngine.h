@@ -12,6 +12,8 @@
 #include "core/document/CharacterStyle.h"
 #include "core/document/InlineSpan.h"
 
+class QGraphicsItem;
+
 namespace QtWordEditor {
 
 /**
@@ -51,6 +53,7 @@ public:
         int endOffsetInSpan;        ///< 在原 InlineSpan 中的结束偏移
         int globalStartOffset;      ///< 全局起始偏移（从段落开头算起）
         int globalEndOffset;        ///< 全局结束偏移
+        QGraphicsItem *graphicsItem;  ///< 新增：MathItem 或 nullptr
     };
 
     /**

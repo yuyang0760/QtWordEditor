@@ -7,6 +7,9 @@
 #include "core/document/CharacterStyle.h"
 #include "core/document/TableBlock.h"
 #include "core/document/Page.h"
+#include "core/document/math/NumberMathSpan.h"
+#include "core/document/math/FractionMathSpan.h"
+#include "core/document/math/RowContainerMathSpan.h"
 #include "core/layout/PageBuilder.h"
 #include "core/utils/Constants.h"
 // 移除 Logger 头文件，使用 Qt 内置日志函数
@@ -498,6 +501,32 @@ void MainWindow::newDocument()
         ParagraphBlock *para2 = new ParagraphBlock(section);
         para2->setText("这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。让我们继续输入一些文字，看看第二段是否也能正常换行！");
         section->addBlock(para2);
+        
+        // ========== 测试段落：包含 MathSpan 的段落 ==========
+        ParagraphBlock *para3 = new ParagraphBlock(section);
+        // 先清空所有 InlineSpan
+        para3->clearInlineSpans();
+        
+        // 添加文字："公式测试: "
+        para3->insert(0, "公式测试: ", CharacterStyle());
+        
+        // 创建分数公式：123/456
+        auto numerator = new NumberMathSpan("123");
+        auto denominator = new NumberMathSpan("456");
+        auto fraction = new FractionMathSpan(numerator, denominator);
+        para3->addInlineSpan(fraction);
+        
+        // 添加文字：" 继续测试 "
+        para3->insert(para3->length(), " 继续测试 ", CharacterStyle());
+        
+        // 创建另一个公式：789
+        auto number = new NumberMathSpan("789");
+        para3->addInlineSpan(number);
+        
+        // 添加文字：" 测试完毕！"
+        para3->insert(para3->length(), " 测试完毕！", CharacterStyle());
+        
+        section->addBlock(para3);
         
         qreal pageWidth = Constants::PAGE_WIDTH;
         qreal pageHeight = Constants::PAGE_HEIGHT;

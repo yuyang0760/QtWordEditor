@@ -6,6 +6,9 @@
 #include <QPainter>
 #include <QDebug>
 #include "core/utils/Logger.h"
+#include "core/document/MathSpan.h"
+#include "graphics/formula/MathItem.h"
+#include "graphics/factory/MathItemFactory.h"
 
 namespace QtWordEditor {
 
@@ -88,9 +91,33 @@ void TextBlockItem::updateBlock()
     if (!para)
         return;
     
+    // 清除旧的 MathItem
+    clearMathItems();
+    
     applyParagraphIndent();
     performLayout();
+    
+    // 为每个 MathSpan 创建对应的 MathItem
+    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
+    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
+        if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
+            MathSpan *mathSpan = static_cast<MathSpan*>(item.inlineSpan);
+            MathItem *mathItem = MathItemFactory::createMathItem(mathSpan);
+            if (mathItem) {
+                mathItem->setParentItem(this);
+                mathItem->setPos(item.position + QPointF(m_leftIndent, 0));
+                m_mathItems.append(mathItem);
+            }
+        }
+    }
+    
     update(); // 触发重绘，确保内容更新后立即显示
+}
+
+void TextBlockItem::clearMathItems()
+{
+    qDeleteAll(m_mathItems);
+    m_mathItems.clear();
 }
 
 QList<InlineSpan*> TextBlockItem::getSpans() const

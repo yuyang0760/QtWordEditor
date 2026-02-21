@@ -108,8 +108,12 @@ void DocumentScene::rebuildFromDocument()
                         // 创建 TextBlockItem
                         TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
                         
-                        // 连接信号：当 ParagraphBlock 的 textChanged 时，更新 TextBlockItem
+                        // 连接信号：当 ParagraphBlock 的 textChanged 或 inlineSpansChanged 时，更新 TextBlockItem
                         connect(paraBlock, &ParagraphBlock::textChanged, 
+                                this, [this, block]() {
+                                    updateSingleTextItem(block);
+                                });
+                        connect(paraBlock, &ParagraphBlock::inlineSpansChanged, 
                                 this, [this, block]() {
                                     updateSingleTextItem(block);
                                 });
@@ -117,6 +121,9 @@ void DocumentScene::rebuildFromDocument()
                         // 设置文本宽度（页面宽度减去左右边距）
                         qreal availableWidth = Constants::PAGE_WIDTH - 2 * Constants::PAGE_MARGIN;
                         textBlockItem->setTextWidth(availableWidth);
+                        
+                        // ========== 关键！调用 updateBlock() 来创建 MathItem！ ==========
+                        textBlockItem->updateBlock();
                         
                         // 添加到场景，设置较高的z-order，确保绘制在选择项上面（文字在上面，背景在下面）
                         textBlockItem->setZValue(10);
@@ -228,6 +235,7 @@ void DocumentScene::updateBlockPositions()
 
             // 根据每个块的实际高度重新计算位置，考虑段前和段后间距
             qreal currentY = Constants::PAGE_MARGIN;
+            qDebug() << "[DocumentScene::updateBlockPositions] - 开始计算块位置，块数量:" << pageBlockItems.size();
             for (int i = 0; i < pageBlockItems.size(); ++i) {
                 TextBlockItem *textBlockItem = pageBlockItems[i];
                 ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(textBlockItem->block());
@@ -248,6 +256,11 @@ void DocumentScene::updateBlockPositions()
                 
                 // 下一个块从当前块的底部开始，加上段后间距
                 qreal blockHeight = textBlockItem->boundingRect().height();
+                qDebug() << "  块" << i << ":" 
+                         << "height=" << blockHeight 
+                         << "currentY=" << currentY 
+                         << "pos=(" << textX << "," << currentY << ")";
+                
                 qreal spaceAfter = paraBlock ? paraBlock->paragraphStyle().spaceAfter() : 0.0;
                 currentY += blockHeight + spaceAfter;
             }
@@ -260,14 +273,19 @@ void DocumentScene::updateBlockPositions()
 
 void DocumentScene::updateSingleTextItem(Block *block)
 {
+    qDebug() << "[DocumentScene::updateSingleTextItem] - 开始更新单个块";
     if (!block)
         return;
     auto it = m_blockItems.find(block);
     if (it != m_blockItems.end() && it.value()) {
+        qDebug() << "  找到块，准备调用 updateBlock()";
         it.value()->updateBlock();
+        qDebug() << "  updateBlock() 完成";
     }
     // 更新所有块的位置
+    qDebug() << "  准备调用 updateBlockPositions()";
     updateBlockPositions();
+    qDebug() << "  updateBlockPositions() 完成";
 }
 
 void DocumentScene::clearPages()

@@ -5,6 +5,8 @@
 #include <QGraphicsTextItem>
 #include <QFont>
 #include <QList>
+#include <QHash>
+#include <QSizeF>
 #include "core/Global.h"
 #include "core/document/InlineSpan.h"
 #include "graphics/items/TextBlockLayoutEngine.h"
@@ -159,6 +161,12 @@ private:
      * @brief 执行布局
      */
     void performLayout();
+    
+    /**
+     * @brief 执行布局（使用给定的MathSpan尺寸）
+     */
+    void performLayoutWithMathSizes(const QHash<InlineSpan*, QSizeF> &mathSizeMap, 
+                                     const QHash<InlineSpan*, qreal> &mathBaselineMap);
     
     /**
      * @brief 应用段落缩进（左缩进、右缩进）

@@ -246,8 +246,8 @@ void MainWindow::setupUi()
     connect(m_ribbonBar, &RibbonBar::insertFractionRequested,
             this, [this]() {
         qDebug() << "插入分数";
-        // 暂时添加简单的测试分数
-        insertTestFraction();
+        // 在光标处插入分数
+        insertFractionAtCursor();
     });
     
     connect(m_ribbonBar, &RibbonBar::insertRadicalRequested,
@@ -624,6 +624,20 @@ void MainWindow::insertTestFormula()
     
     section->addBlock(para);
     
+    // ========== 关键修复：更新页面 ==========
+    if (section->pageCount() > 0) {
+        Page *page = section->page(0);
+        para->setHeight(30.0);
+        
+        // 连接 textChanged 信号
+        connect(para, &ParagraphBlock::textChanged, this, [this, para]() {
+            m_scene->updateSingleTextItem(para);
+        });
+        
+        // 将新块添加到页面
+        page->addBlock(para);
+    }
+    
     // 重新构建文档
     m_scene->rebuildFromDocument();
 }
@@ -652,6 +666,20 @@ void MainWindow::insertTestFraction()
     para->insert(para->length(), " 测试完成", CharacterStyle());
     
     section->addBlock(para);
+    
+    // ========== 关键修复：更新页面 ==========
+    if (section->pageCount() > 0) {
+        Page *page = section->page(0);
+        para->setHeight(30.0);
+        
+        // 连接 textChanged 信号
+        connect(para, &ParagraphBlock::textChanged, this, [this, para]() {
+            m_scene->updateSingleTextItem(para);
+        });
+        
+        // 将新块添加到页面
+        page->addBlock(para);
+    }
     
     // 重新构建文档
     m_scene->rebuildFromDocument();
@@ -1210,6 +1238,85 @@ void MainWindow::onStyleChanged()
     if (m_ribbonBar) {
         m_ribbonBar->refreshStyleLists();
     }
+}
+
+void MainWindow::insertFractionAtCursor()
+{
+    if (!m_document || !m_cursor) {
+        qDebug() << "[insertFractionAtCursor] 文档或光标无效";
+        return;
+    }
+
+    // 步骤1：获取当前光标位置
+    CursorPosition pos = m_cursor->position();
+    qDebug() << "[insertFractionAtCursor] 当前光标位置：块" << pos.blockIndex << "，偏移" << pos.offset;
+
+    // 步骤2：获取当前光标所在的 ParagraphBlock
+    if (!m_document->sectionCount()) {
+        qDebug() << "[insertFractionAtCursor] 文档没有section";
+        return;
+    }
+
+    Section *section = m_document->section(0);
+    if (!section) {
+        qDebug() << "[insertFractionAtCursor] section无效";
+        return;
+    }
+
+    if (pos.blockIndex < 0 || pos.blockIndex >= section->blockCount()) {
+        qDebug() << "[insertFractionAtCursor] 块索引无效：" << pos.blockIndex;
+        return;
+    }
+
+    Block *block = section->block(pos.blockIndex);
+    if (!block) {
+        qDebug() << "[insertFractionAtCursor] 块无效";
+        return;
+    }
+
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
+    if (!para) {
+        qDebug() << "[insertFractionAtCursor] 块不是ParagraphBlock";
+        return;
+    }
+
+    // 步骤3：验证偏移位置是否有效
+    int paraLength = para->length();
+    if (pos.offset < 0 || pos.offset > paraLength) {
+        qDebug() << "[insertFractionAtCursor] 偏移位置无效：" << pos.offset << "，段落长度：" << paraLength;
+        return;
+    }
+
+    qDebug() << "[insertFractionAtCursor] 段落长度：" << paraLength;
+
+    // 步骤4：创建分数 MathSpan
+    // 创建分子（默认为"1"）
+    NumberMathSpan *numSpan = new NumberMathSpan("1");
+    // 创建分母（默认为"2"）
+    NumberMathSpan *denSpan = new NumberMathSpan("2");
+    // 创建分数
+    FractionMathSpan *fracSpan = new FractionMathSpan(numSpan, denSpan);
+
+    qDebug() << "[insertFractionAtCursor] 创建分数 MathSpan 成功";
+
+    // 步骤5：将分数插入到光标位置
+    para->insertInlineSpanAtPosition(pos.offset, fracSpan);
+
+    qDebug() << "[insertFractionAtCursor] 分数插入成功，位置：" << pos.offset;
+
+    // 步骤6：更新光标位置，移动到插入位置之后
+    // MathSpan 占用 1 个字符位置
+    CursorPosition newPos = pos;
+    newPos.offset = pos.offset + 1;
+    m_cursor->setPosition(newPos);
+
+    qDebug() << "[insertFractionAtCursor] 光标已移动到：块" << newPos.blockIndex << "，偏移" << newPos.offset;
+
+    // 步骤7：标记文档已修改
+    m_isModified = true;
+    updateWindowTitle();
+
+    qDebug() << "[insertFractionAtCursor] 完成！";
 }
 
 } // namespace QtWordEditor

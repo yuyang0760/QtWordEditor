@@ -8,6 +8,8 @@
 #include <QFont>
 #include <QTextLine>
 #include <QFontMetricsF>
+#include <QHash>
+#include <QSizeF>
 #include "core/document/ParagraphStyle.h"
 #include "core/document/CharacterStyle.h"
 #include "core/document/InlineSpan.h"
@@ -116,6 +118,16 @@ public:
      * @param spans 段落的 InlineSpan 列表
      */
     void layout(const QList<InlineSpan*> &spans);
+    
+    /**
+     * @brief 执行布局（使用MathSpan的真实尺寸）
+     * @param spans 段落的 InlineSpan 列表
+     * @param mathSizeMap MathSpan到尺寸的映射
+     * @param mathBaselineMap MathSpan到基线的映射
+     */
+    void layout(const QList<InlineSpan*> &spans, 
+                const QHash<InlineSpan*, QSizeF> &mathSizeMap,
+                const QHash<InlineSpan*, qreal> &mathBaselineMap);
 
     /**
      * @brief 获取布局后的所有项
@@ -184,8 +196,9 @@ private:
     
     /**
      * @brief 从 LayoutItem 列表完成一行的布局
+     * @return 该行的最大高度
      */
-    void finishLineFromItems(QList<LayoutItem> &items, qreal lineY);
+    qreal finishLineFromItems(QList<LayoutItem> &items, qreal lineY);
     
     /**
      * @brief 清除所有布局结果

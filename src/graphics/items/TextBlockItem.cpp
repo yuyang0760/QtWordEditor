@@ -106,21 +106,66 @@ void TextBlockItem::updateBlock()
     clearMathItems();
     
     applyParagraphIndent();
-    performLayout();
     
-    // 为每个 MathSpan 创建对应的 MathItem
-    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
-    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
-        if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
-            MathSpan *mathSpan = static_cast<MathSpan*>(item.inlineSpan);
+    // ========== 第一步：先创建所有 MathItem，获取真实尺寸 ==========
+    QList<InlineSpan*> spans = getSpans();
+    QHash<InlineSpan*, MathItem*> mathItemMap;
+    QHash<InlineSpan*, QSizeF> mathSizeMap;
+    QHash<InlineSpan*, qreal> mathBaselineMap;
+    
+    for (InlineSpan *span : spans) {
+        if (span->type() == InlineSpan::Math) {
+            MathSpan *mathSpan = static_cast<MathSpan*>(span);
             MathItem *mathItem = MathItemFactory::createMathItem(mathSpan);
             if (mathItem) {
                 mathItem->setParentItem(this);
-                mathItem->setPos(item.position + QPointF(m_leftIndent, 0));
+                mathItem->setVisible(false); // 先隐藏，等布局后再显示
                 m_mathItems.append(mathItem);
+                mathItemMap.insert(span, mathItem);
+                mathSizeMap.insert(span, mathItem->boundingRect().size());
+                mathBaselineMap.insert(span, mathItem->baseline());
+                qDebug() << "  预创建 MathItem，span=" << span 
+                         << "size=" << mathItem->boundingRect().size()
+                         << "baseline=" << mathItem->baseline();
             }
         }
     }
+    // ===============================================================
+    
+    // ========== 第二步：执行布局（现在可以使用真实尺寸） ==========
+    // 修改：在创建LayoutItem时，如果是MathSpan，使用真实尺寸
+    performLayoutWithMathSizes(mathSizeMap, mathBaselineMap);
+    // ===============================================================
+    
+    // ========== 调试信息 ==========
+    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
+    qDebug() << "TextBlockItem::updateBlock() - items 数量:" << items.size();
+    for (int i = 0; i < items.size(); ++i) {
+        const TextBlockLayoutEngine::LayoutItem &item = items[i];
+        qDebug() << "  item" << i << ":"
+                 << "inlineSpan=" << item.inlineSpan
+                 << "type=" << (item.inlineSpan ? (int)item.inlineSpan->type() : -1)
+                 << "position=" << item.position
+                 << "width=" << item.width
+                 << "height=" << item.height;
+    }
+    // ===============================
+    
+    // ========== 第三步：设置 MathItem 的位置并显示 ==========
+    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
+        if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
+            MathItem *mathItem = mathItemMap.value(item.inlineSpan, nullptr);
+            if (mathItem) {
+                mathItem->setPos(item.position + QPointF(m_leftIndent, 0));
+                mathItem->setVisible(true);
+                qDebug() << "  设置 MathItem 位置，span=" << item.inlineSpan 
+                         << "pos=" << item.position + QPointF(m_leftIndent, 0);
+            }
+        }
+    }
+    // ===============================================================
+    
+    qDebug() << "TextBlockItem::updateBlock() - m_mathItems 数量:" << m_mathItems.size();
     
     update(); // 触发重绘，确保内容更新后立即显示
 }
@@ -167,6 +212,36 @@ void TextBlockItem::performLayout()
     
     // 执行布局
     m_layoutEngine->layout(spans);
+    
+    // 更新边界矩形（加上左缩进）
+    m_boundingRect = QRectF(0, 0, m_textWidth, m_layoutEngine->totalHeight());
+}
+
+void TextBlockItem::performLayoutWithMathSizes(const QHash<InlineSpan*, QSizeF> &mathSizeMap, 
+                                                  const QHash<InlineSpan*, qreal> &mathBaselineMap)
+{
+    QList<InlineSpan*> spans = getSpans();
+    if (spans.isEmpty()) {
+        m_boundingRect = QRectF(0, 0, m_textWidth, 0);
+        return;
+    }
+    
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
+    if (para) {
+        m_layoutEngine->setParagraphStyle(para->paragraphStyle());
+    }
+    
+    // 计算可用宽度（减去缩进）
+    qreal availableWidth = m_textWidth - m_leftIndent - m_rightIndent;
+    if (availableWidth < 10.0) {
+        availableWidth = 10.0;
+    }
+    
+    m_layoutEngine->setAvailableWidth(availableWidth);
+    m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::WrapAnywhere);
+    
+    // 执行布局（使用MathSpan的真实尺寸）
+    m_layoutEngine->layout(spans, mathSizeMap, mathBaselineMap);
     
     // 更新边界矩形（加上左缩进）
     m_boundingRect = QRectF(0, 0, m_textWidth, m_layoutEngine->totalHeight());

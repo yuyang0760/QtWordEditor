@@ -1,562 +1,520 @@
-调试控制台已清空
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: (0, 36)
-  计算目标位置: 块 0，偏移 35 (原 offset=36-1)
-  获取到的样式: 加粗=0, 斜体=0, 下划线=0
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 无选区，光标位置: (0, 36)
-  计算目标位置: 块 0，偏移 35 (原 offset=36-1)
-  获取到的样式: 加粗=0, 斜体=0, 下划线=0
-  从 formatController 收到样式: 加粗=0, 斜体=0, 下划线=0, 有选区=0
-  无选区，工具栏显示一致样式
-  已更新到 ribbonBar
-EditEventHandler::handleMouseMove at: (203, 94)
-  光标位置: 块0，偏移36
-  选择起始: 块0，偏移36
-  选择范围已设置
-EditEventHandler::handleMouseMove at: (206, 95)
-  光标位置: 块0，偏移36
-  选择起始: 块0，偏移36
-  选择范围已设置
-EditEventHandler::handleMouseMove at: (208, 96)
-  光标位置: 块0，偏移36
-  选择起始: 块0，偏移36
-  选择范围已设置
-EditEventHandler::handleMouseMove at: (209, 97)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 37)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (210, 97)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (212, 98)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (213, 98)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (216, 100)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (219, 100)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (220, 101)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (223, 101)
-  光标位置: 块0，偏移37
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=37
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=9, item.text.length()=28
-    startX=128, endX=144, width=16
-    添加矩形: x=128, y=21, w=16, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (226, 101)
-  光标位置: 块0，偏移38
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 38)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=38
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
-    startX=128, endX=160, width=32
-    添加矩形: x=128, y=21, w=32, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (229, 101)
-  光标位置: 块0，偏移38
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=38
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
-    startX=128, endX=160, width=32
-    添加矩形: x=128, y=21, w=32, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (235, 101)
-  光标位置: 块0，偏移38
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=38
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
-    startX=128, endX=160, width=32
-    添加矩形: x=128, y=21, w=32, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (238, 101)
-  光标位置: 块0，偏移38
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=38
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=10, item.text.length()=28
-    startX=128, endX=160, width=32
-    添加矩形: x=128, y=21, w=32, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (241, 101)
-  光标位置: 块0，偏移39
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 39)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=39
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
-    startX=128, endX=176, width=48
-    添加矩形: x=128, y=21, w=48, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (244, 101)
-  光标位置: 块0，偏移39
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=39
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
-    startX=128, endX=176, width=48
-    添加矩形: x=128, y=21, w=48, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (246, 101)
-  光标位置: 块0，偏移39
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=39
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
-    startX=128, endX=176, width=48
-    添加矩形: x=128, y=21, w=48, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (252, 101)
-  光标位置: 块0，偏移39
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=39
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=11, item.text.length()=28
-    startX=128, endX=176, width=48
-    添加矩形: x=128, y=21, w=48, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (257, 100)
-  光标位置: 块0，偏移40
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 40)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=40
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
-    startX=128, endX=192, width=64
-    添加矩形: x=128, y=21, w=64, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (261, 99)
-  光标位置: 块0，偏移40
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=40
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
-    startX=128, endX=192, width=64
-    添加矩形: x=128, y=21, w=64, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (266, 98)
-  光标位置: 块0，偏移40
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=40
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
-    startX=128, endX=192, width=64
-    添加矩形: x=128, y=21, w=64, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (269, 98)
-  光标位置: 块0，偏移40
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=40
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
-    startX=128, endX=192, width=64
-    添加矩形: x=128, y=21, w=64, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (271, 98)
-  光标位置: 块0，偏移40
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=40
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=12, item.text.length()=28
-    startX=128, endX=192, width=64
-    添加矩形: x=128, y=21, w=64, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (273, 97)
-  光标位置: 块0，偏移41
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 41)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=41
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
-    startX=128, endX=208, width=80
-    添加矩形: x=128, y=21, w=80, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (277, 97)
-  光标位置: 块0，偏移41
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=41
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
-    startX=128, endX=208, width=80
-    添加矩形: x=128, y=21, w=80, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (281, 97)
-  光标位置: 块0，偏移41
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=41
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
-    startX=128, endX=208, width=80
-    添加矩形: x=128, y=21, w=80, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (284, 97)
-  光标位置: 块0，偏移41
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=41
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
-    startX=128, endX=208, width=80
-    添加矩形: x=128, y=21, w=80, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (286, 97)
-  光标位置: 块0，偏移41
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=41
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=13, item.text.length()=28
-    startX=128, endX=208, width=80
-    添加矩形: x=128, y=21, w=80, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (291, 97)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 42)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (294, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (297, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (298, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (298, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (300, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (301, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (302, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseMove at: (303, 96)
-  光标位置: 块0，偏移42
-  选择起始: 块0，偏移36
-  选择范围已设置
-TextBlockItem::selectionRects start=36, end=42
-  检查 item: spanIndex=0, globalStart=0, globalEnd=28, text=这是一段很长很长的测试文字。我们用来测试自动换行功能。这
-  检查 item: spanIndex=0, globalStart=28, globalEnd=56, text=段文字应该会超过页面的宽度，这样我们可以看到自动换行是否
-    重叠! selStartInItem=8, selEndInItem=14, item.text.length()=28
-    startX=128, endX=224, width=96
-    添加矩形: x=128, y=21, w=96, h=21
-  检查 item: spanIndex=0, globalStart=56, globalEnd=90, text=正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功
-  检查 item: spanIndex=0, globalStart=90, globalEnd=112, text=能强大的文字编辑器，支持各种文字格式和布局。
-EditEventHandler::handleMouseRelease at: (303, 96)
-  最终选择范围:
-    Anchor: 块0，偏移36
-    Focus: 块0，偏移42
-    Start: 块0，偏移36
-    End: 块0，偏移42
-MainWindow: 收到 selectionFinished 信号，更新样式状态
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 42)
-  选区完全在 Span 0 内: [0, 112] [正常]
-  获取到该 Span 的样式: 加粗=0, 斜体=0, 下划线=0
-  从 formatController 收到样式: 加粗=0, 斜体=0, 下划线=0, 有选区=1
-FormatController::collectSelectionStyles - 处理块0: 偏移36到42
-  包含块0的 Span 0: 加粗=0, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
-FormatController::getSelectionStyleConsistency - 只有 1 个 Span，所有属性都一致
-  一致的属性值：加粗=0, 斜体=0
-  选区完全在单个 Span 内，工具栏显示一致样式
-  已更新到 ribbonBar
-MainWindow:加粗按钮被点击
-FormatController::collectSelectionStyles - 处理块0: 偏移36到42
-  包含块0的 Span 0: 加粗=0, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
-FormatController::isSelectionAllBold - 结果: 0
-  有选区，选区内全部加粗:0
-  选区内不一致或未加粗，设置为 true
-FormatController::applyCharacterStyle - 开始应用样式
-  范围: 块0 偏移36 到块0 偏移42
-  要应用的样式:
-    加粗: 1
-    斜体: 0
-    下划线: 0
-  处理块0: 偏移36 到42
-TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 3
-  span 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过" ] bold= false length= 36
-  span 1 : text=[ "页面的宽度，" ] bold= true length= 6
-  span 2 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 70
-  availableWidth: 451
-TextBlockLayoutEngine::layout() - 收集到的 items 数量: 6
-  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 width= 448
-  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 width= 128
-  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 width= 96
-  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 width= 372.734
-  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 width= 447.281
-  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 width= 192
-TextBlockLayoutEngine::layout() - 最终行数量: 5
-  line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
-  line 1 : rect= QRectF(0,21 224x21) itemIndices= QList(1, 2)
-  line 2 : rect= QRectF(0,42 372.734x21) itemIndices= QList(3)
-  line 3 : rect= QRectF(0,63 447.281x21) itemIndices= QList(4)
-  line 4 : rect= QRectF(0,84 192x21) itemIndices= QList(5)
-TextBlockLayoutEngine::layout() - 最终 items 数量: 6
-  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
-  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 position= QPointF(0,21) width= 128
-  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 position= QPointF(128,21) width= 96
-  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 position= QPointF(0,42) width= 372.734
-  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 position= QPointF(0,63) width= 447.281
-  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 position= QPointF(0,84) width= 192
-TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 3
-  span 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过" ] bold= false length= 36
-  span 1 : text=[ "页面的宽度，" ] bold= true length= 6
-  span 2 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 70
-  availableWidth: 451
-TextBlockLayoutEngine::layout() - 收集到的 items 数量: 6
-  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 width= 448
-  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 width= 128
-  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 width= 96
-  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 width= 372.734
-  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 width= 447.281
-  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 width= 192
-TextBlockLayoutEngine::layout() - 最终行数量: 5
-  line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
-  line 1 : rect= QRectF(0,21 224x21) itemIndices= QList(1, 2)
-  line 2 : rect= QRectF(0,42 372.734x21) itemIndices= QList(3)
-  line 3 : rect= QRectF(0,63 447.281x21) itemIndices= QList(4)
-  line 4 : rect= QRectF(0,84 192x21) itemIndices= QList(5)
-TextBlockLayoutEngine::layout() - 最终 items 数量: 6
-  item 0 : text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
-  item 1 : text=[ "段文字应该会超过" ] spanIndex= 0 position= QPointF(0,21) width= 128
-  item 2 : text=[ "页面的宽度，" ] spanIndex= 1 position= QPointF(128,21) width= 96
-  item 3 : text=[ "这样我们可以看到自动换行是否正常工作。欢迎使用 " ] spanIndex= 2 position= QPointF(0,42) width= 372.734
-  item 4 : text=[ "QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，" ] spanIndex= 2 position= QPointF(0,63) width= 447.281
-  item 5 : text=[ "支持各种文字格式和布局。" ] spanIndex= 2 position= QPointF(0,84) width= 192
-FormatController::applyCharacterStyle - 样式应用完成
-MainWindow::updateStyleState - 开始更新样式
-FormatController::getCurrentDisplayStyle - 有选区
-  选区: Anchor(0, 36), Focus(0, 42)
-  选区完全在 Span 1 内: [36, 42] [加粗]
-  获取到该 Span 的样式: 加粗=1, 斜体=0, 下划线=0
-  从 formatController 收到样式: 加粗=1, 斜体=0, 下划线=0, 有选区=1
-FormatController::collectSelectionStyles - 处理块0: 偏移36到42
-  包含块0的 Span 1: 加粗=1, 斜体=0, 下划线=0, 字体=Microsoft YaHei UI, 字号=12
-FormatController::getSelectionStyleConsistency - 只有 1 个 Span，所有属性都一致
-  一致的属性值：加粗=1, 斜体=0
-  选区完全在单个 Span 内，工具栏显示一致样式
-  已更新到 ribbonBar
+[DEBUG] 调试控制台初始化成功！
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 1
+[DEBUG]   span 0 : type=Text text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过页面的宽度，这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 112
+[DEBUG]   availableWidth: 451
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 0
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 0  +  21  =  21
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 21
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 21
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 21 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 21  +  21  =  42
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 42
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 42
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 42 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 42  +  21  =  63
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 63
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 63 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 4
+[DEBUG]   line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+[DEBUG]   line 1 : rect= QRectF(0,21 448x21) itemIndices= QList(1)
+[DEBUG]   line 2 : rect= QRectF(0,42 436.016x21) itemIndices= QList(2)
+[DEBUG]   line 3 : rect= QRectF(0,63 352x21) itemIndices= QList(3)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 4
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "段文字应该会超过页面的宽度，这样我们可以看到自动换行是否" ] spanIndex= 0 position= QPointF(0,21) width= 448
+[DEBUG]   m_layoutItems[ 2 ]: text=[ "正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功" ] spanIndex= 0 position= QPointF(0,42) width= 436.016
+[DEBUG]   m_layoutItems[ 3 ]: text=[ "能强大的文字编辑器，支持各种文字格式和布局。" ] spanIndex= 0 position= QPointF(0,63) width= 352
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 1
+[DEBUG]   span 0 : type=Text text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过页面的宽度，这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 112
+[DEBUG]   availableWidth: 451
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 0
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 0  +  21  =  21
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 21
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 21
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 21 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 21  +  21  =  42
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 42
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 42
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 42 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 42  +  21  =  63
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 63
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 63 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 4
+[DEBUG]   line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+[DEBUG]   line 1 : rect= QRectF(0,21 448x21) itemIndices= QList(1)
+[DEBUG]   line 2 : rect= QRectF(0,42 436.016x21) itemIndices= QList(2)
+[DEBUG]   line 3 : rect= QRectF(0,63 352x21) itemIndices= QList(3)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 4
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "这是一段很长很长的测试文字。我们用来测试自动换行功能。这" ] spanIndex= 0 position= QPointF(0,0) width= 448
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "段文字应该会超过页面的宽度，这样我们可以看到自动换行是否" ] spanIndex= 0 position= QPointF(0,21) width= 448
+[DEBUG]   m_layoutItems[ 2 ]: text=[ "正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功" ] spanIndex= 0 position= QPointF(0,42) width= 436.016
+[DEBUG]   m_layoutItems[ 3 ]: text=[ "能强大的文字编辑器，支持各种文字格式和布局。" ] spanIndex= 0 position= QPointF(0,63) width= 352
+[DEBUG] TextBlockItem::updateBlock() - items 数量: 4
+[DEBUG]   item 0 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d58d0) type= 0 position= QPointF(0,0) width= 448 height= 21
+[DEBUG]   item 1 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d58d0) type= 0 position= QPointF(0,21) width= 448 height= 21
+[DEBUG]   item 2 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d58d0) type= 0 position= QPointF(0,42) width= 436.016 height= 21
+[DEBUG]   item 3 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d58d0) type= 0 position= QPointF(0,63) width= 352 height= 21
+[DEBUG] TextBlockItem::updateBlock() - m_mathItems 数量: 0
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 1
+[DEBUG]   span 0 : type=Text text=[ "这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。让我们继续输入一些文字，看看第二段是否也能正常换行！" ] bold= false length= 70
+[DEBUG]   availableWidth: 451
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 0
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 0  +  21  =  21
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 21
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 21
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 21 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 21  +  21  =  42
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 42
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 42 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 3
+[DEBUG]   line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+[DEBUG]   line 1 : rect= QRectF(0,21 448x21) itemIndices= QList(1)
+[DEBUG]   line 2 : rect= QRectF(0,42 224x21) itemIndices= QList(2)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 3
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "这是第二段测试文字。您可以在这里进行各种文字编辑操作，包" ] spanIndex= 0 position= QPointF(0,0) width= 448
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "括字体样式修改、段落对齐等功能。让我们继续输入一些文字，" ] spanIndex= 0 position= QPointF(0,21) width= 448
+[DEBUG]   m_layoutItems[ 2 ]: text=[ "看看第二段是否也能正常换行！" ] spanIndex= 0 position= QPointF(0,42) width= 224
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 1
+[DEBUG]   span 0 : type=Text text=[ "这是第二段测试文字。您可以在这里进行各种文字编辑操作，包括字体样式修改、段落对齐等功能。让我们继续输入一些文字，看看第二段是否也能正常换行！" ] bold= false length= 70
+[DEBUG]   availableWidth: 451
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 0
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 0  +  21  =  21
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 21
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 21
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 21 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 21  +  21  =  42
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 42
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 42 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 3
+[DEBUG]   line 0 : rect= QRectF(0,0 448x21) itemIndices= QList(0)
+[DEBUG]   line 1 : rect= QRectF(0,21 448x21) itemIndices= QList(1)
+[DEBUG]   line 2 : rect= QRectF(0,42 224x21) itemIndices= QList(2)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 3
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "这是第二段测试文字。您可以在这里进行各种文字编辑操作，包" ] spanIndex= 0 position= QPointF(0,0) width= 448
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "括字体样式修改、段落对齐等功能。让我们继续输入一些文字，" ] spanIndex= 0 position= QPointF(0,21) width= 448
+[DEBUG]   m_layoutItems[ 2 ]: text=[ "看看第二段是否也能正常换行！" ] spanIndex= 0 position= QPointF(0,42) width= 224
+[DEBUG] TextBlockItem::updateBlock() - items 数量: 3
+[DEBUG]   item 0 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5ce0) type= 0 position= QPointF(0,0) width= 448 height= 21
+[DEBUG]   item 1 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5ce0) type= 0 position= QPointF(0,21) width= 448 height= 21
+[DEBUG]   item 2 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5ce0) type= 0 position= QPointF(0,42) width= 224 height= 21
+[DEBUG] TextBlockItem::updateBlock() - m_mathItems 数量: 0
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 5
+[DEBUG]   span 0 : type=Text text=[ "公式测试: " ] bold= false length= 6
+[DEBUG]   span 1 : type=Math mathType= 3 hasSize= false
+[DEBUG]   span 2 : type=Text text=[ " 继续测试 " ] bold= false length= 6
+[DEBUG]   span 3 : type=Math mathType= 0 hasSize= false
+[DEBUG]   span 4 : type=Text text=[ " 测试完毕！" ] bold= false length= 6
+[DEBUG]   availableWidth: 451
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 5 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   item 1 : height= 30 ascent= 20 isMath= true
+[DEBUG]   item 2 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   item 3 : height= 30 ascent= 20 isMath= true
+[DEBUG]   item 4 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 30 lineMaxAscent= 20
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 30 下一行将从 lineY+ 30  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 1
+[DEBUG]   line 0 : rect= QRectF(0,0 330.781x30) itemIndices= QList(0, 1, 2, 3, 4)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 5
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "公式测试: " ] spanIndex= 0 position= QPointF(0,3.75) width= 72.5781
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "" ] spanIndex= 1 position= QPointF(72.5781,0) width= 50
+[DEBUG]   m_layoutItems[ 2 ]: text=[ " 继续测试 " ] spanIndex= 2 position= QPointF(122.578,3.75) width= 73.4688
+[DEBUG]   m_layoutItems[ 3 ]: text=[ "" ] spanIndex= 3 position= QPointF(196.047,0) width= 50
+[DEBUG]   m_layoutItems[ 4 ]: text=[ " 测试完毕！" ] spanIndex= 4 position= QPointF(246.047,3.75) width= 84.7344
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::FractionMathSpan(0x26bb017a190) , parent= QGraphicsItem(0)
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 3
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createFractionItem...
+[DEBUG]     [MathItemFactory::createFractionItem] 开始...
+[DEBUG]     [MathItemFactory::createFractionItem] fracSpan= QtWordEditor::FractionMathSpan(0x26bb017a190)
+[DEBUG] [FractionItem::FractionItem] 构造函数执行完毕
+[DEBUG]     [MathItemFactory::createFractionItem] FractionItem 创建成功
+[DEBUG]     [MathItemFactory::createFractionItem] numerator= QtWordEditor::NumberMathSpan(0x26bb55d6ac0)
+[DEBUG]     [MathItemFactory::createFractionItem] 准备为分子创建 MathItem...
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::NumberMathSpan(0x26bb55d6ac0) , parent= QGraphicsItem(0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 0
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createNumberItem...
+[DEBUG]     [MathItemFactory::createNumberItem] 开始...
+[DEBUG]     [MathItemFactory::createNumberItem] numSpan= QtWordEditor::NumberMathSpan(0x26bb55d6ac0)
+[DEBUG] [NumberItem::NumberItem] 构造函数开始, span= QtWordEditor::NumberMathSpan(0x26bb55d6ac0)
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "123" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "123" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [NumberItem::NumberItem] 构造函数完成
+[DEBUG]     [MathItemFactory::createNumberItem] NumberItem 创建成功, item= QGraphicsItem(0x26bb55d87c0, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]     [MathItemFactory::createFractionItem] 分子 MathItem 创建成功, numItem= QGraphicsItem(0x26bb55d87c0, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setNumeratorItem] 开始, item= QGraphicsItem(0x26bb55d87c0, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setNumeratorItem] 分子需要更新
+[DEBUG] [FractionItem::setNumeratorItem] 设置新分子的 parent
+[DEBUG] [FractionItem::setNumeratorItem] 准备调用 updateLayout()
+[DEBUG] [FractionItem::updateLayout] 开始...
+[DEBUG] [FractionItem::updateLayout] fracSpan 有效
+[DEBUG] [FractionItem::updateLayout] 准备处理分子, m_numeratorItem= QGraphicsItem(0x26bb55d87c0, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_numeratorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "123" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "123" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分子 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分子布局完成, rect= QRectF(0,0 27x16)
+[DEBUG] [FractionItem::updateLayout] 准备处理分母, m_denominatorItem= QGraphicsItem(0)
+[DEBUG] [FractionItem::updateLayout] totalWidth= 31 , totalHeight= 23
+[DEBUG] [FractionItem::updateLayout] m_numPos= QPointF(2,2)
+[DEBUG] [FractionItem::updateLayout] m_lineY= 20
+[DEBUG] [FractionItem::updateLayout] m_denPos= QPointF(2,23)
+[DEBUG] [FractionItem::updateLayout] 设置分子位置
+[DEBUG] [FractionItem::updateLayout] m_boundingRect= QRectF(0,0 31x23) , m_baseline= 20
+[DEBUG] [FractionItem::updateLayout] 完成
+[DEBUG] [FractionItem::setNumeratorItem] updateLayout() 完成
+[DEBUG] [FractionItem::setNumeratorItem] 结束
+[DEBUG]     [MathItemFactory::createFractionItem] setNumeratorItem 完成
+[DEBUG]     [MathItemFactory::createFractionItem] denominator= QtWordEditor::NumberMathSpan(0x26bb55d63c0)
+[DEBUG]     [MathItemFactory::createFractionItem] 准备为分母创建 MathItem...
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::NumberMathSpan(0x26bb55d63c0) , parent= QGraphicsItem(0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 0
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createNumberItem...
+[DEBUG]     [MathItemFactory::createNumberItem] 开始...
+[DEBUG]     [MathItemFactory::createNumberItem] numSpan= QtWordEditor::NumberMathSpan(0x26bb55d63c0)
+[DEBUG] [NumberItem::NumberItem] 构造函数开始, span= QtWordEditor::NumberMathSpan(0x26bb55d63c0)
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "456" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "456" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [NumberItem::NumberItem] 构造函数完成
+[DEBUG]     [MathItemFactory::createNumberItem] NumberItem 创建成功, item= QGraphicsItem(0x26bb55d8d00, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]     [MathItemFactory::createFractionItem] 分母 MathItem 创建成功, denItem= QGraphicsItem(0x26bb55d8d00, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setDenominatorItem] 开始, item= QGraphicsItem(0x26bb55d8d00, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setDenominatorItem] 分母需要更新
+[DEBUG] [FractionItem::setDenominatorItem] 设置新分母的 parent
+[DEBUG] [FractionItem::setDenominatorItem] 准备调用 updateLayout()
+[DEBUG] [FractionItem::updateLayout] 开始...
+[DEBUG] [FractionItem::updateLayout] fracSpan 有效
+[DEBUG] [FractionItem::updateLayout] 准备处理分子, m_numeratorItem= QGraphicsItem(0x26bb55d87c0, parent=0x26bb55ae0d0, pos=2,2, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_numeratorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "123" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "123" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分子 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分子布局完成, rect= QRectF(0,0 27x16)
+[DEBUG] [FractionItem::updateLayout] 准备处理分母, m_denominatorItem= QGraphicsItem(0x26bb55d8d00, parent=0x26bb55ae0d0, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_denominatorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "456" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "456" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分母 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分母布局完成, rect= QRectF(0,0 27x16)
+[DEBUG] [FractionItem::updateLayout] totalWidth= 31 , totalHeight= 39
+[DEBUG] [FractionItem::updateLayout] m_numPos= QPointF(2,2)
+[DEBUG] [FractionItem::updateLayout] m_lineY= 20
+[DEBUG] [FractionItem::updateLayout] m_denPos= QPointF(2,23)
+[DEBUG] [FractionItem::updateLayout] 设置分子位置
+[DEBUG] [FractionItem::updateLayout] 设置分母位置
+[DEBUG] [FractionItem::updateLayout] m_boundingRect= QRectF(0,0 31x39) , m_baseline= 20
+[DEBUG] [FractionItem::updateLayout] 完成
+[DEBUG] [FractionItem::setDenominatorItem] updateLayout() 完成
+[DEBUG] [FractionItem::setDenominatorItem] 结束
+[DEBUG]     [MathItemFactory::createFractionItem] setDenominatorItem 完成
+[DEBUG]     [MathItemFactory::createFractionItem] 返回
+[DEBUG]   预创建 MathItem，span= QtWordEditor::FractionMathSpan(0x26bb017a190) size= QSizeF(31, 39) baseline= 20
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::NumberMathSpan(0x26bb55d6480) , parent= QGraphicsItem(0)
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 0
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createNumberItem...
+[DEBUG]     [MathItemFactory::createNumberItem] 开始...
+[DEBUG]     [MathItemFactory::createNumberItem] numSpan= QtWordEditor::NumberMathSpan(0x26bb55d6480)
+[DEBUG] [NumberItem::NumberItem] 构造函数开始, span= QtWordEditor::NumberMathSpan(0x26bb55d6480)
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "789" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "789" ]
+[DEBUG] [NumberItem::updateLayout] width= 27 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 27x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [NumberItem::NumberItem] 构造函数完成
+[DEBUG]     [MathItemFactory::createNumberItem] NumberItem 创建成功, item= QGraphicsItem(0x26bb55d8400, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]   预创建 MathItem，span= QtWordEditor::NumberMathSpan(0x26bb55d6480) size= QSizeF(27, 16) baseline= 12
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 5
+[DEBUG]   span 0 : type=Text text=[ "公式测试: " ] bold= false length= 6
+[DEBUG]   span 1 : type=Math mathType= 3 hasSize= true
+[DEBUG]   span 2 : type=Text text=[ " 继续测试 " ] bold= false length= 6
+[DEBUG]   span 3 : type=Math mathType= 0 hasSize= true
+[DEBUG]   span 4 : type=Text text=[ " 测试完毕！" ] bold= false length= 6
+[DEBUG]   availableWidth: 451
+[DEBUG]   MathSpan 使用真实尺寸：size= QSizeF(31, 39) ascent= 20 descent= 19
+[DEBUG]   MathSpan 使用真实尺寸：size= QSizeF(27, 16) ascent= 12 descent= 4
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 5 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   item 1 : height= 39 ascent= 20 isMath= true
+[DEBUG]   item 2 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   item 3 : height= 16 ascent= 12 isMath= true
+[DEBUG]   item 4 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 39 lineMaxAscent= 20
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 39 下一行将从 lineY+ 39  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 1
+[DEBUG]   line 0 : rect= QRectF(0,0 288.781x39) itemIndices= QList(0, 1, 2, 3, 4)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 5
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "公式测试: " ] spanIndex= 0 position= QPointF(0,3.75) width= 72.5781
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "" ] spanIndex= 1 position= QPointF(72.5781,0) width= 31
+[DEBUG]   m_layoutItems[ 2 ]: text=[ " 继续测试 " ] spanIndex= 2 position= QPointF(103.578,3.75) width= 73.4688
+[DEBUG]   m_layoutItems[ 3 ]: text=[ "" ] spanIndex= 3 position= QPointF(177.047,8) width= 27
+[DEBUG]   m_layoutItems[ 4 ]: text=[ " 测试完毕！" ] spanIndex= 4 position= QPointF(204.047,3.75) width= 84.7344
+[DEBUG] TextBlockItem::updateBlock() - items 数量: 5
+[DEBUG]   item 0 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5240) type= 0 position= QPointF(0,3.75) width= 72.5781 height= 21
+[DEBUG]   item 1 : inlineSpan= QtWordEditor::FractionMathSpan(0x26bb017a190) type= 1 position= QPointF(72.5781,0) width= 31 height= 39
+[DEBUG]   item 2 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5600) type= 0 position= QPointF(103.578,3.75) width= 73.4688 height= 21
+[DEBUG]   item 3 : inlineSpan= QtWordEditor::NumberMathSpan(0x26bb55d6480) type= 1 position= QPointF(177.047,8) width= 27 height= 16
+[DEBUG]   item 4 : inlineSpan= QtWordEditor::InlineSpan(0x26bb55d5380) type= 0 position= QPointF(204.047,3.75) width= 84.7344 height= 21
+[DEBUG]   设置 MathItem 位置，span= QtWordEditor::FractionMathSpan(0x26bb017a190) pos= QPointF(72.5781,0)
+[DEBUG]   设置 MathItem 位置，span= QtWordEditor::NumberMathSpan(0x26bb55d6480) pos= QPointF(177.047,8)
+[DEBUG] TextBlockItem::updateBlock() - m_mathItems 数量: 2
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 0)"
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 0)"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 2)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 2)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] "EditEventHandler::handleMouseRelease at: (111, 84)"
+[DEBUG] "Start: 块-1，偏移0  End: 块-1，偏移0 "
+[DEBUG] MainWindow: 收到 selectionFinished 信号，更新样式状态
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 2)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] 插入分数
+[DEBUG] [insertFractionAtCursor] 当前光标位置：块 0 ，偏移 2
+[DEBUG] [insertFractionAtCursor] 段落长度： 112
+[DEBUG] [insertFractionAtCursor] 创建分数 MathSpan 成功
+[DEBUG] [DocumentScene::updateSingleTextItem] - 开始更新单个块
+[DEBUG]   找到块，准备调用 updateBlock()
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::FractionMathSpan(0x26bb56ea940) , parent= QGraphicsItem(0)
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 3
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createFractionItem...
+[DEBUG]     [MathItemFactory::createFractionItem] 开始...
+[DEBUG]     [MathItemFactory::createFractionItem] fracSpan= QtWordEditor::FractionMathSpan(0x26bb56ea940)
+[DEBUG] [FractionItem::FractionItem] 构造函数执行完毕
+[DEBUG]     [MathItemFactory::createFractionItem] FractionItem 创建成功
+[DEBUG]     [MathItemFactory::createFractionItem] numerator= QtWordEditor::NumberMathSpan(0x26bb56ee440)
+[DEBUG]     [MathItemFactory::createFractionItem] 准备为分子创建 MathItem...
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::NumberMathSpan(0x26bb56ee440) , parent= QGraphicsItem(0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 0
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createNumberItem...
+[DEBUG]     [MathItemFactory::createNumberItem] 开始...
+[DEBUG]     [MathItemFactory::createNumberItem] numSpan= QtWordEditor::NumberMathSpan(0x26bb56ee440)
+[DEBUG] [NumberItem::NumberItem] 构造函数开始, span= QtWordEditor::NumberMathSpan(0x26bb56ee440)
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "1" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "1" ]
+[DEBUG] [NumberItem::updateLayout] width= 9 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 9x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [NumberItem::NumberItem] 构造函数完成
+[DEBUG]     [MathItemFactory::createNumberItem] NumberItem 创建成功, item= QGraphicsItem(0x26bc34d2550, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]     [MathItemFactory::createFractionItem] 分子 MathItem 创建成功, numItem= QGraphicsItem(0x26bc34d2550, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setNumeratorItem] 开始, item= QGraphicsItem(0x26bc34d2550, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setNumeratorItem] 分子需要更新
+[DEBUG] [FractionItem::setNumeratorItem] 设置新分子的 parent
+[DEBUG] [FractionItem::setNumeratorItem] 准备调用 updateLayout()
+[DEBUG] [FractionItem::updateLayout] 开始...
+[DEBUG] [FractionItem::updateLayout] fracSpan 有效
+[DEBUG] [FractionItem::updateLayout] 准备处理分子, m_numeratorItem= QGraphicsItem(0x26bc34d2550, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_numeratorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "1" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "1" ]
+[DEBUG] [NumberItem::updateLayout] width= 9 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 9x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分子 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分子布局完成, rect= QRectF(0,0 9x16)
+[DEBUG] [FractionItem::updateLayout] 准备处理分母, m_denominatorItem= QGraphicsItem(0)
+[DEBUG] [FractionItem::updateLayout] totalWidth= 13 , totalHeight= 23
+[DEBUG] [FractionItem::updateLayout] m_numPos= QPointF(2,2)
+[DEBUG] [FractionItem::updateLayout] m_lineY= 20
+[DEBUG] [FractionItem::updateLayout] m_denPos= QPointF(2,23)
+[DEBUG] [FractionItem::updateLayout] 设置分子位置
+[DEBUG] [FractionItem::updateLayout] m_boundingRect= QRectF(0,0 13x23) , m_baseline= 20
+[DEBUG] [FractionItem::updateLayout] 完成
+[DEBUG] [FractionItem::setNumeratorItem] updateLayout() 完成
+[DEBUG] [FractionItem::setNumeratorItem] 结束
+[DEBUG]     [MathItemFactory::createFractionItem] setNumeratorItem 完成
+[DEBUG]     [MathItemFactory::createFractionItem] denominator= QtWordEditor::NumberMathSpan(0x26bb56ee6c0)
+[DEBUG]     [MathItemFactory::createFractionItem] 准备为分母创建 MathItem...
+[DEBUG]   [MathItemFactory::createMathItem] 开始, span= QtWordEditor::NumberMathSpan(0x26bb56ee6c0) , parent= QGraphicsItem(0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]   [MathItemFactory::createMathItem] mathType= 0
+[DEBUG]   [MathItemFactory::createMathItem] 准备调用 createNumberItem...
+[DEBUG]     [MathItemFactory::createNumberItem] 开始...
+[DEBUG]     [MathItemFactory::createNumberItem] numSpan= QtWordEditor::NumberMathSpan(0x26bb56ee6c0)
+[DEBUG] [NumberItem::NumberItem] 构造函数开始, span= QtWordEditor::NumberMathSpan(0x26bb56ee6c0)
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "2" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "2" ]
+[DEBUG] [NumberItem::updateLayout] width= 9 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 9x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [NumberItem::NumberItem] 构造函数完成
+[DEBUG]     [MathItemFactory::createNumberItem] NumberItem 创建成功, item= QGraphicsItem(0x26bc34d2e50, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG]     [MathItemFactory::createFractionItem] 分母 MathItem 创建成功, denItem= QGraphicsItem(0x26bc34d2e50, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setDenominatorItem] 开始, item= QGraphicsItem(0x26bc34d2e50, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::setDenominatorItem] 分母需要更新
+[DEBUG] [FractionItem::setDenominatorItem] 设置新分母的 parent
+[DEBUG] [FractionItem::setDenominatorItem] 准备调用 updateLayout()
+[DEBUG] [FractionItem::updateLayout] 开始...
+[DEBUG] [FractionItem::updateLayout] fracSpan 有效
+[DEBUG] [FractionItem::updateLayout] 准备处理分子, m_numeratorItem= QGraphicsItem(0x26bc34d2550, parent=0x26bb565d290, pos=2,2, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_numeratorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "1" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "1" ]
+[DEBUG] [NumberItem::updateLayout] width= 9 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 9x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分子 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分子布局完成, rect= QRectF(0,0 9x16)
+[DEBUG] [FractionItem::updateLayout] 准备处理分母, m_denominatorItem= QGraphicsItem(0x26bc34d2e50, parent=0x26bb565d290, pos=0,0, flags=(ItemIsSelectable|ItemIsFocusable))
+[DEBUG] [FractionItem::updateLayout] 调用 m_denominatorItem->updateLayout()...
+[DEBUG] [NumberItem::updateLayout] 开始...
+[DEBUG] [NumberItem::updateLayout] numSpan 有效, text=[ "2" ]
+[DEBUG] [NumberItem::updateLayout] 显示的文本: [ "2" ]
+[DEBUG] [NumberItem::updateLayout] width= 9 , height= 16 , ascent= 12
+[DEBUG] [NumberItem::updateLayout] m_boundingRect= QRectF(0,0 9x16) , m_baseline= 12
+[DEBUG] [NumberItem::updateLayout] 完成
+[DEBUG] [FractionItem::updateLayout] 分母 updateLayout 完成
+[DEBUG] [FractionItem::updateLayout] 分母布局完成, rect= QRectF(0,0 9x16)
+[DEBUG] [FractionItem::updateLayout] totalWidth= 13 , totalHeight= 39
+[DEBUG] [FractionItem::updateLayout] m_numPos= QPointF(2,2)
+[DEBUG] [FractionItem::updateLayout] m_lineY= 20
+[DEBUG] [FractionItem::updateLayout] m_denPos= QPointF(2,23)
+[DEBUG] [FractionItem::updateLayout] 设置分子位置
+[DEBUG] [FractionItem::updateLayout] 设置分母位置
+[DEBUG] [FractionItem::updateLayout] m_boundingRect= QRectF(0,0 13x39) , m_baseline= 20
+[DEBUG] [FractionItem::updateLayout] 完成
+[DEBUG] [FractionItem::setDenominatorItem] updateLayout() 完成
+[DEBUG] [FractionItem::setDenominatorItem] 结束
+[DEBUG]     [MathItemFactory::createFractionItem] setDenominatorItem 完成
+[DEBUG]     [MathItemFactory::createFractionItem] 返回
+[DEBUG]   预创建 MathItem，span= QtWordEditor::FractionMathSpan(0x26bb56ea940) size= QSizeF(13, 39) baseline= 20
+[DEBUG] TextBlockLayoutEngine::layout() - 开始布局，spans 数量: 3
+[DEBUG]   span 0 : type=Text text=[ "这是" ] bold= false length= 2
+[DEBUG]   span 1 : type=Math mathType= 3 hasSize= true
+[DEBUG]   span 2 : type=Text text=[ "一段很长很长的测试文字。我们用来测试自动换行功能。这段文字应该会超过页面的宽度，这样我们可以看到自动换行是否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个功能强大的文字编辑器，支持各种文字格式和布局。" ] bold= false length= 110
+[DEBUG]   availableWidth: 451
+[DEBUG]   MathSpan 使用真实尺寸：size= QSizeF(13, 39) ascent= 20 descent= 19
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 0
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 3 lineY: 0
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   item 1 : height= 39 ascent= 20 isMath= true
+[DEBUG]   item 2 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 39 lineMaxAscent= 20
+[DEBUG] [finishLineFromItems] - 完成，lineY= 0 lineMaxHeight= 39 下一行将从 lineY+ 39  开始
+[DEBUG]   增加 currentLineY： 0  +  21  =  21
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 21
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 21
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 21 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 21  +  21  =  42
+[DEBUG] [TextSpan换行1] - 准备换行，currentLineY= 42
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 42
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 42 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG]   增加 currentLineY： 42  +  21  =  63
+[DEBUG] [finishLineFromItems] - 开始处理一行，items数量: 1 lineY: 63
+[DEBUG]   item 0 : height= 21 ascent= 16.25 isMath= false
+[DEBUG]   计算结果：lineMaxHeight= 21 lineMaxAscent= 16.25
+[DEBUG] [finishLineFromItems] - 完成，lineY= 63 lineMaxHeight= 21 下一行将从 lineY+ 21  开始
+[DEBUG] TextBlockLayoutEngine::layout() - 最终行数量: 4
+[DEBUG]   line 0 : rect= QRectF(0,0 445x39) itemIndices= QList(0, 1, 2)
+[DEBUG]   line 1 : rect= QRectF(0,21 448x21) itemIndices= QList(3)
+[DEBUG]   line 2 : rect= QRectF(0,42 436.016x21) itemIndices= QList(4)
+[DEBUG]   line 3 : rect= QRectF(0,63 368x21) itemIndices= QList(5)
+[DEBUG] TextBlockLayoutEngine::layout() - 最终 items 数量: 6
+[DEBUG]   m_layoutItems[ 0 ]: text=[ "这是" ] spanIndex= 0 position= QPointF(0,3.75) width= 32
+[DEBUG]   m_layoutItems[ 1 ]: text=[ "" ] spanIndex= 1 position= QPointF(32,0) width= 13
+[DEBUG]   m_layoutItems[ 2 ]: text=[ "一段很长很长的测试文字。我们用来测试自动换行功能。" ] spanIndex= 2 position= QPointF(45,3.75) width= 400
+[DEBUG]   m_layoutItems[ 3 ]: text=[ "这段文字应该会超过页面的宽度，这样我们可以看到自动换行是" ] spanIndex= 2 position= QPointF(0,21) width= 448
+[DEBUG]   m_layoutItems[ 4 ]: text=[ "否正常工作。欢迎使用 QtWordEditor 文字编辑器！这是一个" ] spanIndex= 2 position= QPointF(0,42) width= 436.016
+[DEBUG]   m_layoutItems[ 5 ]: text=[ "功能强大的文字编辑器，支持各种文字格式和布局。" ] spanIndex= 2 position= QPointF(0,63) width= 368
+[DEBUG] TextBlockItem::updateBlock() - items 数量: 6
+[DEBUG]   item 0 : inlineSpan= QtWordEditor::InlineSpan(0x26bc35c66d0) type= 0 position= QPointF(0,3.75) width= 32 height= 21
+[DEBUG]   item 1 : inlineSpan= QtWordEditor::FractionMathSpan(0x26bb56ea940) type= 1 position= QPointF(32,0) width= 13 height= 39
+[DEBUG]   item 2 : inlineSpan= QtWordEditor::InlineSpan(0x26bc35c69f0) type= 0 position= QPointF(45,3.75) width= 400 height= 21
+[DEBUG]   item 3 : inlineSpan= QtWordEditor::InlineSpan(0x26bc35c69f0) type= 0 position= QPointF(0,21) width= 448 height= 21
+[DEBUG]   item 4 : inlineSpan= QtWordEditor::InlineSpan(0x26bc35c69f0) type= 0 position= QPointF(0,42) width= 436.016 height= 21
+[DEBUG]   item 5 : inlineSpan= QtWordEditor::InlineSpan(0x26bc35c69f0) type= 0 position= QPointF(0,63) width= 368 height= 21
+[DEBUG]   设置 MathItem 位置，span= QtWordEditor::FractionMathSpan(0x26bb56ea940) pos= QPointF(32,0)
+[DEBUG] TextBlockItem::updateBlock() - m_mathItems 数量: 1
+[DEBUG]   updateBlock() 完成
+[DEBUG]   准备调用 updateBlockPositions()
+[DEBUG] [DocumentScene::updateBlockPositions] - 开始计算块位置，块数量: 3
+[DEBUG]   块 0 : height= 84 currentY= 72 pos=( 72 , 72 )
+[DEBUG]   块 1 : height= 63 currentY= 168 pos=( 72 , 168 )
+[DEBUG]   块 2 : height= 39 currentY= 243 pos=( 72 , 243 )
+[DEBUG]   updateBlockPositions() 完成
+[DEBUG] [insertFractionAtCursor] 分数插入成功，位置： 2
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 3)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (0, 3)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] [insertFractionAtCursor] 光标已移动到：块 0 ，偏移 3
+[DEBUG] [insertFractionAtCursor] 完成！

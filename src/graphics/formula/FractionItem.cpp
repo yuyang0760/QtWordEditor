@@ -19,6 +19,7 @@ FractionItem::FractionItem(FractionMathSpan *span, MathItem *parent)
     , m_lineThickness(1.0)
     , m_padding(2.0)
 {
+    qDebug() << "[FractionItem::FractionItem] 构造函数执行完毕";
 }
 
 FractionItem::~FractionItem()
@@ -28,8 +29,13 @@ FractionItem::~FractionItem()
 
 void FractionItem::updateLayout()
 {
+    qDebug() << "[FractionItem::updateLayout] 开始...";
     FractionMathSpan *fracSpan = fractionSpan();
-    if (!fracSpan) return;
+    if (!fracSpan) {
+        qDebug() << "[FractionItem::updateLayout] fracSpan 为空，返回";
+        return;
+    }
+    qDebug() << "[FractionItem::updateLayout] fracSpan 有效";
 
     qreal totalWidth = 0;
     qreal numHeight = 0;
@@ -37,25 +43,33 @@ void FractionItem::updateLayout()
     qreal numBaseline = 0;
     qreal denBaseline = 0;
 
+    qDebug() << "[FractionItem::updateLayout] 准备处理分子, m_numeratorItem=" << m_numeratorItem;
     // 先更新分子和分母的布局
     if (m_numeratorItem) {
+        qDebug() << "[FractionItem::updateLayout] 调用 m_numeratorItem->updateLayout()...";
         m_numeratorItem->updateLayout();
+        qDebug() << "[FractionItem::updateLayout] 分子 updateLayout 完成";
         QRectF numRect = m_numeratorItem->boundingRect();
         numHeight = numRect.height();
         numBaseline = m_numeratorItem->baseline();
         if (numRect.width() > totalWidth) {
             totalWidth = numRect.width();
         }
+        qDebug() << "[FractionItem::updateLayout] 分子布局完成, rect=" << numRect;
     }
 
+    qDebug() << "[FractionItem::updateLayout] 准备处理分母, m_denominatorItem=" << m_denominatorItem;
     if (m_denominatorItem) {
+        qDebug() << "[FractionItem::updateLayout] 调用 m_denominatorItem->updateLayout()...";
         m_denominatorItem->updateLayout();
+        qDebug() << "[FractionItem::updateLayout] 分母 updateLayout 完成";
         QRectF denRect = m_denominatorItem->boundingRect();
         denHeight = denRect.height();
         denBaseline = m_denominatorItem->baseline();
         if (denRect.width() > totalWidth) {
             totalWidth = denRect.width();
         }
+        qDebug() << "[FractionItem::updateLayout] 分母布局完成, rect=" << denRect;
     }
 
     // 添加左右padding
@@ -63,6 +77,7 @@ void FractionItem::updateLayout()
 
     // 计算位置
     qreal totalHeight = numHeight + m_lineThickness + denHeight + 3 * m_padding;
+    qDebug() << "[FractionItem::updateLayout] totalWidth=" << totalWidth << ", totalHeight=" << totalHeight;
 
     // 分子居中
     qreal numX = m_padding;
@@ -71,9 +86,11 @@ void FractionItem::updateLayout()
         numX += (totalWidth - 2 * m_padding - numWidth) / 2.0;
     }
     m_numPos = QPointF(numX, m_padding);
+    qDebug() << "[FractionItem::updateLayout] m_numPos=" << m_numPos;
 
     // 分数线位置
     m_lineY = m_padding + numHeight + m_padding;
+    qDebug() << "[FractionItem::updateLayout] m_lineY=" << m_lineY;
 
     // 分母居中
     qreal denX = m_padding;
@@ -82,19 +99,23 @@ void FractionItem::updateLayout()
         denX += (totalWidth - 2 * m_padding - denWidth) / 2.0;
     }
     m_denPos = QPointF(denX, m_lineY + m_lineThickness + m_padding);
+    qDebug() << "[FractionItem::updateLayout] m_denPos=" << m_denPos;
 
     // 设置子元素位置
     if (m_numeratorItem) {
+        qDebug() << "[FractionItem::updateLayout] 设置分子位置";
         m_numeratorItem->setPos(m_numPos);
     }
     if (m_denominatorItem) {
+        qDebug() << "[FractionItem::updateLayout] 设置分母位置";
         m_denominatorItem->setPos(m_denPos);
     }
 
     m_boundingRect = QRectF(0, 0, totalWidth, totalHeight);
     m_baseline = m_lineY;  // 基线在分数线上
+    qDebug() << "[FractionItem::updateLayout] m_boundingRect=" << m_boundingRect << ", m_baseline=" << m_baseline;
 
-    notifyParentLayoutChanged();
+    qDebug() << "[FractionItem::updateLayout] 完成";
 }
 
 qreal FractionItem::baseline() const
@@ -164,16 +185,23 @@ MathItem *FractionItem::numeratorItem() const
 
 void FractionItem::setNumeratorItem(MathItem *item)
 {
+    qDebug() << "[FractionItem::setNumeratorItem] 开始, item=" << item;
     if (m_numeratorItem != item) {
+        qDebug() << "[FractionItem::setNumeratorItem] 分子需要更新";
         if (m_numeratorItem) {
+            qDebug() << "[FractionItem::setNumeratorItem] 移除旧分子的 parent";
             m_numeratorItem->setParentItem(nullptr);
         }
         m_numeratorItem = item;
         if (m_numeratorItem) {
+            qDebug() << "[FractionItem::setNumeratorItem] 设置新分子的 parent";
             m_numeratorItem->setParentItem(this);
         }
+        qDebug() << "[FractionItem::setNumeratorItem] 准备调用 updateLayout()";
         updateLayout();
+        qDebug() << "[FractionItem::setNumeratorItem] updateLayout() 完成";
     }
+    qDebug() << "[FractionItem::setNumeratorItem] 结束";
 }
 
 MathItem *FractionItem::denominatorItem() const
@@ -183,16 +211,23 @@ MathItem *FractionItem::denominatorItem() const
 
 void FractionItem::setDenominatorItem(MathItem *item)
 {
+    qDebug() << "[FractionItem::setDenominatorItem] 开始, item=" << item;
     if (m_denominatorItem != item) {
+        qDebug() << "[FractionItem::setDenominatorItem] 分母需要更新";
         if (m_denominatorItem) {
+            qDebug() << "[FractionItem::setDenominatorItem] 移除旧分母的 parent";
             m_denominatorItem->setParentItem(nullptr);
         }
         m_denominatorItem = item;
         if (m_denominatorItem) {
+            qDebug() << "[FractionItem::setDenominatorItem] 设置新分母的 parent";
             m_denominatorItem->setParentItem(this);
         }
+        qDebug() << "[FractionItem::setDenominatorItem] 准备调用 updateLayout()";
         updateLayout();
+        qDebug() << "[FractionItem::setDenominatorItem] updateLayout() 完成";
     }
+    qDebug() << "[FractionItem::setDenominatorItem] 结束";
 }
 
 } // namespace QtWordEditor

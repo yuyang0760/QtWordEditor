@@ -6,7 +6,7 @@
 #include <QFont>
 #include <QList>
 #include "core/Global.h"
-#include "core/document/Span.h"
+#include "core/document/InlineSpan.h"
 #include "graphics/items/TextBlockLayoutEngine.h"
 
 namespace QtWordEditor {
@@ -16,7 +16,7 @@ class ParagraphBlock;
 /**
  * @brief 文本块图形项类（直接绘制版）
  *
- * 不再使用 TextFragment！直接从 ParagraphBlock 读取 Span 列表，直接绘制！
+ * 不再使用 TextFragment！直接从 ParagraphBlock 读取 InlineSpan 列表，直接绘制！
  * 保留原有接口以确保兼容性。
  */
 class TextBlockItem : public BaseBlockItem
@@ -147,9 +147,9 @@ private:
     // ========== 内部方法 ==========
     
     /**
-     * @brief 获取段落的 Span 列表
+     * @brief 获取段落的 InlineSpan 列表
      */
-    QList<Span> getSpans() const;
+    QList<InlineSpan*> getSpans() const;
     
     /**
      * @brief 执行布局

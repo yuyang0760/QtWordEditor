@@ -1,4 +1,5 @@
 #include "graphics/items/TextBlockLayoutEngine.h"
+#include "core/document/TextSpan.h"
 #include <QTextLayout>
 #include <QTextLine>
 #include <QFontMetricsF>
@@ -35,7 +36,7 @@ void TextBlockLayoutEngine::setWrapMode(WrapMode mode)
     m_wrapMode = mode;
 }
 
-void TextBlockLayoutEngine::layout(const QList<Span> &spans)
+void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans)
 {
     clear();
     
@@ -46,31 +47,40 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
     // ========== 调试信息：打印传入的 spans ==========
     qDebug() << "TextBlockLayoutEngine::layout() - 开始布局，spans 数量:" << spans.size();
     for (int i = 0; i < spans.size(); ++i) {
-        qDebug() << "  span" << i << ":" 
-                 << "text=[" << spans[i].text() << "]" 
-                 << "bold=" << spans[i].style().bold() 
-                 << "length=" << spans[i].text().length();
+        if (spans[i]->type() == InlineSpan::Text) {
+            const TextSpan *textSpan = static_cast<const TextSpan*>(spans[i]);
+            qDebug() << "  span" << i << ":" 
+                     << "text=[" << textSpan->text() << "]" 
+                     << "bold=" << textSpan->style().bold() 
+                     << "length=" << textSpan->text().length();
+        }
     }
     qDebug() << "  availableWidth:" << m_availableWidth;
     // =========================================
     
     // 重新设计的布局逻辑：
-    // 1. 先为每个 Span 创建完整的 item（不分割）
+    // 1. 先为每个 InlineSpan 创建完整的 item（不分割）
     // 2. 然后逐行放置这些 items，在需要换行时再分割 item
     
     QList<LayoutItem> allItems;
     int currentGlobalOffset = 0;
     
-    // 第一步：为每个 Span 创建完整的 item（不分割）
+    // 第一步：为每个 InlineSpan 创建完整的 item（不分割）
     for (int spanIndex = 0; spanIndex < spans.size(); ++spanIndex) {
-        const Span &span = spans[spanIndex];
-        QString spanText = span.text();
+        InlineSpan *span = spans[spanIndex];
+        
+        if (span->type() != InlineSpan::Text) {
+            continue; // 暂时只处理 TextSpan
+        }
+        
+        TextSpan *textSpan = static_cast<TextSpan*>(span);
+        QString spanText = textSpan->text();
         
         if (spanText.isEmpty()) {
             continue;
         }
         
-        QFont font = createFontFromStyle(span.style());
+        QFont font = createFontFromStyle(textSpan->style());
         QFontMetricsF fontMetrics(font);
         QTextLayout textLayout(spanText, font);
         textLayout.beginLayout();
@@ -81,9 +91,10 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
         // 创建完整的 LayoutItem
         LayoutItem item;
         item.spanIndex = spanIndex;
+        item.inlineSpan = span;
         item.text = spanText;
         item.fullSpanText = spanText;
-        item.style = span.style();
+        item.style = textSpan->style();
         item.font = font;
         // 使用 QTextLayout 计算宽度，比 QFontMetricsF 更准确，特别是对于斜体字体
         item.width = textLine.naturalTextWidth();
@@ -180,6 +191,7 @@ void TextBlockLayoutEngine::layout(const QList<Span> &spans)
             // 创建新的 item 来放这部分文本
             LayoutItem newItem;
             newItem.spanIndex = currentItem.spanIndex;
+            newItem.inlineSpan = currentItem.inlineSpan;
             newItem.text = textToFit;
             newItem.fullSpanText = currentItem.fullSpanText;
             newItem.style = currentItem.style;
@@ -388,7 +400,7 @@ qreal TextBlockLayoutEngine::totalHeight() const
     return m_totalHeight;
 }
 
-QList<QRectF> TextBlockLayoutEngine::selectionRects(int startOffset, int endOffset, const QList<Span> &spans) const
+QList<QRectF> TextBlockLayoutEngine::selectionRects(int startOffset, int endOffset, const QList<InlineSpan*> &spans) const
 {
     Q_UNUSED(spans);
     QList<QRectF> rects;
@@ -495,7 +507,7 @@ QList<QRectF> TextBlockLayoutEngine::selectionRects(int startOffset, int endOffs
     return rects;
 }
 
-TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPointF &localPos, const QList<Span> &spans) const
+TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPointF &localPos, const QList<InlineSpan*> &spans) const
 {
     Q_UNUSED(spans);
     
@@ -570,7 +582,7 @@ TextBlockLayoutEngine::CursorHitResult TextBlockLayoutEngine::hitTest(const QPoi
     return result;
 }
 
-TextBlockLayoutEngine::CursorVisualResult TextBlockLayoutEngine::cursorPositionAt(int globalOffset, const QList<Span> &spans) const
+TextBlockLayoutEngine::CursorVisualResult TextBlockLayoutEngine::cursorPositionAt(int globalOffset, const QList<InlineSpan*> &spans) const
 {
     Q_UNUSED(spans);
     

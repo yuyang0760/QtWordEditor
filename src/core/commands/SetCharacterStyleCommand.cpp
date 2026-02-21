@@ -1,6 +1,7 @@
 #include "core/commands/SetCharacterStyleCommand.h"
 #include "core/document/Document.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/TextSpan.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -19,6 +20,9 @@ SetCharacterStyleCommand::SetCharacterStyleCommand(Document *document, int block
 
 SetCharacterStyleCommand::~SetCharacterStyleCommand()
 {
+    // 清理旧的 spans
+    qDeleteAll(m_oldSpans);
+    m_oldSpans.clear();
 }
 
 void SetCharacterStyleCommand::redo()
@@ -34,10 +38,11 @@ void SetCharacterStyleCommand::redo()
         return;
     }
 
-    // Save old spans for undo
+    // 保存旧 spans 用于 undo（深拷贝）
+    qDeleteAll(m_oldSpans);
     m_oldSpans.clear();
-    for (int i = 0; i < para->spanCount(); ++i) {
-        m_oldSpans.append(para->span(i));
+    for (int i = 0; i < para->inlineSpanCount(); ++i) {
+        m_oldSpans.append(para->inlineSpan(i)->clone());
     }
 
     // 使用 ParagraphBlock 的 setStyle 方法正确地应用样式到指定范围
@@ -53,10 +58,10 @@ void SetCharacterStyleCommand::undo()
     if (!para)
         return;
 
-    // Restore old spans
-    para->setText(""); // clear
-    for (const Span &span : m_oldSpans) {
-        para->addSpan(span);
+    // 恢复旧 spans（深拷贝）
+    para->clearInlineSpans();
+    for (const InlineSpan *span : m_oldSpans) {
+        para->addInlineSpan(span->clone());
     }
 }
 

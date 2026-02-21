@@ -10,7 +10,7 @@
 #include <QFontMetricsF>
 #include "core/document/ParagraphStyle.h"
 #include "core/document/CharacterStyle.h"
-#include "core/document/Span.h"
+#include "core/document/InlineSpan.h"
 
 namespace QtWordEditor {
 
@@ -18,7 +18,7 @@ namespace QtWordEditor {
  * @brief 文本块布局引擎类
  *
  * 负责文本的测量、换行、对齐和基线对齐等排版工作
- * 直接基于 Span 工作，不需要 QGraphicsItem！
+ * 直接基于 InlineSpan 工作！
  */
 class TextBlockLayoutEngine
 {
@@ -33,12 +33,13 @@ public:
     };
 
     /**
-     * @brief 单个内容项的信息（对应一个 Span 的某一行片段）
+     * @brief 单个内容项的信息（对应一个 InlineSpan 的某一行片段）
      */
     struct LayoutItem {
-        int spanIndex;              ///< 对应的 Span 索引
-        QString text;               ///< 文本内容（可能是 Span 的某一行）
-        QString fullSpanText;       ///< 整个 Span 的完整文本
+        int spanIndex;              ///< 对应的 InlineSpan 索引
+        InlineSpan *inlineSpan;     ///< 对应的 InlineSpan
+        QString text;               ///< 文本内容（可能是 InlineSpan 的某一行）
+        QString fullSpanText;       ///< 整个 InlineSpan 的完整文本
         CharacterStyle style;       ///< 字符样式
         qreal width;                ///< 宽度
         qreal height;               ///< 高度
@@ -46,8 +47,8 @@ public:
         qreal descent;              ///< 下降高度（从基线到底部）
         QPointF position;           ///< 位置（相对于 TextBlockItem 的左上角）
         QFont font;                 ///< 字体（用于绘制）
-        int startOffsetInSpan;      ///< 在原 Span 中的起始偏移
-        int endOffsetInSpan;        ///< 在原 Span 中的结束偏移
+        int startOffsetInSpan;      ///< 在原 InlineSpan 中的起始偏移
+        int endOffsetInSpan;        ///< 在原 InlineSpan 中的结束偏移
         int globalStartOffset;      ///< 全局起始偏移（从段落开头算起）
         int globalEndOffset;        ///< 全局结束偏移
     };
@@ -109,9 +110,9 @@ public:
 
     /**
      * @brief 执行布局
-     * @param spans 段落的 Span 列表
+     * @param spans 段落的 InlineSpan 列表
      */
-    void layout(const QList<Span> &spans);
+    void layout(const QList<InlineSpan*> &spans);
 
     /**
      * @brief 获取布局后的所有项
@@ -142,27 +143,27 @@ public:
     /**
      * @brief 根据局部坐标找到光标位置
      * @param localPos 相对于段落的局部坐标
-     * @param spans 段落的 Span 列表
+     * @param spans 段落的 InlineSpan 列表
      * @return 命中结果
      */
-    CursorHitResult hitTest(const QPointF &localPos, const QList<Span> &spans) const;
+    CursorHitResult hitTest(const QPointF &localPos, const QList<InlineSpan*> &spans) const;
     
     /**
      * @brief 根据全局偏移找到光标视觉位置
      * @param globalOffset 全局字符偏移（从段落开头算起）
-     * @param spans 段落的 Span 列表
+     * @param spans 段落的 InlineSpan 列表
      * @return 视觉位置结果
      */
-    CursorVisualResult cursorPositionAt(int globalOffset, const QList<Span> &spans) const;
+    CursorVisualResult cursorPositionAt(int globalOffset, const QList<InlineSpan*> &spans) const;
     
     /**
      * @brief 计算选择矩形（按行合并，确保背景色连续）
      * @param startOffset 选择起始偏移
      * @param endOffset 选择结束偏移
-     * @param spans 段落的 Span 列表
+     * @param spans 段落的 InlineSpan 列表
      * @return 选择矩形列表（按行连续）
      */
-    QList<QRectF> selectionRects(int startOffset, int endOffset, const QList<Span> &spans) const;
+    QList<QRectF> selectionRects(int startOffset, int endOffset, const QList<InlineSpan*> &spans) const;
 
 private:
     /**
@@ -193,7 +194,7 @@ private:
     ParagraphStyle m_paragraphStyle;///< 段落样式
     WrapMode m_wrapMode;             ///< 换行模式
     
-    QList<LayoutItem> m_layoutItems;///< 所有布局项（对应 Span）
+    QList<LayoutItem> m_layoutItems;///< 所有布局项（对应 InlineSpan）
     QList<LineInfo> m_lines;        ///< 所有行信息
     qreal m_totalWidth;              ///< 总宽度
     qreal m_totalHeight;             ///< 总高度

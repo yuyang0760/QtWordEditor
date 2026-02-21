@@ -2,6 +2,7 @@
 #include "core/document/Document.h"
 #include "core/document/ParagraphBlock.h"
 #include "core/document/Section.h"
+#include "core/document/TextSpan.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "core/commands/SetCharacterStyleCommand.h"
@@ -342,22 +343,24 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
             Block *block = m_document->block(range.startBlock);
             ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
             if (paraBlock) {
-                // ========== 查找选区完全在哪个 Span 内 ==========
+                // ========== 查找选区完全在哪个 InlineSpan 内 ==========
                 int spanIndex = -1;
                 int currentOffset = 0;
-                for (int i = 0; i < paraBlock->spanCount(); ++i) {
-                    const Span &span = paraBlock->span(i);
+                for (int i = 0; i < paraBlock->inlineSpanCount(); ++i) {
+                    InlineSpan *span = paraBlock->inlineSpan(i);
+                    if (span->type() != InlineSpan::Text) continue;
+                    TextSpan *textSpan = static_cast<TextSpan*>(span);
                     int spanStart = currentOffset;
-                    int spanEnd = spanStart + span.text().length();
+                    int spanEnd = spanStart + textSpan->text().length();
                     
                     // 检查 span 是否完全包含选区
                     if (spanStart <= range.startOffset && spanEnd >= range.endOffset) {
                         spanIndex = i;
-                        qDebug() << QString("  选区完全在 Span %1 内: [%2, %3] %4")
+                        qDebug() << QString("  选区完全在 TextSpan %1 内: [%2, %3] %4")
                             .arg(i).arg(spanStart).arg(spanEnd)
-                            .arg(span.style().bold() ? "[加粗]" : "[正常]");
-                        result = span.style();
-                        qDebug() << QString("  获取到该 Span 的样式: 加粗=%1, 斜体=%2, 下划线=%3")
+                            .arg(textSpan->directStyle().bold() ? "[加粗]" : "[正常]");
+                        result = textSpan->directStyle();
+                        qDebug() << QString("  获取到该 TextSpan 的样式: 加粗=%1, 斜体=%2, 下划线=%3")
                             .arg(result.bold()).arg(result.italic()).arg(result.underline());
                         return result;
                     }
@@ -365,8 +368,8 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
                     currentOffset = spanEnd;
                 }
                 
-                // ========== 如果选区跨多个 Span，返回默认空样式 ==========
-                qDebug() << "  选区跨多个 Span，返回默认空样式";
+                // ========== 如果选区跨多个 InlineSpan，返回默认空样式 ==========
+                qDebug() << "  选区跨多个 InlineSpan，返回默认空样式";
                 return result;
             }
         }
@@ -590,21 +593,23 @@ QList<CharacterStyle> FormatController::collectSelectionStyles() const
         
         qDebug() << QString("FormatController::collectSelectionStyles - 处理块%1: 偏移%2到%3").arg(blockIndex).arg(blockStartOffset).arg(blockEndOffset);
         
-        // 收集当前块中与选区重叠的 Span
+        // 收集当前块中与选区重叠的 InlineSpan
         int currentOffset = 0;
-        for (int i = 0; i < paraBlock->spanCount(); ++i) {
-            const Span &span = paraBlock->span(i);
+        for (int i = 0; i < paraBlock->inlineSpanCount(); ++i) {
+            InlineSpan *span = paraBlock->inlineSpan(i);
+            if (span->type() != InlineSpan::Text) continue;
+            TextSpan *textSpan = static_cast<TextSpan*>(span);
             int spanStart = currentOffset;
-            int spanEnd = spanStart + span.text().length();
+            int spanEnd = spanStart + textSpan->text().length();
             
             // 检查 span 是否与选区重叠
             if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
-                result.append(span.style());
-                qDebug() << QString("  包含块%1的 Span %2: 加粗=%3, 斜体=%4, 下划线=%5, 字体=%6, 字号=%7")
+                result.append(textSpan->directStyle());
+                qDebug() << QString("  包含块%1的 TextSpan %2: 加粗=%3, 斜体=%4, 下划线=%5, 字体=%6, 字号=%7")
                     .arg(blockIndex).arg(i)
-                    .arg(span.style().bold()).arg(span.style().italic())
-                    .arg(span.style().underline()).arg(span.style().fontFamily())
-                    .arg(span.style().fontSize());
+                    .arg(textSpan->directStyle().bold()).arg(textSpan->directStyle().italic())
+                    .arg(textSpan->directStyle().underline()).arg(textSpan->directStyle().fontFamily())
+                    .arg(textSpan->directStyle().fontSize());
             }
             
             currentOffset = spanEnd;

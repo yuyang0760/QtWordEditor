@@ -3,7 +3,7 @@
 
 #include "ParagraphCommand.h"
 #include "core/document/CharacterStyle.h"
-#include "core/document/Span.h"
+#include "core/document/InlineSpan.h"
 #include <QString>
 #include <QList>
 
@@ -48,7 +48,7 @@ private:
     int m_position;             ///< 删除起始位置
     int m_length;               ///< 删除的文本长度
     QString m_removedText;      ///< 被删除的文本内容
-    QList<Span> m_removedSpans; ///< 被删除文本的样式跨度信息
+    QList<InlineSpan*> m_removedSpans; ///< 被删除文本的样式跨度信息
 };
 
 } // namespace QtWordEditor

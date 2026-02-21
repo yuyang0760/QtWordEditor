@@ -1,4 +1,5 @@
 
+
 /**
  * @file RemoveTextCommand.cpp
  * @brief RemoveTextCommand类的实现
@@ -10,6 +11,7 @@
 #include "core/commands/RemoveTextCommand.h"
 #include "core/document/Document.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/TextSpan.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -33,6 +35,9 @@ RemoveTextCommand::RemoveTextCommand(Document *document, int blockIndex, int pos
  */
 RemoveTextCommand::~RemoveTextCommand()
 {
+    // 清理旧的 spans
+    qDeleteAll(m_removedSpans);
+    m_removedSpans.clear();
 }
 
 /**
@@ -45,7 +50,62 @@ void RemoveTextCommand::redo()
     ParagraphBlock *para = getParagraphBlock();
     if (!para)
         return;
+    
+    // 保存被删除的文本
     m_removedText = para->text().mid(m_position, m_length);
+    
+    // 保存被删除的 spans（深拷贝）
+    qDeleteAll(m_removedSpans);
+    m_removedSpans.clear();
+    
+    int end = m_position + m_length;
+    int posInStartSpan = 0;
+    int startSpanIndex = para->findInlineSpanIndex(m_position, &posInStartSpan);
+    
+    int posInEndSpan = 0;
+    int endSpanIndex = para->findInlineSpanIndex(end, &posInEndSpan);
+    
+    // 保存被删除的 spans
+    if (startSpanIndex == endSpanIndex) {
+        InlineSpan *span = para->inlineSpan(startSpanIndex);
+        if (span && span->type() == InlineSpan::Text) {
+            const TextSpan *textSpan = static_cast<const TextSpan*>(span);
+            QString removedText = textSpan->text().mid(posInStartSpan, m_length);
+            m_removedSpans.append(new TextSpan(removedText, textSpan->style()));
+        }
+    } else {
+        // 保存起始 span 的被删除部分
+        if (startSpanIndex >= 0 && startSpanIndex < para->inlineSpanCount()) {
+            InlineSpan *span = para->inlineSpan(startSpanIndex);
+            if (span && span->type() == InlineSpan::Text) {
+                const TextSpan *textSpan = static_cast<const TextSpan*>(span);
+                QString removedText = textSpan->text().mid(posInStartSpan);
+                m_removedSpans.append(new TextSpan(removedText, textSpan->style()));
+            }
+        }
+        
+        // 保存中间的 spans
+        for (int i = startSpanIndex + 1; i < endSpanIndex; ++i) {
+            if (i >= 0 && i < para->inlineSpanCount()) {
+                InlineSpan *span = para->inlineSpan(i);
+                if (span) {
+                    m_removedSpans.append(span->clone());
+                }
+            }
+        }
+        
+        // 保存结束 span 的被删除部分
+        if (endSpanIndex >= 0 && endSpanIndex < para->inlineSpanCount()) {
+            InlineSpan *span = para->inlineSpan(endSpanIndex);
+            if (span && span->type() == InlineSpan::Text) {
+                const TextSpan *textSpan = static_cast<const TextSpan*>(span);
+                QString removedText = textSpan->text().left(posInEndSpan);
+                m_removedSpans.append(new TextSpan(removedText, textSpan->style()));
+            }
+        }
+    }
+    
+    // 删除文本
     para->remove(m_position, m_length);
 }
 
@@ -59,12 +119,16 @@ void RemoveTextCommand::undo()
     ParagraphBlock *para = getParagraphBlock();
     if (!para)
         return;
+    
+    // 恢复被删除的 spans
     int insertPos = m_position;
-    for (const auto& span : m_removedSpans) {
-        para->insert(insertPos, span.text(), span.style());
-        insertPos += span.text().length();
+    for (const InlineSpan *span : m_removedSpans) {
+        if (span->type() == InlineSpan::Text) {
+            const TextSpan *textSpan = static_cast<const TextSpan*>(span);
+            para->insert(insertPos, textSpan->text(), textSpan->style());
+            insertPos += textSpan->length();
+        }
     }
 }
 
 } // namespace QtWordEditor
-

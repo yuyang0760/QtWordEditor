@@ -1,5 +1,6 @@
 #include "graphics/items/TextBlockItem.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/TextSpan.h"
 #include "graphics/items/TextBlockLayoutEngine.h"
 #include "core/utils/Constants.h"
 #include <QPainter>
@@ -38,8 +39,8 @@ void TextBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
     Q_UNUSED(option);
     Q_UNUSED(widget);
     
-    // 获取 Span 列表
-    QList<Span> spans = getSpans();
+    // 获取 InlineSpan 列表
+    QList<InlineSpan*> spans = getSpans();
     if (spans.isEmpty()) {
         return;
     }
@@ -92,13 +93,13 @@ void TextBlockItem::updateBlock()
     update(); // 触发重绘，确保内容更新后立即显示
 }
 
-QList<Span> TextBlockItem::getSpans() const
+QList<InlineSpan*> TextBlockItem::getSpans() const
 {
-    QList<Span> spans;
+    QList<InlineSpan*> spans;
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
     if (para) {
-        for (int i = 0; i < para->spanCount(); ++i) {
-            spans << para->span(i);
+        for (int i = 0; i < para->inlineSpanCount(); ++i) {
+            spans << para->inlineSpan(i);
         }
     }
     return spans;
@@ -106,7 +107,7 @@ QList<Span> TextBlockItem::getSpans() const
 
 void TextBlockItem::performLayout()
 {
-    QList<Span> spans = getSpans();
+    QList<InlineSpan*> spans = getSpans();
     if (spans.isEmpty()) {
         m_boundingRect = QRectF(0, 0, m_textWidth, 0);
         return;
@@ -148,7 +149,7 @@ void TextBlockItem::applyParagraphIndent()
 
 int TextBlockItem::hitTest(const QPointF &localPos) const
 {
-    QList<Span> spans = getSpans();
+    QList<InlineSpan*> spans = getSpans();
     if (spans.isEmpty()) {
         return 0;
     }
@@ -166,7 +167,7 @@ TextBlockItem::CursorVisualInfo TextBlockItem::cursorPositionAt(int globalOffset
     result.position = QPointF(0, 0);
     result.height = 20;
     
-    QList<Span> spans = getSpans();
+    QList<InlineSpan*> spans = getSpans();
     if (spans.isEmpty()) {
         return result;
     }
@@ -184,7 +185,7 @@ QList<QRectF> TextBlockItem::selectionRects(int startOffset, int endOffset) cons
 {
     QList<QRectF> rects;
     
-    QList<Span> spans = getSpans();
+    QList<InlineSpan*> spans = getSpans();
     if (spans.isEmpty()) {
         return rects;
     }
@@ -205,9 +206,12 @@ QList<QRectF> TextBlockItem::selectionRects(int startOffset, int endOffset) cons
 QString TextBlockItem::toPlainText() const
 {
     QString text;
-    QList<Span> spans = getSpans();
-    for (const Span &span : spans) {
-        text += span.text();
+    QList<InlineSpan*> spans = getSpans();
+    for (const InlineSpan *span : spans) {
+        if (span->type() == InlineSpan::Text) {
+            const TextSpan *textSpan = static_cast<const TextSpan*>(span);
+            text += textSpan->text();
+        }
     }
     return text;
 }

@@ -234,6 +234,36 @@ void MainWindow::setupUi()
             m_ribbonBar->refreshStyleLists();
         }
     });
+    
+    // ========== 连接公式工具栏信号 ==========
+    connect(m_ribbonBar, &RibbonBar::insertFormulaRequested,
+            this, [this]() {
+        qDebug() << "插入公式";
+        // 暂时添加简单的测试公式
+        insertTestFormula();
+    });
+    
+    connect(m_ribbonBar, &RibbonBar::insertFractionRequested,
+            this, [this]() {
+        qDebug() << "插入分数";
+        // 暂时添加简单的测试分数
+        insertTestFraction();
+    });
+    
+    connect(m_ribbonBar, &RibbonBar::insertRadicalRequested,
+            this, [this]() {
+        qDebug() << "插入根号";
+    });
+    
+    connect(m_ribbonBar, &RibbonBar::insertSubscriptRequested,
+            this, [this]() {
+        qDebug() << "插入下标";
+    });
+    
+    connect(m_ribbonBar, &RibbonBar::insertSuperscriptRequested,
+            this, [this]() {
+        qDebug() << "插入上标";
+    });
 
     // 设置场景到 EditEventHandler
     m_editEventHandler->setScene(m_scene);
@@ -562,6 +592,69 @@ void MainWindow::newDocument()
         m_currentFile.clear();
         m_isModified = false;
     }
+}
+
+void MainWindow::insertTestFormula()
+{
+    if (!m_document || m_document->sectionCount() == 0) {
+        return;
+    }
+    
+    Section *section = m_document->section(0);
+    if (!section) {
+        return;
+    }
+    
+    ParagraphBlock *para = new ParagraphBlock(section);
+    para->clearInlineSpans();
+    
+    para->insert(0, "插入的公式: ", CharacterStyle());
+    
+    auto number = new NumberMathSpan("x");
+    para->addInlineSpan(number);
+    
+    para->insert(para->length(), " = ", CharacterStyle());
+    
+    auto numerator = new NumberMathSpan("a+b");
+    auto denominator = new NumberMathSpan("c");
+    auto fraction = new FractionMathSpan(numerator, denominator);
+    para->addInlineSpan(fraction);
+    
+    para->insert(para->length(), " + 1", CharacterStyle());
+    
+    section->addBlock(para);
+    
+    // 重新构建文档
+    m_scene->rebuildFromDocument();
+}
+
+void MainWindow::insertTestFraction()
+{
+    if (!m_document || m_document->sectionCount() == 0) {
+        return;
+    }
+    
+    Section *section = m_document->section(0);
+    if (!section) {
+        return;
+    }
+    
+    ParagraphBlock *para = new ParagraphBlock(section);
+    para->clearInlineSpans();
+    
+    para->insert(0, "插入的分数: ", CharacterStyle());
+    
+    auto numerator = new NumberMathSpan("100");
+    auto denominator = new NumberMathSpan("200");
+    auto fraction = new FractionMathSpan(numerator, denominator);
+    para->addInlineSpan(fraction);
+    
+    para->insert(para->length(), " 测试完成", CharacterStyle());
+    
+    section->addBlock(para);
+    
+    // 重新构建文档
+    m_scene->rebuildFromDocument();
 }
 
 void MainWindow::openDocument()

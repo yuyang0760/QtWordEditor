@@ -135,6 +135,13 @@ public:
      * @return RowContainerMathSpan指针
      */
     RowContainerMathSpan *rowSpan() const;
+    
+    /**
+     * @brief 获取指定位置的光标 X 坐标
+     * @param position 位置索引（0 到 childCount()）
+     * @return 光标 X 坐标（相对于 RowContainerItem）
+     */
+    qreal cursorXAt(int position) const;
 
 private:
     QList<MathItem*> m_children;       ///< 子元素列表

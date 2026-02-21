@@ -14,6 +14,8 @@ namespace QtWordEditor {
 class ParagraphBlock;
 class MathItem;
 class MathSpan;
+class MathCursor;
+class RowContainerItem;
 
 /**
  * @brief 文本块图形项类（直接绘制版）
@@ -184,6 +186,36 @@ public:
      * @brief 清除所有 MathItem
      */
     void clearMathItems();
+    
+    // ========== 公式编辑模式 ==========
+    
+    /**
+     * @brief 判断是否处于公式编辑模式
+     * @return true 表示处于公式编辑模式
+     */
+    bool isInMathEditMode() const;
+    
+    /**
+     * @brief 进入公式编辑模式
+     * @param mathSpan 要编辑的 MathSpan
+     */
+    void enterMathEditMode(MathSpan *mathSpan);
+    
+    /**
+     * @brief 退出公式编辑模式
+     */
+    void exitMathEditMode();
+    
+    /**
+     * @brief 获取当前的 MathCursor
+     * @return MathCursor 指针
+     */
+    MathCursor *mathCursor() const;
+    
+    // ========== 事件处理 ==========
+    
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
@@ -194,6 +226,11 @@ private:
     int m_selectionStartOffset;             ///< 选择起始偏移
     int m_selectionEndOffset;               ///< 选择结束偏移
     QList<QGraphicsItem*> m_mathItems;     ///< MathItem 子项列表
+    
+    // ========== 公式编辑模式 ==========
+    bool m_inMathEditMode;                  ///< 是否处于公式编辑模式
+    MathItem *m_rootMathItem;               ///< 当前编辑的根 MathItem
+    MathCursor *m_mathCursor;               ///< 公式光标
 };
 
 } // namespace QtWordEditor

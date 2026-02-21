@@ -161,4 +161,22 @@ RowContainerMathSpan *RowContainerItem::rowSpan() const
     return static_cast<RowContainerMathSpan*>(m_span);
 }
 
+qreal RowContainerItem::cursorXAt(int position) const
+{
+    if (position <= 0) {
+        return 0;
+    }
+    
+    if (position >= m_children.size()) {
+        if (m_children.isEmpty()) {
+            return 0;
+        }
+        MathItem *lastChild = m_children.last();
+        return lastChild->pos().x() + lastChild->boundingRect().width();
+    }
+    
+    // 返回第 position 个元素的起始 X 坐标
+    return m_children[position]->pos().x();
+}
+
 } // namespace QtWordEditor

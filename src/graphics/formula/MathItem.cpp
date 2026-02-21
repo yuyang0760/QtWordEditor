@@ -88,4 +88,25 @@ void MathItem::notifyParentLayoutChanged()
     }
 }
 
+void MathItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mousePressEvent(event);
+    setFocus();
+}
+
+void MathItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mouseMoveEvent(event);
+}
+
+void MathItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    QGraphicsItem::mouseReleaseEvent(event);
+}
+
+void MathItem::keyPressEvent(QKeyEvent *event)
+{
+    QGraphicsItem::keyPressEvent(event);
+}
+
 } // namespace QtWordEditor

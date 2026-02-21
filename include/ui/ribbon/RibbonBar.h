@@ -120,6 +120,11 @@ signals:
     void characterStyleChanged(const QString &styleName);
     void paragraphStyleChanged(const QString &styleName);
     void openStyleManagerRequested();
+    void insertFormulaRequested();
+    void insertFractionRequested();
+    void insertRadicalRequested();
+    void insertSubscriptRequested();
+    void insertSuperscriptRequested();
 
 private:
     QScopedPointer<RibbonBarPrivate> d;

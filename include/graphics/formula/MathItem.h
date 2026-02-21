@@ -148,6 +148,32 @@ public:
      */
     virtual bool isContainer() const { return false; }
 
+    // ========== 编辑支持 ==========
+    
+    /**
+     * @brief 处理鼠标按下事件
+     * @param event 鼠标事件
+     */
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    
+    /**
+     * @brief 处理鼠标移动事件
+     * @param event 鼠标事件
+     */
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    
+    /**
+     * @brief 处理鼠标释放事件
+     * @param event 鼠标事件
+     */
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    
+    /**
+     * @brief 处理键盘按下事件
+     * @param event 键盘事件
+     */
+    virtual void keyPressEvent(QKeyEvent *event) override;
+
 protected:
     /**
      * @brief 通知父元素布局已变化

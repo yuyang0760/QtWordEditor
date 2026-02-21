@@ -5,10 +5,14 @@
 #include "core/utils/Constants.h"
 #include <QPainter>
 #include <QDebug>
+#include <QGraphicsSceneMouseEvent>
+#include <QTransform>
 #include "core/utils/Logger.h"
 #include "core/document/MathSpan.h"
 #include "graphics/formula/MathItem.h"
 #include "graphics/factory/MathItemFactory.h"
+#include "graphics/formula/MathCursor.h"
+#include "graphics/formula/RowContainerItem.h"
 
 namespace QtWordEditor {
 
@@ -20,9 +24,13 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_rightIndent(0),
       m_boundingRect(0, 0, m_textWidth, 0),
       m_selectionStartOffset(-1),
-      m_selectionEndOffset(-1)
+      m_selectionEndOffset(-1),
+      m_inMathEditMode(false),
+      m_rootMathItem(nullptr),
+      m_mathCursor(nullptr)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
+    setFlag(QGraphicsItem::ItemIsFocusable, true);  // 允许接收焦点
     applyParagraphIndent();
     performLayout();
 }
@@ -30,6 +38,9 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
 TextBlockItem::~TextBlockItem()
 {
     delete m_layoutEngine;
+    if (m_mathCursor) {
+        delete m_mathCursor;
+    }
 }
 
 QRectF TextBlockItem::boundingRect() const
@@ -293,6 +304,134 @@ void TextBlockItem::setPlainText(const QString &text)
 qreal TextBlockItem::textWidth() const
 {
     return m_textWidth;
+}
+
+// ========== 公式编辑模式 ==========
+
+bool TextBlockItem::isInMathEditMode() const
+{
+    return m_inMathEditMode;
+}
+
+void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
+{
+    if (m_inMathEditMode) {
+        return;
+    }
+    
+    m_inMathEditMode = true;
+    
+    // 创建 MathCursor
+    if (!m_mathCursor) {
+        m_mathCursor = new MathCursor(this);
+    }
+    m_mathCursor->setVisible(true);
+    
+    // 查找对应的 MathItem
+    m_rootMathItem = nullptr;
+    RowContainerItem *rootContainer = nullptr;
+    for (QGraphicsItem *item : m_mathItems) {
+        MathItem *mathItem = dynamic_cast<MathItem*>(item);
+        if (mathItem && mathItem->mathSpan() == mathSpan) {
+            m_rootMathItem = mathItem;
+            // 检查是否是 RowContainerItem
+            rootContainer = dynamic_cast<RowContainerItem*>(mathItem);
+            break;
+        }
+    }
+    
+    // 如果找到了根 MathItem，并且它是容器，设置 MathCursor
+    if (rootContainer) {
+        m_mathCursor->setHeight(rootContainer->boundingRect().height());
+        m_mathCursor->setPosition(rootContainer, 0);
+        // 将 MathCursor 设置为 rootContainer 的子项，这样坐标是相对的
+        m_mathCursor->setParentItem(rootContainer);
+    } else if (m_rootMathItem) {
+        // 如果不是容器，也设置高度
+        m_mathCursor->setHeight(m_rootMathItem->boundingRect().height());
+        m_mathCursor->setParentItem(m_rootMathItem);
+    }
+    
+    // 设置焦点
+    setFocus();
+    
+    qDebug() << "进入公式编辑模式";
+}
+
+void TextBlockItem::exitMathEditMode()
+{
+    if (!m_inMathEditMode) {
+        return;
+    }
+    
+    m_inMathEditMode = false;
+    
+    if (m_mathCursor) {
+        m_mathCursor->setVisible(false);
+    }
+    
+    m_rootMathItem = nullptr;
+    
+    qDebug() << "退出公式编辑模式";
+}
+
+MathCursor *TextBlockItem::mathCursor() const
+{
+    return m_mathCursor;
+}
+
+void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    // 检查是否点击了 MathItem
+    QGraphicsItem *clickedItem = nullptr;
+    
+    // 遍历所有子项，查找被点击的 MathItem
+    for (QGraphicsItem *child : childItems()) {
+        if (child->contains(child->mapFromScene(event->scenePos()))) {
+            clickedItem = child;
+            break;
+        }
+    }
+    
+    if (clickedItem) {
+        MathItem *mathItem = dynamic_cast<MathItem*>(clickedItem);
+        if (mathItem) {
+            enterMathEditMode(mathItem->mathSpan());
+            mathItem->mousePressEvent(event);
+            return;
+        }
+    }
+    
+    // 如果不是点击 MathItem，退出公式编辑模式
+    if (m_inMathEditMode) {
+        exitMathEditMode();
+    }
+    
+    QGraphicsItem::mousePressEvent(event);
+}
+
+void TextBlockItem::keyPressEvent(QKeyEvent *event)
+{
+    if (m_inMathEditMode && m_mathCursor) {
+        // 处理公式编辑模式的键盘事件
+        switch (event->key()) {
+        case Qt::Key_Left:
+            m_mathCursor->moveLeft();
+            break;
+        case Qt::Key_Right:
+            m_mathCursor->moveRight();
+            break;
+        case Qt::Key_Escape:
+            exitMathEditMode();
+            break;
+        default:
+            QGraphicsItem::keyPressEvent(event);
+            break;
+        }
+        return;
+    }
+    
+    QGraphicsItem::keyPressEvent(event);
 }
 
 } // namespace QtWordEditor

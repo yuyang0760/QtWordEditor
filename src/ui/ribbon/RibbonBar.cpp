@@ -35,6 +35,13 @@ public:
     QAction *alignRightAction = nullptr;
     QAction *alignJustifyAction = nullptr;
     QAction *styleManagerAction = nullptr;
+    
+    // ========== 公式工具栏 ==========
+    QAction *insertFormulaAction = nullptr;
+    QAction *insertFractionAction = nullptr;
+    QAction *insertRadicalAction = nullptr;
+    QAction *insertSubscriptAction = nullptr;
+    QAction *insertSuperscriptAction = nullptr;
 };
 
 RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
@@ -195,6 +202,42 @@ RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
     
     // 初始化样式列表
     refreshStyleLists();
+    
+    // ========== 添加"插入"标签页 ==========
+    int insertIndex = addTab(tr("插入"));
+    
+    // 公式组
+    addGroup(tr("公式"));
+    
+    d->insertFormulaAction = new QAction(tr("π"), this);
+    d->insertFormulaAction->setToolTip(tr("插入公式"));
+    connect(d->insertFormulaAction, &QAction::triggered,
+            this, &RibbonBar::insertFormulaRequested);
+    addAction(d->insertFormulaAction);
+    
+    d->insertFractionAction = new QAction(tr("½"), this);
+    d->insertFractionAction->setToolTip(tr("插入分数"));
+    connect(d->insertFractionAction, &QAction::triggered,
+            this, &RibbonBar::insertFractionRequested);
+    addAction(d->insertFractionAction);
+    
+    d->insertRadicalAction = new QAction(tr("√"), this);
+    d->insertRadicalAction->setToolTip(tr("插入根号"));
+    connect(d->insertRadicalAction, &QAction::triggered,
+            this, &RibbonBar::insertRadicalRequested);
+    addAction(d->insertRadicalAction);
+    
+    d->insertSubscriptAction = new QAction(tr("X₂"), this);
+    d->insertSubscriptAction->setToolTip(tr("插入下标"));
+    connect(d->insertSubscriptAction, &QAction::triggered,
+            this, &RibbonBar::insertSubscriptRequested);
+    addAction(d->insertSubscriptAction);
+    
+    d->insertSuperscriptAction = new QAction(tr("X²"), this);
+    d->insertSuperscriptAction->setToolTip(tr("插入上标"));
+    connect(d->insertSuperscriptAction, &QAction::triggered,
+            this, &RibbonBar::insertSuperscriptRequested);
+    addAction(d->insertSuperscriptAction);
 }
 
 RibbonBar::~RibbonBar()

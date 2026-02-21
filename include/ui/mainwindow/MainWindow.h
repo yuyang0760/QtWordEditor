@@ -195,6 +195,18 @@ private:
         const std::function<void(bool)>& applyStyleFunc,
         const QString& styleName);
     
+    // ========== 公式插入辅助方法 ==========
+    
+    /**
+     * @brief 插入测试公式
+     */
+    void insertTestFormula();
+    
+    /**
+     * @brief 插入测试分数
+     */
+    void insertTestFraction();
+    
     /**
      * @brief 应用字体属性
      * @param setPropertyFunc 设置属性的函数

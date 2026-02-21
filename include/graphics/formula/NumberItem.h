@@ -83,6 +83,28 @@ public:
      */
     NumberMathSpan *numberSpan() const;
 
+    // ========== 字符位置计算 ==========
+
+    /**
+     * @brief 获取指定位置的光标 X 坐标
+     * @param position 位置索引（0 到 textLength()）
+     * @return 光标 X 坐标（相对于 NumberItem）
+     */
+    qreal cursorXAt(int position) const;
+
+    /**
+     * @brief 获取文本长度
+     * @return 文本长度
+     */
+    int textLength() const;
+
+    /**
+     * @brief 根据局部 X 坐标获取字符位置
+     * @param x 局部 X 坐标
+     * @return 字符位置索引
+     */
+    int hitTestX(qreal x) const;
+
 private:
     QFont m_font;  ///< 用于渲染文本的字体
 };

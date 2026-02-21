@@ -8,23 +8,37 @@
 
 namespace QtWordEditor {
 
+class Document;
+class InlineSpan;
 /**
  * @brief 光标位置结构体，表示文档中的光标位置
  *
  * 包含块索引和块内字符偏移量，用于精确定位光标在文档中的位置。
+ * 如果光标在公式内部，还会包含公式相关的信息。
  */
 struct CursorPosition
 {
     int blockIndex = -1;    ///< 块索引
     int offset = 0;         ///< 块内的字符偏移量
-
+    
+    // ========== 公式内部位置信息 ==========
+    bool inMathSpan = false;                  ///< 是否在公式内部
+    InlineSpan *mathSpan = nullptr;           ///< 当前所在的公式元素
+    int mathChildIndex = -1;                  ///< 在公式容器中的子元素索引（0=分子，1=分母等）
+    int mathChildOffset = 0;                  ///< 在公式子元素内部的偏移量
+    
     /**
      * @brief 相等性比较运算符
      * @param other 要比较的另一个光标位置
      * @return 如果两个位置相等返回true
      */
     bool operator==(const CursorPosition &other) const {
-        return blockIndex == other.blockIndex && offset == other.offset;
+        return blockIndex == other.blockIndex 
+               && offset == other.offset
+               && inMathSpan == other.inMathSpan
+               && mathSpan == other.mathSpan
+               && mathChildIndex == other.mathChildIndex
+               && mathChildOffset == other.mathChildOffset;
     }
     
     /**

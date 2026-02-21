@@ -90,4 +90,59 @@ NumberMathSpan *NumberItem::numberSpan() const
     return static_cast<NumberMathSpan*>(m_span);
 }
 
+qreal NumberItem::cursorXAt(int position) const
+{
+    NumberMathSpan *numSpan = numberSpan();
+    if (!numSpan) {
+        return 0;
+    }
+
+    QString text = numSpan->text();
+    if (position <= 0) {
+        return 0;
+    }
+
+    if (position >= text.length()) {
+        return boundingRect().width();
+    }
+
+    // 计算到第 position 个字符的宽度
+    QFontMetrics fm(m_font);
+    QString subText = text.left(position);
+    return fm.horizontalAdvance(subText);
+}
+
+int NumberItem::textLength() const
+{
+    NumberMathSpan *numSpan = numberSpan();
+    if (!numSpan) {
+        return 0;
+    }
+    return numSpan->text().length();
+}
+
+int NumberItem::hitTestX(qreal x) const
+{
+    NumberMathSpan *numSpan = numberSpan();
+    if (!numSpan) {
+        return 0;
+    }
+
+    QString text = numSpan->text();
+    if (text.isEmpty()) {
+        return 0;
+    }
+
+    QFontMetrics fm(m_font);
+    // 从第一个字符开始，找到最合适的位置
+    for (int i = 0; i <= text.length(); ++i) {
+        QString subText = text.left(i);
+        qreal charX = fm.horizontalAdvance(subText);
+        if (x <= charX) {
+            return i;
+        }
+    }
+    return text.length();
+}
+
 } // namespace QtWordEditor

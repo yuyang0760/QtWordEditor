@@ -132,6 +132,27 @@ public:
      * @param item 分母MathItem
      */
     void setDenominatorItem(MathItem *item);
+    
+    /**
+     * @brief 判断一个点在分数的哪个区域
+     * @param localPos 相对于FractionItem的局部坐标
+     * @return 0=分子区域，1=分母区域，-1=其他区域
+     */
+    int hitTestRegion(const QPointF &localPos) const;
+
+    // ========== 位置访问 ==========
+
+    /**
+     * @brief 获取分子位置
+     * @return 分子位置（相对于 FractionItem）
+     */
+    QPointF numeratorPos() const;
+
+    /**
+     * @brief 获取分母位置
+     * @return 分母位置（相对于 FractionItem）
+     */
+    QPointF denominatorPos() const;
 
 private:
     MathItem *m_numeratorItem;   ///< 分子视图

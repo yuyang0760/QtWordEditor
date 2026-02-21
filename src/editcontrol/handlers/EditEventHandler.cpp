@@ -4,6 +4,8 @@
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
+#include "graphics/formula/MathItem.h"
+#include "graphics/items/TextBlockItem.h"
 // 移除 Logger 头文件，使用 Qt 内置日志函数
 
 namespace QtWordEditor {
@@ -36,6 +38,19 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
 {
     if (!m_document || !m_cursor || !m_selection)
         return false;
+
+    // ========== 先检查是否有 TextBlockItem 处于公式编辑模式 ==========
+    if (m_scene) {
+        QList<QGraphicsItem *> items = m_scene->items();
+        for (QGraphicsItem *item : items) {
+            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
+            if (textBlockItem && textBlockItem->isInMathEditMode()) {
+                qDebug() << "[EditEventHandler] TextBlockItem 处于公式编辑模式，不处理按键";
+                // 如果有 TextBlockItem 处于公式编辑模式，不处理，让 TextBlockItem 处理
+                return false;
+            }
+        }
+    }
 
     bool handled = false;
     switch (event->key()) {
@@ -114,8 +129,34 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
     if (!m_scene || !m_cursor || !m_selection)
         return false;
 
-  //  QDebug() << "EditEventHandler::handleMousePress at:" << scenePos;
+    qDebug() << "[EditEventHandler::handleMousePress] at:" << scenePos;
 
+    // ========== 先检查是否点击了 MathItem 或者有 TextBlockItem 在鼠标位置 ==========
+    QList<QGraphicsItem *> items = m_scene->items(scenePos);
+    
+    // 先检查所有 items，看是否有 MathItem
+    for (QGraphicsItem *item : items) {
+        MathItem *mathItem = dynamic_cast<MathItem *>(item);
+        if (mathItem) {
+            qDebug() << "[EditEventHandler] 点击了 MathItem，不处理选择";
+            // 如果点击了 MathItem，直接返回，不处理选择
+            m_isSelecting = false;
+            return true;
+        }
+    }
+    
+    // 检查是否有 TextBlockItem 处于公式编辑模式（虽然现在还没有，但未来可能会有）
+    for (QGraphicsItem *item : items) {
+        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
+        if (textBlockItem && textBlockItem->isInMathEditMode()) {
+            qDebug() << "[EditEventHandler] TextBlockItem 处于公式编辑模式，不处理选择";
+            m_isSelecting = false;
+            return true;
+        }
+    }
+
+    // ========== 如果没有点击 MathItem，正常处理选择 ==========
+    qDebug() << "[EditEventHandler] 没有点击 MathItem，正常处理选择";
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
 

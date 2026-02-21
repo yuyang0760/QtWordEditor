@@ -239,6 +239,11 @@ private:
     bool m_inMathEditMode;                  ///< 是否处于公式编辑模式
     MathItem *m_rootMathItem;               ///< 当前编辑的根 MathItem
     MathCursor *m_mathCursor;               ///< 公式光标
+    
+    // ========== 点击信息存储（临时） ==========
+    MathItem *m_clickedMathItem;            ///< 被点击的 MathItem
+    int m_clickedRegion;                     ///< 被点击的区域（0=分子，1=分母，-1=其他）
+    QPointF m_clickedLocalPos;               ///< 被点击的局部坐标
 };
 
 } // namespace QtWordEditor

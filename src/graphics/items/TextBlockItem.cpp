@@ -13,6 +13,10 @@
 #include "graphics/factory/MathItemFactory.h"
 #include "graphics/formula/MathCursor.h"
 #include "graphics/formula/RowContainerItem.h"
+#include "graphics/formula/NumberItem.h"
+#include "graphics/formula/FractionItem.h"
+#include "core/document/math/NumberMathSpan.h"
+#include "graphics/scene/DocumentScene.h"
 
 namespace QtWordEditor {
 
@@ -27,7 +31,10 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_selectionEndOffset(-1),
       m_inMathEditMode(false),
       m_rootMathItem(nullptr),
-      m_mathCursor(nullptr)
+      m_mathCursor(nullptr),
+      m_clickedMathItem(nullptr),
+      m_clickedRegion(-1),
+      m_clickedLocalPos(0, 0)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, true);  // 允许接收焦点
@@ -396,6 +403,13 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
     
     m_inMathEditMode = true;
     
+    // ========== 隐藏 DocumentScene 的普通光标 ==========
+    QGraphicsScene *graphicsScene = this->scene();
+    DocumentScene *scene = dynamic_cast<DocumentScene *>(graphicsScene);
+    if (scene) {
+        scene->setCursorVisible(false);
+    }
+    
     // 创建 MathCursor
     if (!m_mathCursor) {
         m_mathCursor = new MathCursor(this);
@@ -414,6 +428,55 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
             break;
         }
     }
+    
+    // ========== 检查是否是 FractionItem 并且有点击信息 ==========
+    FractionItem *fracItem = dynamic_cast<FractionItem*>(m_clickedMathItem);
+    if (fracItem && m_clickedRegion >= 0 && m_clickedRegion <= 1) {
+        qDebug() << "[enterMathEditMode] 是 FractionItem，点击区域=" << m_clickedRegion;
+        
+        NumberItem *targetNumberItem = nullptr;
+        QPointF numberLocalPos(0, 0);
+        
+        // 获取分子或分母的 NumberItem
+        if (m_clickedRegion == 0) {
+            // 分子
+            MathItem *numItem = fracItem->numeratorItem();
+            targetNumberItem = dynamic_cast<NumberItem*>(numItem);
+            if (targetNumberItem) {
+                // 计算相对于 NumberItem 的坐标
+                QPointF numLocalPos = m_clickedLocalPos - fracItem->numeratorPos();
+                numberLocalPos = numLocalPos;
+            }
+        } else if (m_clickedRegion == 1) {
+            // 分母
+            MathItem *denItem = fracItem->denominatorItem();
+            targetNumberItem = dynamic_cast<NumberItem*>(denItem);
+            if (targetNumberItem) {
+                // 计算相对于 NumberItem 的坐标
+                QPointF denLocalPos = m_clickedLocalPos - fracItem->denominatorPos();
+                numberLocalPos = denLocalPos;
+            }
+        }
+        
+        // 如果找到了目标 NumberItem，设置光标到该位置
+        if (targetNumberItem) {
+            qDebug() << "[enterMathEditMode] 找到目标 NumberItem=" << targetNumberItem;
+            
+            // 使用 NumberItem 的 hitTestX 方法获取字符位置
+            int charPosition = targetNumberItem->hitTestX(numberLocalPos.x());
+            qDebug() << "[enterMathEditMode] 字符位置=" << charPosition;
+            
+            m_mathCursor->setHeight(targetNumberItem->boundingRect().height());
+            m_mathCursor->setPosition(targetNumberItem, charPosition);
+            
+            setFocus();
+            qDebug() << "进入公式编辑模式（分数的 NumberItem）";
+            return;
+        }
+    }
+    
+    // ========== 默认情况（不是 FractionItem 或没有点击信息） ==========
+    qDebug() << "[enterMathEditMode] 默认情况处理";
     
     // 如果找到了根 MathItem，并且它是容器，设置 MathCursor
     if (rootContainer) {
@@ -447,6 +510,13 @@ void TextBlockItem::exitMathEditMode()
     
     m_rootMathItem = nullptr;
     
+    // ========== 重新显示 DocumentScene 的普通光标 ==========
+    QGraphicsScene *graphicsScene = this->scene();
+    DocumentScene *scene = dynamic_cast<DocumentScene *>(graphicsScene);
+    if (scene) {
+        scene->setCursorVisible(true);
+    }
+    
     qDebug() << "退出公式编辑模式";
 }
 
@@ -457,25 +527,72 @@ MathCursor *TextBlockItem::mathCursor() const
 
 void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    // 检查是否点击了 MathItem
-    QGraphicsItem *clickedItem = nullptr;
+    qDebug() << "[TextBlockItem::mousePressEvent] 开始, scenePos=" << event->scenePos();
+    
+    // 重置点击信息
+    m_clickedMathItem = nullptr;
+    m_clickedRegion = -1;
+    m_clickedLocalPos = QPointF(0, 0);
+    
+    // 检查是否点击了 MathItem（包括子项）
+    MathItem *clickedMathItem = nullptr;
     
     // 遍历所有子项，查找被点击的 MathItem
     for (QGraphicsItem *child : childItems()) {
-        if (child->contains(child->mapFromScene(event->scenePos()))) {
-            clickedItem = child;
-            break;
+        QPointF localPos = child->mapFromScene(event->scenePos());
+        if (child->contains(localPos)) {
+            qDebug() << "  找到子项: " << child << ", localPos=" << localPos;
+            
+            // 检查是否是 MathItem
+            MathItem *mathItem = dynamic_cast<MathItem*>(child);
+            if (mathItem) {
+                clickedMathItem = mathItem;
+                qDebug() << "  找到 MathItem: " << clickedMathItem;
+                break;
+            }
+            
+            // 如果不是 MathItem，检查它的父项是否是 MathItem
+            QGraphicsItem *parent = child->parentItem();
+            while (parent) {
+                MathItem *parentMathItem = dynamic_cast<MathItem*>(parent);
+                if (parentMathItem) {
+                    clickedMathItem = parentMathItem;
+                    qDebug() << "  找到父 MathItem: " << clickedMathItem;
+                    break;
+                }
+                parent = parent->parentItem();
+            }
+            if (clickedMathItem) {
+                break;
+            }
         }
     }
     
-    if (clickedItem) {
-        MathItem *mathItem = dynamic_cast<MathItem*>(clickedItem);
-        if (mathItem) {
-            enterMathEditMode(mathItem->mathSpan());
-            mathItem->mousePressEvent(event);
-            return;
-        }
+    if (clickedMathItem) {
+        qDebug() << "  准备进入公式编辑模式, span=" << clickedMathItem->mathSpan();
+        
+        // 转换到 clickedMathItem 的局部坐标
+        QPointF mathLocalPos = clickedMathItem->mapFromScene(event->scenePos());
+        qDebug() << "  mathLocalPos=" << mathLocalPos;
+        
+        // 检查是否是 FractionItem，判断是分子还是分母
+        int region = clickedMathItem->hitTestRegion(mathLocalPos);
+        qDebug() << "  点击区域: " << region;
+        
+        // 存储点击信息
+        m_clickedMathItem = clickedMathItem;
+        m_clickedRegion = region;
+        m_clickedLocalPos = mathLocalPos;
+        
+        // 进入公式编辑模式
+        enterMathEditMode(clickedMathItem->mathSpan());
+        
+        // 调用 MathItem 的鼠标事件
+        clickedMathItem->mousePressEvent(event);
+        return;
     }
+    
+    qDebug() << "  没有点击 MathItem";
     
     // 如果不是点击 MathItem，退出公式编辑模式
     if (m_inMathEditMode) {
@@ -488,20 +605,81 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void TextBlockItem::keyPressEvent(QKeyEvent *event)
 {
     if (m_inMathEditMode && m_mathCursor) {
-        // 处理公式编辑模式的键盘事件
+        qDebug() << "[TextBlockItem::keyPressEvent] 公式编辑模式，key=" << event->key() << ", text=" << event->text();
+        
+        // 检查是否在 NumberItem 内部（数字模式）
+        if (m_mathCursor->cursorMode() == MathCursor::NumberMode) {
+            NumberItem *numberItem = m_mathCursor->currentNumberItem();
+            if (numberItem) {
+                NumberMathSpan *numSpan = numberItem->numberSpan();
+                if (numSpan) {
+                    QString text = numSpan->text();
+                    int pos = m_mathCursor->position();
+                    
+                    // 处理可打印字符
+                    if (event->text().length() > 0 && event->text()[0].isPrint()) {
+                        // 插入字符
+                        text.insert(pos, event->text());
+                        numSpan->setText(text);
+                        
+                        // 更新布局
+                        numberItem->updateLayout();
+                        
+                        // 光标向右移动
+                        m_mathCursor->setPosition(numberItem, pos + 1);
+                        return;
+                    }
+                    
+                    // 处理退格键
+                    if (event->key() == Qt::Key_Backspace) {
+                        if (pos > 0) {
+                            text.remove(pos - 1, 1);
+                            numSpan->setText(text);
+                            
+                            // 更新布局
+                            numberItem->updateLayout();
+                            
+                            // 光标向左移动
+                            m_mathCursor->setPosition(numberItem, pos - 1);
+                        }
+                        return;
+                    }
+                    
+                    // 处理 Delete 键
+                    if (event->key() == Qt::Key_Delete) {
+                        if (pos < text.length()) {
+                            text.remove(pos, 1);
+                            numSpan->setText(text);
+                            
+                            // 更新布局
+                            numberItem->updateLayout();
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // 处理导航键
         switch (event->key()) {
-        case Qt::Key_Left:
-            m_mathCursor->moveLeft();
-            break;
-        case Qt::Key_Right:
-            m_mathCursor->moveRight();
-            break;
-        case Qt::Key_Escape:
-            exitMathEditMode();
-            break;
-        default:
-            QGraphicsItem::keyPressEvent(event);
-            break;
+            case Qt::Key_Left:
+                m_mathCursor->moveLeft();
+                break;
+            case Qt::Key_Right:
+                m_mathCursor->moveRight();
+                break;
+            case Qt::Key_Up:
+                m_mathCursor->moveUp();
+                break;
+            case Qt::Key_Down:
+                m_mathCursor->moveDown();
+                break;
+            case Qt::Key_Escape:
+                exitMathEditMode();
+                break;
+            default:
+                QGraphicsItem::keyPressEvent(event);
+                break;
         }
         return;
     }

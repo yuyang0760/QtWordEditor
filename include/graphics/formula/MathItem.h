@@ -173,6 +173,13 @@ public:
      * @param event 键盘事件
      */
     virtual void keyPressEvent(QKeyEvent *event) override;
+    
+    /**
+     * @brief 判断一个点在公式的哪个区域
+     * @param localPos 相对于自身的局部坐标
+     * @return 子区域索引，对于非容器类型返回 -1
+     */
+    virtual int hitTestRegion(const QPointF &localPos) const;
 
 protected:
     /**

@@ -17,6 +17,7 @@ namespace QtWordEditor {
 
 class MathItem;
 class RowContainerItem;
+class NumberItem;
 
 /**
  * @brief 数学公式光标类
@@ -44,26 +45,53 @@ public:
     ~MathCursor() override;
     
     // ========== 光标位置管理 ==========
-    
+
     /**
-     * @brief 设置光标位置
+     * @brief 光标模式枚举
+     */
+    enum CursorMode {
+        ContainerMode,  ///< 容器模式（在 RowContainerItem 中）
+        NumberMode      ///< 数字模式（在 NumberItem 中）
+    };
+
+    /**
+     * @brief 设置光标位置（容器模式）
      * @param container 光标所在的行容器
      * @param position 光标在容器中的位置索引
      */
     void setPosition(RowContainerItem *container, int position);
-    
+
     /**
-     * @brief 获取当前所在的行容器
+     * @brief 设置光标位置（数字模式）
+     * @param numberItem 光标所在的数字项
+     * @param position 光标在数字中的字符偏移
+     */
+    void setPosition(NumberItem *numberItem, int position);
+
+    /**
+     * @brief 获取当前所在的行容器（容器模式）
      * @return 行容器指针
      */
     RowContainerItem *currentContainer() const;
-    
+
     /**
-     * @brief 获取光标在容器中的位置
-     * @return 位置索引
+     * @brief 获取当前所在的数字项（数字模式）
+     * @return 数字项指针
+     */
+    NumberItem *currentNumberItem() const;
+
+    /**
+     * @brief 获取光标模式
+     * @return 光标模式
+     */
+    CursorMode cursorMode() const;
+
+    /**
+     * @brief 获取光标位置
+     * @return 位置（容器模式：子项索引；数字模式：字符偏移）
      */
     int position() const;
-    
+
     // ========== 光标导航 ==========
     
     /**
@@ -123,8 +151,10 @@ private slots:
     void blink();
     
 private:
-    RowContainerItem *m_currentContainer;  ///< 当前所在的行容器
-    int m_position;                          ///< 光标在容器中的位置
+    RowContainerItem *m_currentContainer;   ///< 当前所在的行容器（容器模式）
+    NumberItem *m_currentNumberItem;        ///< 当前所在的数字项（数字模式）
+    CursorMode m_cursorMode;                ///< 光标模式
+    int m_position;                          ///< 光标在容器中的位置或数字中的偏移
     qreal m_height;                          ///< 光标高度
     bool m_visible;                          ///< 是否可见
     bool m_blinkState;                       ///< 闪烁状态

@@ -1,6 +1,7 @@
 #include "graphics/view/DocumentView.h"
 #include "graphics/scene/DocumentScene.h"
 #include "editcontrol/cursor/Cursor.h"
+#include "graphics/items/TextBlockItem.h"
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QInputMethodEvent>
@@ -83,9 +84,31 @@ void DocumentView::zoomToFit()
 
 void DocumentView::keyPressEvent(QKeyEvent *event)
 {
-    emit keyPressed(event);
-    // Do not call base to avoid default handling (optional)
-    // QGraphicsView::keyPressEvent(event);
+    qDebug() << "[DocumentView::keyPressEvent] key:" << event->key() << ", text:" << event->text();
+    
+    // ========== 检查是否有 TextBlockItem 处于公式编辑模式 ==========
+    bool isInMathEditMode = false;
+    if (scene()) {
+        QList<QGraphicsItem *> items = scene()->items();
+        for (QGraphicsItem *item : items) {
+            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
+            if (textBlockItem && textBlockItem->isInMathEditMode()) {
+                qDebug() << "[DocumentView] TextBlockItem 处于公式编辑模式";
+                isInMathEditMode = true;
+                break;
+            }
+        }
+    }
+    
+    // ========== 先让 QGraphicsScene 处理键盘事件，这样 TextBlockItem 会收到 ==========
+    QGraphicsView::keyPressEvent(event);
+    
+    // ========== 如果不是在公式编辑模式，才发送信号让 EditEventHandler 处理 ==========
+    if (!isInMathEditMode) {
+        emit keyPressed(event);
+    } else {
+        qDebug() << "[DocumentView] 在公式编辑模式，不发送信号给 EditEventHandler";
+    }
 }
 
 void DocumentView::keyReleaseEvent(QKeyEvent *event)
@@ -97,8 +120,13 @@ void DocumentView::keyReleaseEvent(QKeyEvent *event)
 void DocumentView::mousePressEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
-    emit mousePressed(scenePos);
+    qDebug() << "[DocumentView::mousePressEvent] scenePos:" << scenePos;
+    
+    // ========== 先让 QGraphicsScene 处理鼠标事件，这样 TextBlockItem 会收到 ==========
     QGraphicsView::mousePressEvent(event);
+    
+    // ========== 再发送信号让 EditEventHandler 处理 ==========
+    emit mousePressed(scenePos);
 }
 
 void DocumentView::mouseMoveEvent(QMouseEvent *event)

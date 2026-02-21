@@ -15,8 +15,9 @@ MathItem::MathItem(MathSpan *span, MathItem *parent)
     , m_baseline(0)
     , m_span(span)
 {
-    setFlag(QGraphicsItem::ItemIsSelectable, true);
-    setFlag(QGraphicsItem::ItemIsFocusable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, false);
+    setFlag(QGraphicsItem::ItemIsFocusable, false);
+    setAcceptedMouseButtons(Qt::NoButton); // 不接受任何鼠标按钮事件
 }
 
 void MathItem::updateLayout()
@@ -107,6 +108,13 @@ void MathItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void MathItem::keyPressEvent(QKeyEvent *event)
 {
     QGraphicsItem::keyPressEvent(event);
+}
+
+int MathItem::hitTestRegion(const QPointF &localPos) const
+{
+    Q_UNUSED(localPos);
+    // 默认实现：非容器类型返回 -1
+    return -1;
 }
 
 } // namespace QtWordEditor

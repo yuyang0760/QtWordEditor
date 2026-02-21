@@ -230,4 +230,43 @@ void FractionItem::setDenominatorItem(MathItem *item)
     qDebug() << "[FractionItem::setDenominatorItem] 结束";
 }
 
+int FractionItem::hitTestRegion(const QPointF &localPos) const
+{
+    qDebug() << "[FractionItem::hitTestRegion] localPos=" << localPos;
+    
+    // 判断是否在分子区域
+    if (m_numeratorItem) {
+        QRectF numRect = m_numeratorItem->boundingRect();
+        numRect.translate(m_numPos);
+        if (numRect.contains(localPos)) {
+            qDebug() << "  在分子区域";
+            return 0;
+        }
+    }
+    
+    // 判断是否在分母区域
+    if (m_denominatorItem) {
+        QRectF denRect = m_denominatorItem->boundingRect();
+        denRect.translate(m_denPos);
+        if (denRect.contains(localPos)) {
+            qDebug() << "  在分母区域";
+            return 1;
+        }
+    }
+    
+    // 如果都不在，可能是点击了分数线
+    qDebug() << "  在其他区域";
+    return -1;
+}
+
+QPointF FractionItem::numeratorPos() const
+{
+    return m_numPos;
+}
+
+QPointF FractionItem::denominatorPos() const
+{
+    return m_denPos;
+}
+
 } // namespace QtWordEditor

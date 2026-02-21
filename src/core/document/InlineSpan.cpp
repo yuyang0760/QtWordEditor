@@ -2,7 +2,8 @@
 
 namespace QtWordEditor {
 
-InlineSpan::InlineSpan()
+InlineSpan::InlineSpan(QObject *parent)
+    : QObject(parent)
 {
 }
 

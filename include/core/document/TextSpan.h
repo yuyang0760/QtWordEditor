@@ -20,11 +20,9 @@ class StyleManager;
 class TextSpan : public InlineSpan
 {
 public:
-    TextSpan();
-    explicit TextSpan(const QString &text);
-    TextSpan(const QString &text, const CharacterStyle &style);
-    TextSpan(const TextSpan &other);
-    TextSpan &operator=(const TextSpan &other);
+    explicit TextSpan(QObject *parent = nullptr);
+    explicit TextSpan(const QString &text, QObject *parent = nullptr);
+    TextSpan(const QString &text, const CharacterStyle &style, QObject *parent = nullptr);
     ~TextSpan() override;
 
     // ========== InlineSpan 接口 ==========
@@ -56,9 +54,6 @@ public:
 
     // ========== 字体 ==========
     QFont font() const;
-
-    // ========== 分割 ==========
-    TextSpan split(int position);
 
     // ========== 比较操作符 ==========
     bool operator==(const TextSpan &other) const;

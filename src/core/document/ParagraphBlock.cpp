@@ -523,19 +523,26 @@ void ParagraphBlock::insertInlineSpanAtPosition(int position, InlineSpan *span)
                 m_inlineSpans.insert(spanIndex + 1, span);
             } else {
                 // 在 span 中间插入，需要分割
-                TextSpan secondPart = textSpan->split(posInSpan);
+                QString beforeText = textSpan->text().left(posInSpan);
+                QString afterText = textSpan->text().mid(posInSpan);
                 
                 m_inlineSpans.removeAt(spanIndex);
                 
-                TextSpan *firstPartClone = new TextSpan(*textSpan);
-                m_inlineSpans.insert(spanIndex, firstPartClone);
+                TextSpan *beforePart = new TextSpan();
+                beforePart->setText(beforeText);
+                beforePart->setStyleName(textSpan->styleName());
+                beforePart->setDirectStyle(textSpan->directStyle());
+                m_inlineSpans.insert(spanIndex, beforePart);
                 spanIndex++;
                 
                 m_inlineSpans.insert(spanIndex, span);
                 spanIndex++;
                 
-                TextSpan *secondPartClone = new TextSpan(secondPart);
-                m_inlineSpans.insert(spanIndex, secondPartClone);
+                TextSpan *afterPart = new TextSpan();
+                afterPart->setText(afterText);
+                afterPart->setStyleName(textSpan->styleName());
+                afterPart->setDirectStyle(textSpan->directStyle());
+                m_inlineSpans.insert(spanIndex, afterPart);
             }
         } else {
             // 如果目标是 MathSpan，直接在其后插入

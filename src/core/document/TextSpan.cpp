@@ -3,46 +3,28 @@
 
 namespace QtWordEditor {
 
-TextSpan::TextSpan()
-    : InlineSpan()
+TextSpan::TextSpan(QObject *parent)
+    : InlineSpan(parent)
     , m_text("")
     , m_styleName("")
     , m_directStyle(CharacterStyle())
 {
 }
 
-TextSpan::TextSpan(const QString &text)
-    : InlineSpan()
+TextSpan::TextSpan(const QString &text, QObject *parent)
+    : InlineSpan(parent)
     , m_text(text)
     , m_styleName("")
     , m_directStyle(CharacterStyle())
 {
 }
 
-TextSpan::TextSpan(const QString &text, const CharacterStyle &style)
-    : InlineSpan()
+TextSpan::TextSpan(const QString &text, const CharacterStyle &style, QObject *parent)
+    : InlineSpan(parent)
     , m_text(text)
     , m_styleName("")
     , m_directStyle(style)
 {
-}
-
-TextSpan::TextSpan(const TextSpan &other)
-    : InlineSpan(other)
-    , m_text(other.m_text)
-    , m_styleName(other.m_styleName)
-    , m_directStyle(other.m_directStyle)
-{
-}
-
-TextSpan &TextSpan::operator=(const TextSpan &other)
-{
-    if (this != &other) {
-        m_text = other.m_text;
-        m_styleName = other.m_styleName;
-        m_directStyle = other.m_directStyle;
-    }
-    return *this;
 }
 
 TextSpan::~TextSpan()
@@ -56,7 +38,11 @@ int TextSpan::length() const
 
 InlineSpan *TextSpan::clone() const
 {
-    return new TextSpan(*this);
+    TextSpan *cloned = new TextSpan();
+    cloned->m_text = m_text;
+    cloned->m_styleName = m_styleName;
+    cloned->m_directStyle = m_directStyle;
+    return cloned;
 }
 
 QString TextSpan::text() const
@@ -136,19 +122,6 @@ CharacterStyle TextSpan::effectiveStyle(const StyleManager *styleManager) const
 QFont TextSpan::font() const
 {
     return m_directStyle.font();
-}
-
-TextSpan TextSpan::split(int position)
-{
-    if (position <= 0 || position >= m_text.length()) {
-        return TextSpan(*this);
-    }
-    QString secondPart = m_text.mid(position);
-    m_text = m_text.left(position);
-    TextSpan second(secondPart);
-    second.setStyleName(m_styleName);
-    second.setDirectStyle(m_directStyle);
-    return second;
 }
 
 bool TextSpan::operator==(const TextSpan &other) const

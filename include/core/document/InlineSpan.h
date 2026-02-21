@@ -1,6 +1,7 @@
 #ifndef INLINESPAN_H
 #define INLINESPAN_H
 
+#include <QObject>
 #include <QString>
 #include <QPointF>
 #include <QPainter>
@@ -14,8 +15,9 @@ namespace QtWordEditor {
  * 这是内联内容系统的基石。TextSpan和MathSpan都继承自此类，
  * 使得文本和公式可以在ParagraphBlock中统一管理。
  */
-class InlineSpan
+class InlineSpan : public QObject
 {
+    Q_OBJECT
 public:
     /**
      * @brief 内联内容类型
@@ -28,7 +30,7 @@ public:
     /**
      * @brief 构造函数
      */
-    InlineSpan();
+    explicit InlineSpan(QObject *parent = nullptr);
     
     /**
      * @brief 析构函数

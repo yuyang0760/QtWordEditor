@@ -120,13 +120,15 @@ void DocumentView::keyReleaseEvent(QKeyEvent *event)
 void DocumentView::mousePressEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
-    qDebug() << "[DocumentView::mousePressEvent] scenePos:" << scenePos;
+    qDebug() << "[DocumentView::mousePressEvent] scenePos:" << scenePos << "button:" << event->button();
     
     // ========== 先让 QGraphicsScene 处理鼠标事件，这样 TextBlockItem 会收到 ==========
     QGraphicsView::mousePressEvent(event);
     
-    // ========== 再发送信号让 EditEventHandler 处理 ==========
-    emit mousePressed(scenePos);
+    // ========== 只有左键才发送信号让 EditEventHandler 处理，右键不改变光标位置 ==========
+    if (event->button() == Qt::LeftButton) {
+        emit mousePressed(scenePos);
+    }
 }
 
 void DocumentView::mouseMoveEvent(QMouseEvent *event)
@@ -156,7 +158,12 @@ void DocumentView::resizeEvent(QResizeEvent *event)
 void DocumentView::mouseReleaseEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
-    emit mouseReleased(scenePos);
+    
+    // ========== 只有左键释放时才发送信号 ==========
+    if (event->button() == Qt::LeftButton) {
+        emit mouseReleased(scenePos);
+    }
+    
     QGraphicsView::mouseReleaseEvent(event);
 }
 

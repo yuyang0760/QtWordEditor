@@ -9,7 +9,7 @@
 #include "core/utils/Logger.h"
 #include "graphics/items/BaseBlockItem.h"
 #include "graphics/items/TextBlockItem.h"
-#include "graphics/items/CursorItem.h"
+#include "graphics/items/UnifiedCursorVisual.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
 #include "editcontrol/cursor/Cursor.h"
@@ -30,7 +30,7 @@ namespace QtWordEditor {
 DocumentScene::DocumentScene(QObject *parent)
     : QGraphicsScene(parent)
     , m_document(nullptr)
-    , m_cursorItem(nullptr)
+    , m_unifiedCursorVisual(nullptr)
     , m_selectionItem(nullptr)
 {
     setBackgroundBrush(QBrush(QColor(200, 200, 200)));
@@ -55,12 +55,12 @@ Document *DocumentScene::document() const
 
 void DocumentScene::rebuildFromDocument()
 {
-    // 先临时保存光标和选择项，避免被 clear() 删除
-    CursorItem *tempCursor = m_cursorItem;
+    // 先临时保存统一光标和选择项，避免被 clear() 删除
+    UnifiedCursorVisual *tempUnifiedCursor = m_unifiedCursorVisual;
     SelectionItem *tempSelection = m_selectionItem;
     
     // 移除这些项目，但不删除它们
-    if (tempCursor) removeItem(tempCursor);
+    if (tempUnifiedCursor) removeItem(tempUnifiedCursor);
     if (tempSelection) removeItem(tempSelection);
     
     clear();
@@ -170,11 +170,11 @@ void DocumentScene::rebuildFromDocument()
         }
     }
     
-    // 重新添加光标和选择项
-    if (tempCursor) {
-        addItem(tempCursor);
-        m_cursorItem = tempCursor;
-      //  QDebug() << "  恢复光标项";
+    // 重新添加统一光标和选择项
+    if (tempUnifiedCursor) {
+        addItem(tempUnifiedCursor);
+        m_unifiedCursorVisual = tempUnifiedCursor;
+      //  QDebug() << "  恢复统一光标项";
     }
     if (tempSelection) {
         addItem(tempSelection);
@@ -318,20 +318,19 @@ void DocumentScene::addPage(Page *page)
 void DocumentScene::updateCursor(const QPointF &pos, qreal height)
 {
   //  QDebug() << "DocumentScene::updateCursor - 更新光标，位置:" << pos << "，高度:" << height;
-    if (!m_cursorItem) {
-      //  QDebug() << "  创建新的光标项";
-        m_cursorItem = new CursorItem();
-        addItem(m_cursorItem);
+    // ========== 只使用新的统一光标 ==========
+    UnifiedCursorVisual *unifiedCursor = unifiedCursorVisual();
+    if (unifiedCursor) {
+        unifiedCursor->setPosition(pos, height);
+        unifiedCursor->setVisible(true);  // 显示统一光标
     }
-    m_cursorItem->setPosition(pos, height);
 }
 
-// ========== 新增方法：设置光标可见性 ==========
+// ========== 设置光标可见性 ==========
 void DocumentScene::setCursorVisible(bool visible)
 {
-    if (m_cursorItem) {
-        m_cursorItem->setCursorVisible(visible);
-    }
+    // ========== 只控制新的统一光标的可见性 ==========
+    setUnifiedCursorVisible(visible);
 }
 
 void DocumentScene::updateSelectionFromRange(const SelectionRange &range)
@@ -578,9 +577,9 @@ QPointF DocumentScene::calculateCursorVisualPosition(const CursorPosition &pos) 
     result.setX(blockScenePos.x() + visualInfo.position.x());
     result.setY(blockScenePos.y() + visualInfo.position.y());
     
-    // 更新光标高度
-    if (m_cursorItem) {
-        m_cursorItem->setPosition(result, visualInfo.height);
+    // 更新统一光标高度
+    if (m_unifiedCursorVisual) {
+        m_unifiedCursorVisual->setPosition(result, visualInfo.height);
     }
     
     return result;
@@ -700,6 +699,27 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
     }
     
     return rects;
+}
+
+// ========== 统一光标（新）相关方法实现 ==========
+
+UnifiedCursorVisual *DocumentScene::unifiedCursorVisual()
+{
+    // ========== 如果统一光标还不存在，创建它 ==========
+    if (!m_unifiedCursorVisual) {
+        m_unifiedCursorVisual = new UnifiedCursorVisual();
+        addItem(m_unifiedCursorVisual);
+        // 默认隐藏统一光标，保持旧光标的行为
+        m_unifiedCursorVisual->setVisible(false);
+    }
+    return m_unifiedCursorVisual;
+}
+
+void DocumentScene::setUnifiedCursorVisible(bool visible)
+{
+    if (m_unifiedCursorVisual) {
+        m_unifiedCursorVisual->setVisible(visible);
+    }
 }
 
 } // namespace QtWordEditor

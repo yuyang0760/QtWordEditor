@@ -34,7 +34,8 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_mathCursor(nullptr),
       m_clickedMathItem(nullptr),
       m_clickedRegion(-1),
-      m_clickedLocalPos(0, 0)
+      m_clickedLocalPos(0, 0),
+      m_useUnifiedCursor(false)  // 默认不使用统一光标，保持向后兼容
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, true);  // 允许接收焦点
@@ -403,17 +404,23 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
     
     m_inMathEditMode = true;
     
-    // ========== 隐藏 DocumentScene 的普通光标 ==========
+    // ========== 严格隐藏 DocumentScene 的普通光标 ==========
     QGraphicsScene *graphicsScene = this->scene();
     DocumentScene *scene = dynamic_cast<DocumentScene *>(graphicsScene);
     if (scene) {
         scene->setCursorVisible(false);
     }
     
-    // 创建 MathCursor
+    // ========== 使用新的统一光标（如果启用） ==========
+    if (m_useUnifiedCursor && scene) {
+        // 暂时还是用旧的 MathCursor，因为完全替换需要更多工作
+    }
+    
+    // 创建 MathCursor（保持兼容性）
     if (!m_mathCursor) {
         m_mathCursor = new MathCursor(this);
     }
+    // 确保 MathCursor 可见
     m_mathCursor->setVisible(true);
     
     // 查找对应的 MathItem
@@ -504,13 +511,14 @@ void TextBlockItem::exitMathEditMode()
     
     m_inMathEditMode = false;
     
+    // ========== 严格隐藏 MathCursor ==========
     if (m_mathCursor) {
         m_mathCursor->setVisible(false);
     }
     
     m_rootMathItem = nullptr;
     
-    // ========== 重新显示 DocumentScene 的普通光标 ==========
+    // ========== 严格重新显示 DocumentScene 的普通光标 ==========
     QGraphicsScene *graphicsScene = this->scene();
     DocumentScene *scene = dynamic_cast<DocumentScene *>(graphicsScene);
     if (scene) {
@@ -527,7 +535,13 @@ MathCursor *TextBlockItem::mathCursor() const
 
 void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    qDebug() << "[TextBlockItem::mousePressEvent] 开始, scenePos=" << event->scenePos();
+    qDebug() << "[TextBlockItem::mousePressEvent] 开始, scenePos=" << event->scenePos() << "button=" << event->button();
+    
+    // ========== 只在左键时才处理公式编辑逻辑，右键不改变光标位置 ==========
+    if (event->button() != Qt::LeftButton) {
+        // 右键点击：完全不处理任何光标逻辑，直接返回
+        return;
+    }
     
     // 重置点击信息
     m_clickedMathItem = nullptr;
@@ -685,6 +699,18 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
     }
     
     QGraphicsItem::keyPressEvent(event);
+}
+
+// ========== 统一光标（新）相关方法实现 ==========
+
+void TextBlockItem::setUseUnifiedCursor(bool useUnified)
+{
+    m_useUnifiedCursor = useUnified;
+}
+
+bool TextBlockItem::useUnifiedCursor() const
+{
+    return m_useUnifiedCursor;
 }
 
 } // namespace QtWordEditor

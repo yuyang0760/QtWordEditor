@@ -17,6 +17,7 @@ class ParagraphBlock;
 class MathItem;
 class MathSpan;
 class MathCursor;
+class UnifiedCursorVisual;
 class RowContainerItem;
 
 /**
@@ -220,6 +221,20 @@ public:
      */
     MathCursor *mathCursor() const;
     
+    // ========== 统一光标（新）相关方法 ==========
+    
+    /**
+     * @brief 设置是否使用统一光标（新）
+     * @param useUnified true=使用统一光标，false=使用旧光标
+     */
+    void setUseUnifiedCursor(bool useUnified);
+    
+    /**
+     * @brief 获取是否使用统一光标（新）
+     * @return true=使用统一光标
+     */
+    bool useUnifiedCursor() const;
+    
     // ========== 事件处理 ==========
     
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -244,6 +259,9 @@ private:
     MathItem *m_clickedMathItem;            ///< 被点击的 MathItem
     int m_clickedRegion;                     ///< 被点击的区域（0=分子，1=分母，-1=其他）
     QPointF m_clickedLocalPos;               ///< 被点击的局部坐标
+    
+    // ========== 统一光标（新） ==========
+    bool m_useUnifiedCursor;                 ///< 是否使用统一光标（默认false）
 };
 
 } // namespace QtWordEditor

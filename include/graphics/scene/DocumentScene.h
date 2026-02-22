@@ -12,9 +12,9 @@ class Document;
 class Block;
 class Page;
 class BaseBlockItem;
-class CursorItem;
 class SelectionItem;
 class PageItem;
+class UnifiedCursorVisual;
 struct CursorPosition;
 struct SelectionRange;
 
@@ -100,6 +100,20 @@ public:
      * @param visible true=显示光标，false=隐藏光标
      */
     void setCursorVisible(bool visible);
+    
+    // ========== 统一光标（新）相关方法 ==========
+    
+    /**
+     * @brief 获取统一光标视觉组件（新）
+     * @return UnifiedCursorVisual 指针
+     */
+    UnifiedCursorVisual *unifiedCursorVisual();
+    
+    /**
+     * @brief 设置统一光标是否可见（新）
+     * @param visible true=显示光标，false=隐藏光标
+     */
+    void setUnifiedCursorVisible(bool visible);
 
     // ========== 选择区域相关方法 ==========
     
@@ -186,7 +200,7 @@ private:
     QHash<Block*, BaseBlockItem*> m_blockItems;            ///< 块到图形项的映射
     QList<PageItem*> m_pageItems;                          ///< 页面项列表
     QVector<QVector<QGraphicsTextItem*>> m_pageTextItems;  ///< 存储每个页、块对应的 QGraphicsTextItem
-    CursorItem *m_cursorItem;                              ///< 光标图形项
+    UnifiedCursorVisual *m_unifiedCursorVisual;            ///< 统一光标视觉组件
     SelectionItem *m_selectionItem;                        ///< 选择区域图形项
 };
 

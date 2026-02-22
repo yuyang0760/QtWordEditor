@@ -187,6 +187,8 @@ void MathCursor::moveToParent()
 void MathCursor::setVisible(bool visible)
 {
     m_visible = visible;
+    // ========== 关键：调用 QGraphicsItem::setVisible()！ ==========
+    QGraphicsItem::setVisible(visible);
     update();
 }
 

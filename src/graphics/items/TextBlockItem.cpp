@@ -35,7 +35,7 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_clickedMathItem(nullptr),
       m_clickedRegion(-1),
       m_clickedLocalPos(0, 0),
-      m_useUnifiedCursor(false)  // 默认不使用统一光标，保持向后兼容
+      m_useUnifiedCursor(true)  // 默认使用统一光标，只显示一个光标
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, true);  // 允许接收焦点
@@ -411,11 +411,6 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
         scene->setCursorVisible(false);
     }
     
-    // ========== 使用新的统一光标（如果启用） ==========
-    if (m_useUnifiedCursor && scene) {
-        // 暂时还是用旧的 MathCursor，因为完全替换需要更多工作
-    }
-    
     // 创建 MathCursor（保持兼容性）
     if (!m_mathCursor) {
         m_mathCursor = new MathCursor(this);
@@ -511,14 +506,14 @@ void TextBlockItem::exitMathEditMode()
     
     m_inMathEditMode = false;
     
-    // ========== 严格隐藏 MathCursor ==========
+    // ========== 彻底隐藏 MathCursor（确保完全不可见）==========
     if (m_mathCursor) {
         m_mathCursor->setVisible(false);
     }
     
     m_rootMathItem = nullptr;
     
-    // ========== 严格重新显示 DocumentScene 的普通光标 ==========
+    // ========== 严格重新显示 DocumentScene 的统一光标 ==========
     QGraphicsScene *graphicsScene = this->scene();
     DocumentScene *scene = dynamic_cast<DocumentScene *>(graphicsScene);
     if (scene) {

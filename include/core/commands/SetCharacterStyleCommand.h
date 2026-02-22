@@ -4,7 +4,7 @@
 #include "EditCommand.h"
 #include "core/document/CharacterStyle.h"
 #include <QList>
-#include "core/document/Span.h"
+#include "core/document/InlineSpan.h"
 
 namespace QtWordEditor {
 
@@ -26,7 +26,7 @@ private:
     int m_start;
     int m_end;
     CharacterStyle m_newStyle;
-    QList<Span> m_oldSpans; // original spans for undo
+    QList<InlineSpan*> m_oldSpans; // original spans for undo
 };
 
 } // namespace QtWordEditor

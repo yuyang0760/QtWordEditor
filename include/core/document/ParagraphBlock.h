@@ -3,7 +3,8 @@
 
 #include "Block.h"
 #include "ParagraphStyle.h"
-#include "Span.h"
+#include "TextSpan.h"
+#include "InlineSpan.h"
 #include <QList>
 #include "core/Global.h"
 
@@ -22,55 +23,44 @@ public:
     ParagraphBlock(const ParagraphBlock &other);
     ~ParagraphBlock() override;
 
-    // Text operations
+    // ========== 文本操作 ==========
     QString text() const;
     void setText(const QString &text);
     void insert(int position, const QString &text, const CharacterStyle &style);
     void remove(int position, int length);
 
-    // Span access
-    int spanCount() const;
-    Span span(int index) const;
-    void addSpan(const Span &span);
-    void setSpan(int index, const Span &span);
+    // ========== InlineSpan管理 ==========
+    int inlineSpanCount() const;
+    InlineSpan *inlineSpan(int index) const;
+    void addInlineSpan(InlineSpan *span);
+    void insertInlineSpan(int index, InlineSpan *span);
+    void removeInlineSpan(int index);
+    void clearInlineSpans();
 
-    // Paragraph style
+    // ========== 段落样式 ==========
     ParagraphStyle paragraphStyle() const;
     void setParagraphStyle(const ParagraphStyle &style);
 
-    // Overrides from Block
+    // ========== Block接口重写 ==========
     int length() const override;
     bool isEmpty() const override;
     Block *clone() const override;
     
-    // Helper: find span index and position within span for a global position
-    int findSpanIndex(int globalPosition, int *positionInSpan = nullptr) const;
-    
-    // Helper: get character style at a specific position
+    // ========== 辅助方法 ==========
+    int findInlineSpanIndex(int globalPosition, int *positionInSpan = nullptr) const;
     CharacterStyle styleAt(int position) const;
-    
-    // Helper: set character style for a range
     void setStyle(int start, int length, const CharacterStyle &style);
-    
-    // Helper: check if a range spans multiple spans
-    // @return true=范围跨多个Span（样式不一致），false=范围在单个Span内（样式一致）
-    bool isRangeSpansMultipleSpans(int start, int end) const;
-    
-    // Helper: get character at a specific position
     QChar characterAt(int position) const;
 
 signals:
     void textChanged();
 
 private:
-    // Helper to maintain span consistency after modification
-    void mergeAdjacentSpans();
-    
-    // Helper to validate position and length parameters
+    void mergeAdjacentTextSpans();
     bool validatePositionAndLength(int& position, int& length) const;
 
 private:
-    QList<Span> m_spans;
+    QList<InlineSpan*> m_inlineSpans;
     ParagraphStyle m_paragraphStyle;
 };
 

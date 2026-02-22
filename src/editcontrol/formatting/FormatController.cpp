@@ -377,24 +377,29 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
             Block *block = m_document->block(range.startBlock);
             ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
             if (paraBlock) {
-                // ========== 查找选区完全在哪个 Span 内 ==========
+                // ========== 查找选区完全在哪个 InlineSpan 内 ==========
                 int spanIndex = -1;
                 int currentOffset = 0;
-                for (int i = 0; i < paraBlock->spanCount(); ++i) {
-                    const Span &span = paraBlock->span(i);
+                for (int i = 0; i < paraBlock->inlineSpanCount(); ++i) {
+                    InlineSpan *inlineSpan = paraBlock->inlineSpan(i);
                     int spanStart = currentOffset;
-                    int spanEnd = spanStart + span.text().length();
+                    int spanEnd = spanStart + inlineSpan->length();
                     
                     // 检查 span 是否完全包含选区
                     if (spanStart <= range.startOffset && spanEnd >= range.endOffset) {
                         spanIndex = i;
-                        qDebug() << "  选区完全在 Span " << i << " 内: [" << spanStart << "," << spanEnd << "] "
-                                 << (span.style().bold() ? "[加粗]" : "[正常]");
-                        result = span.style();
-                        qDebug() << "  获取到该 Span 的样式: 加粗=" << result.bold() 
-                                 << ", 斜体=" << result.italic() 
-                                 << ", 下划线=" << result.underline();
-                        return result;
+                        if (inlineSpan->type() == InlineSpan::Text) {
+                            TextSpan *textSpan = qobject_cast<TextSpan*>(inlineSpan);
+                            if (textSpan) {
+                                qDebug() << "  选区完全在 Span " << i << " 内: [" << spanStart << "," << spanEnd << "] "
+                                         << (textSpan->style().bold() ? "[加粗]" : "[正常]");
+                                result = textSpan->style();
+                                qDebug() << "  获取到该 Span 的样式: 加粗=" << result.bold() 
+                                         << ", 斜体=" << result.italic() 
+                                         << ", 下划线=" << result.underline();
+                                return result;
+                            }
+                        }
                     }
                     
                     currentOffset = spanEnd;
@@ -623,22 +628,27 @@ QList<CharacterStyle> FormatController::collectSelectionStyles() const
         qDebug() << "FormatController::collectSelectionStyles - 处理块" << blockIndex 
                  << ": 偏移" << blockStartOffset << "到" << blockEndOffset;
         
-        // 收集当前块中与选区重叠的 Span
+        // 收集当前块中与选区重叠的 InlineSpan
         int currentOffset = 0;
-        for (int i = 0; i < paraBlock->spanCount(); ++i) {
-            const Span &span = paraBlock->span(i);
+        for (int i = 0; i < paraBlock->inlineSpanCount(); ++i) {
+            InlineSpan *inlineSpan = paraBlock->inlineSpan(i);
             int spanStart = currentOffset;
-            int spanEnd = spanStart + span.text().length();
+            int spanEnd = spanStart + inlineSpan->length();
             
             // 检查 span 是否与选区重叠
             if (!(spanEnd <= blockStartOffset || spanStart >= blockEndOffset)) {
-                result.append(span.style());
-                qDebug() << "  包含块" << blockIndex << "的 Span " << i 
-                         << ": 加粗=" << span.style().bold() 
-                         << ", 斜体=" << span.style().italic()
-                         << ", 下划线=" << span.style().underline()
-                         << ", 字体=" << span.style().fontFamily()
-                         << ", 字号=" << span.style().fontSize();
+                if (inlineSpan->type() == InlineSpan::Text) {
+                    TextSpan *textSpan = qobject_cast<TextSpan*>(inlineSpan);
+                    if (textSpan) {
+                        result.append(textSpan->style());
+                        qDebug() << "  包含块" << blockIndex << "的 Span " << i 
+                                 << ": 加粗=" << textSpan->style().bold() 
+                                 << ", 斜体=" << textSpan->style().italic()
+                                 << ", 下划线=" << textSpan->style().underline()
+                                 << ", 字体=" << textSpan->style().fontFamily()
+                                 << ", 字号=" << textSpan->style().fontSize();
+                    }
+                }
             }
             
             currentOffset = spanEnd;

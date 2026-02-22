@@ -20,6 +20,9 @@ public:
 
     void updateBlock() override;
 
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
 private:
     QGraphicsPixmapItem *m_pixmapItem;
 };

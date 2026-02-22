@@ -3,7 +3,8 @@
 #include "core/document/Document.h"
 #include "core/document/Section.h"
 #include "core/document/ParagraphBlock.h"
-#include "core/document/Span.h"
+#include "core/document/InlineSpan.h"
+#include "core/document/TextSpan.h"
 #include "core/document/ImageBlock.h"
 #include "core/document/CharacterStyle.h"
 #include "core/document/TableBlock.h"
@@ -670,18 +671,19 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
                     
                     ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
                     paragraphLength = QString::number(paraBlock->length());
-                    spanCount = QString::number(paraBlock->spanCount());
+                    spanCount = QString::number(paraBlock->inlineSpanCount());
                     
-                    // 查找 Span 信息
+                    // 查找 InlineSpan 信息
                     int posInSpan = 0;
-                    spanIndex = paraBlock->findSpanIndex(m_currentCursorPos.offset, &posInSpan);
+                    spanIndex = paraBlock->findInlineSpanIndex(m_currentCursorPos.offset, &posInSpan);
                     spanOffset = posInSpan;
                     
-                    if (spanIndex >= 0 && spanIndex < paraBlock->spanCount()) {
-                        Span span = paraBlock->span(spanIndex);
-                        spanInfo = QString("索引:%1, 长度:%2, 偏移:%3")
+                    if (spanIndex >= 0 && spanIndex < paraBlock->inlineSpanCount()) {
+                        InlineSpan *span = paraBlock->inlineSpan(spanIndex);
+                        spanInfo = QString("索引:%1, 类型:%2, 长度:%3, 偏移:%4")
                             .arg(spanIndex)
-                            .arg(span.length())
+                            .arg(span->type() == InlineSpan::Text ? "文本" : "公式")
+                            .arg(span->length())
                             .arg(posInSpan);
                         
                         // 获取字符信息

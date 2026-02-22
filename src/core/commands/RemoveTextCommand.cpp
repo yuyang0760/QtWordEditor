@@ -26,6 +26,7 @@ RemoveTextCommand::RemoveTextCommand(Document *document, int blockIndex, int pos
     , m_blockIndex(blockIndex)
     , m_position(position)
     , m_length(length)
+    , m_oldBlock(nullptr)
 {
     setText(QObject::tr("Delete text"));
 }
@@ -35,6 +36,9 @@ RemoveTextCommand::RemoveTextCommand(Document *document, int blockIndex, int pos
  */
 RemoveTextCommand::~RemoveTextCommand()
 {
+    if (m_oldBlock) {
+        delete m_oldBlock;
+    }
 }
 
 /**
@@ -54,7 +58,14 @@ void RemoveTextCommand::redo()
         qWarning() << "Block is not a paragraph block";
         return;
     }
-    m_removedText = para->text().mid(m_position, m_length);
+    
+    // 保存旧的块用于撤销
+    if (m_oldBlock) {
+        delete m_oldBlock;
+    }
+    m_oldBlock = qobject_cast<ParagraphBlock*>(para->clone());
+    
+    // 执行删除操作
     para->remove(m_position, m_length);
 }
 
@@ -65,16 +76,24 @@ void RemoveTextCommand::redo()
  */
 void RemoveTextCommand::undo()
 {
+    if (!m_oldBlock) {
+        return;
+    }
+    
     Block *block = document()->block(m_blockIndex);
     if (!block)
         return;
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
     if (!para)
         return;
-    for (const auto& span : m_removedSpans) {
-        para->insert(m_position, span.text(), span.style());
-        m_position += span.text().length();
+    
+    // 恢复旧的块
+    para->clearInlineSpans();
+    for (int i = 0; i < m_oldBlock->inlineSpanCount(); ++i) {
+        InlineSpan *span = m_oldBlock->inlineSpan(i);
+        para->addInlineSpan(span->clone());
     }
+    para->setParagraphStyle(m_oldBlock->paragraphStyle());
 }
 
 } // namespace QtWordEditor

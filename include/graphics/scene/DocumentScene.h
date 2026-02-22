@@ -173,7 +173,7 @@ private:
     Document *m_document;                                   ///< 关联的文档
     QHash<Block*, BaseBlockItem*> m_blockItems;            ///< 块到图形项的映射
     QList<PageItem*> m_pageItems;                          ///< 页面项列表
-    QVector<QVector<QGraphicsTextItem*>> m_pageTextItems;  ///< 存储每个页、块对应的 QGraphicsTextItem
+    // QVector<QVector<QGraphicsTextItem*>> m_pageTextItems;  ///< 存储每个页、块对应的 QGraphicsTextItem（暂时禁用）
     CursorItem *m_cursorItem;                              ///< 光标图形项
     SelectionItem *m_selectionItem;                        ///< 选择区域图形项
 };

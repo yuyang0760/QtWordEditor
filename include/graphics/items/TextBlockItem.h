@@ -5,12 +5,18 @@
 #include <QGraphicsTextItem>
 #include <QFont>
 #include <QList>
+#include <QHash>
 #include "core/Global.h"
-#include "core/document/Span.h"
+#include "graphics/items/TextBlockLayoutEngine.h"
 
 namespace QtWordEditor {
 
 class ParagraphBlock;
+class InlineSpan;
+class TextSpan;
+class MathSpan;
+class TextFragment;
+class MathFormulaItem;
 
 /**
  * @brief 文本块图形项类，将段落块渲染为格式化文本
@@ -42,12 +48,6 @@ public:
     void updateBlock() override;
     
     /**
-     * @brief 获取内部的文本图形项
-     * @return 指向QGraphicsTextItem的指针
-     */
-    QGraphicsTextItem *textItem() const;
-    
-    /**
      * @brief 设置文本显示宽度
      * @param width 新的文本宽度
      */
@@ -60,34 +60,18 @@ public:
     qreal textWidth() const;
     
     /**
-     * @brief 设置字体
-     * @param font 新的字体设置
-     */
-    void setFont(const QFont &font);
-    
-    /**
-     * @brief 获取当前字体
-     * @return 当前字体设置
-     */
-    QFont font() const;
-    
-    /**
-     * @brief 设置纯文本内容
-     * @param text 新的文本内容
-     */
-    void setPlainText(const QString &text);
-    
-    /**
-     * @brief 获取纯文本内容
-     * @return 当前的纯文本内容
-     */
-    QString toPlainText() const;
-    
-    /**
      * @brief 获取边界矩形
      * @return 图形项的边界矩形
      */
     QRectF boundingRect() const override;
+    
+    /**
+     * @brief 绘制图形项
+     * @param painter 绘制器
+     * @param option 样式选项
+     * @param widget 窗口部件
+     */
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     
     /**
      * @brief 更新几何形状
@@ -95,21 +79,36 @@ public:
      */
     void updateGeometry();
 
+    // ========== 视图-数据映射 ==========
+    /**
+     * @brief 根据TextSpan获取对应的TextFragment
+     * @param span TextSpan指针
+     * @return TextFragment指针，找不到返回nullptr
+     */
+    TextFragment* getTextFragmentForSpan(InlineSpan* span) const;
+    
+    /**
+     * @brief 根据MathSpan获取对应的MathFormulaItem
+     * @param span MathSpan指针
+     * @return MathFormulaItem指针，找不到返回nullptr
+     */
+    MathFormulaItem* getMathItemForSpan(MathSpan* span) const;
+
 private:
-    /** @brief 初始化内部文本图形项 */
-    void initializeTextItem();
+    /** @brief 从块数据创建内容项（TextFragment和MathFormulaItem） */
+    void createContentItemsFromBlock();
     
-    /** @brief 更新边界矩形 */
-    void updateBoundingRect();
+    /** @brief 使用TextBlockLayoutEngine执行布局 */
+    void performLayout();
     
-    /** @brief 从块数据应用富文本格式 */
-    void applyRichTextFromBlock();
+    /** @brief 清除内容项 */
+    void clearContentItems();
     
-    /** @brief 应用段落缩进（左缩进、右缩进） */
-    void applyParagraphIndent();
-    
-    QGraphicsTextItem *m_textItem;  ///< 内部文本图形项
     qreal m_textWidth;              ///< 文本显示宽度
+    TextBlockLayoutEngine m_layoutEngine;  ///< 布局引擎
+    QList<QGraphicsItem*> m_contentItems;  ///< 内容项列表（TextFragment或MathFormulaItem）
+    QHash<InlineSpan*, TextFragment*> m_textFragmentMap;  ///< TextSpan到TextFragment的映射
+    QHash<MathSpan*, MathFormulaItem*> m_mathItemMap;     ///< MathSpan到MathFormulaItem的映射
 };
 
 } // namespace QtWordEditor

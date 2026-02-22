@@ -1,6 +1,7 @@
 #include "graphics/items/ImageBlockItem.h"
 #include "core/document/ImageBlock.h"
 #include <QDebug>
+#include <QPainter>
 
 namespace QtWordEditor {
 
@@ -29,7 +30,20 @@ void ImageBlockItem::updateBlock()
             m_pixmapItem->setScale(size.width() / image.width());
         }
         m_pixmapItem->setPos(m_block->boundingRect().topLeft());
+        m_boundingRect = m_block->boundingRect();
     }
+}
+
+QRectF ImageBlockItem::boundingRect() const
+{
+    return m_boundingRect;
+}
+
+void ImageBlockItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
 }
 
 } // namespace QtWordEditor

@@ -3,9 +3,9 @@
 
 #include "EditCommand.h"
 #include "core/document/CharacterStyle.h"
-#include "core/document/Span.h"
 #include <QString>
 #include <QList>
+#include "core/document/ParagraphBlock.h"
 
 namespace QtWordEditor {
 
@@ -48,8 +48,7 @@ private:
     int m_blockIndex;           ///< 目标块索引
     int m_position;             ///< 删除起始位置
     int m_length;               ///< 删除的文本长度
-    QString m_removedText;      ///< 被删除的文本内容
-    QList<Span> m_removedSpans; ///< 被删除文本的样式跨度信息
+    ParagraphBlock *m_oldBlock; ///< 保存旧块用于撤销
 };
 
 } // namespace QtWordEditor

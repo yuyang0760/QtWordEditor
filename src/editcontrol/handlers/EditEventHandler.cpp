@@ -131,7 +131,7 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
 
     qDebug() << "[EditEventHandler::handleMousePress] at:" << scenePos;
 
-    // ========== 先检查是否点击了 MathItem 或者有 TextBlockItem 在鼠标位置 ==========
+    // ========== 先检查是否点击了 MathItem ==========
     QList<QGraphicsItem *> items = m_scene->items(scenePos);
     
     // 先检查所有 items，看是否有 MathItem
@@ -145,13 +145,15 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         }
     }
     
-    // 检查是否有 TextBlockItem 处于公式编辑模式（虽然现在还没有，但未来可能会有）
-    for (QGraphicsItem *item : items) {
+    // ========== 关键修复：遍历所有 TextBlockItem，确保它们都退出公式编辑模式 ==========
+    bool hadMathEditMode = false;
+    QList<QGraphicsItem *> allItems = m_scene->items();
+    for (QGraphicsItem *item : allItems) {
         TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
         if (textBlockItem && textBlockItem->isInMathEditMode()) {
-            qDebug() << "[EditEventHandler] TextBlockItem 处于公式编辑模式，不处理选择";
-            m_isSelecting = false;
-            return true;
+            qDebug() << "[EditEventHandler] 发现有 TextBlockItem 处于公式编辑模式，强制退出";
+            textBlockItem->exitMathEditMode();
+            hadMathEditMode = true;
         }
     }
 

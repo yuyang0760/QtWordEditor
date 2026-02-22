@@ -196,6 +196,11 @@ public:
      */
     void clearMathItems();
     
+    /**
+     * @brief 安全更新布局（不删除 MathItem）
+     */
+    void safeUpdateLayout();
+    
     // ========== 公式编辑模式 ==========
     
     /**
@@ -239,6 +244,8 @@ public:
     
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void inputMethodEvent(QInputMethodEvent *event) override;
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 
 private:
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎

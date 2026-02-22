@@ -17,7 +17,8 @@ MathItem::MathItem(MathSpan *span, MathItem *parent)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, false);
-    setAcceptedMouseButtons(Qt::NoButton); // 不接受任何鼠标按钮事件
+    // 接受左键事件，允许点击定位光标
+    setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 void MathItem::updateLayout()

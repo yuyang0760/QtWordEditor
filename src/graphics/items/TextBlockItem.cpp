@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QGraphicsSceneMouseEvent>
 #include <QTransform>
+#include <QInputMethodEvent>
 #include "core/utils/Logger.h"
 #include "core/document/MathSpan.h"
 #include "graphics/formula/MathItem.h"
@@ -39,6 +40,7 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
     setFlag(QGraphicsItem::ItemIsFocusable, true);  // 允许接收焦点
+    setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);  // 重要！接受输入法事件
     applyParagraphIndent();
     performLayout();
 }
@@ -132,9 +134,6 @@ void TextBlockItem::updateBlock()
                 mathItemMap.insert(span, mathItem);
                 mathSizeMap.insert(span, mathItem->boundingRect().size());
                 mathBaselineMap.insert(span, mathItem->baseline());
-                qDebug() << "  预创建 MathItem，span=" << span 
-                         << "size=" << mathItem->boundingRect().size()
-                         << "baseline=" << mathItem->baseline();
             }
         }
     }
@@ -145,29 +144,14 @@ void TextBlockItem::updateBlock()
     performLayoutWithMathSizes(mathSizeMap, mathBaselineMap);
     // ===============================================================
     
-    // ========== 调试信息 ==========
-    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
-    qDebug() << "TextBlockItem::updateBlock() - items 数量:" << items.size();
-    for (int i = 0; i < items.size(); ++i) {
-        const TextBlockLayoutEngine::LayoutItem &item = items[i];
-        qDebug() << "  item" << i << ":"
-                 << "inlineSpan=" << item.inlineSpan
-                 << "type=" << (item.inlineSpan ? (int)item.inlineSpan->type() : -1)
-                 << "position=" << item.position
-                 << "width=" << item.width
-                 << "height=" << item.height;
-    }
-    // ===============================
-    
     // ========== 第三步：设置 MathItem 的位置并显示 ==========
+    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
     for (const TextBlockLayoutEngine::LayoutItem &item : items) {
         if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
             MathItem *mathItem = mathItemMap.value(item.inlineSpan, nullptr);
             if (mathItem) {
                 mathItem->setPos(item.position + QPointF(m_leftIndent, 0));
                 mathItem->setVisible(true);
-                qDebug() << "  设置 MathItem 位置，span=" << item.inlineSpan 
-                         << "pos=" << item.position + QPointF(m_leftIndent, 0);
             }
         }
     }
@@ -182,6 +166,60 @@ void TextBlockItem::clearMathItems()
 {
     qDeleteAll(m_mathItems);
     m_mathItems.clear();
+}
+
+void TextBlockItem::safeUpdateLayout()
+{
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
+    if (!para)
+        return;
+    
+    applyParagraphIndent();
+    
+    // ========== 第一步：递归更新所有 MathItem 的布局 ==========
+    // 从叶子到根，确保所有 MathItem 都用最新数据计算自己的尺寸
+    for (QGraphicsItem *item : m_mathItems) {
+        MathItem *mathItem = dynamic_cast<MathItem*>(item);
+        if (mathItem) {
+            mathItem->updateLayout();
+        }
+    }
+    // ===============================================================
+    
+    // ========== 第二步：从现有 MathItem 收集尺寸信息 ==========
+    QList<InlineSpan*> spans = getSpans();
+    QHash<InlineSpan*, MathItem*> mathItemMap;
+    QHash<InlineSpan*, QSizeF> mathSizeMap;
+    QHash<InlineSpan*, qreal> mathBaselineMap;
+    
+    // 先建立 MathSpan 到 MathItem 的映射
+    for (QGraphicsItem *item : m_mathItems) {
+        MathItem *mathItem = dynamic_cast<MathItem*>(item);
+        if (mathItem && mathItem->mathSpan()) {
+            mathItemMap.insert(mathItem->mathSpan(), mathItem);
+            mathSizeMap.insert(mathItem->mathSpan(), mathItem->boundingRect().size());
+            mathBaselineMap.insert(mathItem->mathSpan(), mathItem->baseline());
+        }
+    }
+    // ===============================================================
+    
+    // ========== 第三步：执行布局（使用现有 MathItem 的尺寸） ==========
+    performLayoutWithMathSizes(mathSizeMap, mathBaselineMap);
+    // ===============================================================
+    
+    // ========== 第四步：更新 MathItem 的位置 ==========
+    const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
+    for (const TextBlockLayoutEngine::LayoutItem &item : items) {
+        if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
+            MathItem *mathItem = mathItemMap.value(item.inlineSpan, nullptr);
+            if (mathItem) {
+                mathItem->setPos(item.position + QPointF(m_leftIndent, 0));
+            }
+        }
+    }
+    // ===============================================================
+    
+    update(); // 触发重绘
 }
 
 QList<InlineSpan*> TextBlockItem::getSpans() const
@@ -398,10 +436,7 @@ bool TextBlockItem::isInMathEditMode() const
 
 void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
 {
-    if (m_inMathEditMode) {
-        return;
-    }
-    
+    bool wasInEditMode = m_inMathEditMode;
     m_inMathEditMode = true;
     
     // ========== 严格隐藏 DocumentScene 的普通光标 ==========
@@ -429,6 +464,27 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
             rootContainer = dynamic_cast<RowContainerItem*>(mathItem);
             break;
         }
+    }
+    
+    // ========== 检查是否是 NumberItem（直接点击的情况） ==========
+    NumberItem *numItem = dynamic_cast<NumberItem*>(m_clickedMathItem);
+    if (numItem) {
+        qDebug() << "[enterMathEditMode] 直接点击 NumberItem=" << numItem;
+        
+        // 使用 NumberItem 的 hitTestX 方法获取字符位置
+        int charPosition = numItem->hitTestX(m_clickedLocalPos.x());
+        qDebug() << "[enterMathEditMode] 字符位置=" << charPosition;
+        
+        m_mathCursor->setHeight(numItem->boundingRect().height());
+        m_mathCursor->setPosition(numItem, charPosition);
+        
+        setFocus();
+        if (!wasInEditMode) {
+            qDebug() << "进入公式编辑模式（NumberItem）";
+        } else {
+            qDebug() << "更新公式编辑模式光标位置（NumberItem）";
+        }
+        return;
     }
     
     // ========== 检查是否是 FractionItem 并且有点击信息 ==========
@@ -472,7 +528,11 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
             m_mathCursor->setPosition(targetNumberItem, charPosition);
             
             setFocus();
-            qDebug() << "进入公式编辑模式（分数的 NumberItem）";
+            if (!wasInEditMode) {
+                qDebug() << "进入公式编辑模式（分数的 NumberItem）";
+            } else {
+                qDebug() << "更新公式编辑模式光标位置（分数的 NumberItem）";
+            }
             return;
         }
     }
@@ -495,7 +555,11 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
     // 设置焦点
     setFocus();
     
-    qDebug() << "进入公式编辑模式";
+    if (!wasInEditMode) {
+        qDebug() << "进入公式编辑模式";
+    } else {
+        qDebug() << "更新公式编辑模式光标位置";
+    }
 }
 
 void TextBlockItem::exitMathEditMode()
@@ -631,8 +695,11 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
                         text.insert(pos, event->text());
                         numSpan->setText(text);
                         
-                        // 更新布局
+                        // 更新 NumberItem 自身布局
                         numberItem->updateLayout();
+                        
+                        // 安全更新整个段落布局（不删除 MathItem）
+                        safeUpdateLayout();
                         
                         // 光标向右移动
                         m_mathCursor->setPosition(numberItem, pos + 1);
@@ -645,8 +712,11 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
                             text.remove(pos - 1, 1);
                             numSpan->setText(text);
                             
-                            // 更新布局
+                            // 更新 NumberItem 自身布局
                             numberItem->updateLayout();
+                            
+                            // 安全更新整个段落布局（不删除 MathItem）
+                            safeUpdateLayout();
                             
                             // 光标向左移动
                             m_mathCursor->setPosition(numberItem, pos - 1);
@@ -660,8 +730,11 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
                             text.remove(pos, 1);
                             numSpan->setText(text);
                             
-                            // 更新布局
+                            // 更新 NumberItem 自身布局
                             numberItem->updateLayout();
+                            
+                            // 安全更新整个段落布局（不删除 MathItem）
+                            safeUpdateLayout();
                         }
                         return;
                     }
@@ -694,6 +767,101 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
     }
     
     QGraphicsItem::keyPressEvent(event);
+}
+
+void TextBlockItem::inputMethodEvent(QInputMethodEvent *event)
+{
+    // 如果在公式编辑模式并且光标在 NumberItem 中，处理输入法输入
+    if (m_inMathEditMode && m_mathCursor && 
+        m_mathCursor->cursorMode() == MathCursor::NumberMode) {
+        
+        NumberItem *numberItem = m_mathCursor->currentNumberItem();
+        if (numberItem) {
+            NumberMathSpan *numSpan = numberItem->numberSpan();
+            if (numSpan) {
+                QString text = numSpan->text();
+                int pos = m_mathCursor->position();
+                
+                // 处理输入法提交的文本
+                QString commitString = event->commitString();
+                if (!commitString.isEmpty()) {
+                    // 插入提交的文本
+                    text.insert(pos, commitString);
+                    numSpan->setText(text);
+                    
+                    // 更新 NumberItem 自身布局
+                    numberItem->updateLayout();
+                    
+                    // 安全更新整个段落布局（不删除 MathItem）
+                    safeUpdateLayout();
+                    
+                    // 光标移动到提交文本的末尾
+                    m_mathCursor->setPosition(numberItem, pos + commitString.length());
+                }
+                
+                // 完全接受事件，阻止父类处理
+                event->accept();
+                return;
+            }
+        }
+        // 即使没有处理，只要在公式编辑模式，也接受事件
+        event->accept();
+        return;
+    }
+    
+    // 否则交给父类处理
+    QGraphicsItem::inputMethodEvent(event);
+}
+
+QVariant TextBlockItem::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    // 只有在公式编辑模式并且光标在 NumberItem 中，才提供输入法查询信息
+    if (m_inMathEditMode && m_mathCursor && 
+        m_mathCursor->cursorMode() == MathCursor::NumberMode) {
+        
+        NumberItem *numberItem = m_mathCursor->currentNumberItem();
+        if (numberItem) {
+            NumberMathSpan *numSpan = numberItem->numberSpan();
+            if (numSpan) {
+                QString text = numSpan->text();
+                int pos = m_mathCursor->position();
+                
+                switch (query) {
+                    case Qt::ImCursorPosition:
+                        // 返回光标位置
+                        return pos;
+                    case Qt::ImSurroundingText:
+                        // 返回周围文本
+                        return text;
+                    case Qt::ImCurrentSelection:
+                        // 当前没有选择，返回空
+                        return QString();
+                    case Qt::ImFont:
+                        // 返回 NumberItem 使用的字体
+                        return QFont("Microsoft YaHei", 12);
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    
+    // 不在公式编辑模式，或者不在 NumberItem，返回空值，阻止输入法输入到普通文本
+    switch (query) {
+        case Qt::ImEnabled:
+            // 只有在公式编辑模式才启用输入法
+            return m_inMathEditMode;
+        case Qt::ImCursorPosition:
+        case Qt::ImSurroundingText:
+        case Qt::ImCurrentSelection:
+        case Qt::ImFont:
+            // 不在公式编辑模式，返回空
+            return QVariant();
+        default:
+            break;
+    }
+    
+    return QVariant();
 }
 
 // ========== 统一光标（新）相关方法实现 ==========

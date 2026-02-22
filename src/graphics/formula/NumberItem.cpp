@@ -12,11 +12,9 @@ namespace QtWordEditor {
 
 NumberItem::NumberItem(NumberMathSpan *span, MathItem *parent)
     : MathItem(span, parent)
-    , m_font("Cambria Math", 12)
+    , m_font("Microsoft YaHei", 12)
 {
-    qDebug() << "[NumberItem::NumberItem] 构造函数开始, span=" << span;
     updateLayout();
-    qDebug() << "[NumberItem::NumberItem] 构造函数完成";
 }
 
 NumberItem::~NumberItem()
@@ -25,13 +23,10 @@ NumberItem::~NumberItem()
 
 void NumberItem::updateLayout()
 {
-    qDebug() << "[NumberItem::updateLayout] 开始...";
     NumberMathSpan *numSpan = numberSpan();
     if (!numSpan) {
-        qDebug() << "[NumberItem::updateLayout] numSpan 为空，返回";
         return;
     }
-    qDebug() << "[NumberItem::updateLayout] numSpan 有效, text=[" << numSpan->text() << "]";
 
     QFontMetrics fm(m_font);
     QString text = numSpan->text();
@@ -39,18 +34,13 @@ void NumberItem::updateLayout()
     if (text.isEmpty()) {
         text = " ";  // 空时显示一个占位符
     }
-    qDebug() << "[NumberItem::updateLayout] 显示的文本: [" << text << "]";
 
     qreal width = fm.horizontalAdvance(text);
     qreal height = fm.height();
     qreal ascent = fm.ascent();
-    qDebug() << "[NumberItem::updateLayout] width=" << width << ", height=" << height << ", ascent=" << ascent;
 
     m_boundingRect = QRectF(0, 0, width, height);
     m_baseline = ascent;
-    qDebug() << "[NumberItem::updateLayout] m_boundingRect=" << m_boundingRect << ", m_baseline=" << m_baseline;
-
-    qDebug() << "[NumberItem::updateLayout] 完成";
 }
 
 qreal NumberItem::baseline() const
@@ -72,6 +62,16 @@ void NumberItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     if (!numSpan) return;
 
     painter->save();
+    
+    // 绘制虚线边框
+    QPen borderPen(QColor(128, 128, 128)); // 灰色
+    borderPen.setStyle(Qt::DashLine);
+    borderPen.setWidth(1);
+    painter->setPen(borderPen);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(m_boundingRect.adjusted(0.5, 0.5, -0.5, -0.5)); // 调整位置避免模糊
+    
+    // 绘制文本
     painter->setFont(m_font);
     painter->setPen(Qt::black);
 

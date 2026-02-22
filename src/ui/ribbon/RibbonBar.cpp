@@ -39,6 +39,7 @@ public:
     // ========== 公式工具栏 ==========
     QAction *insertFormulaAction = nullptr;
     QAction *insertFractionAction = nullptr;
+    QAction *insertNumberAction = nullptr;
     QAction *insertRadicalAction = nullptr;
     QAction *insertSubscriptAction = nullptr;
     QAction *insertSuperscriptAction = nullptr;
@@ -220,6 +221,12 @@ RibbonBar::RibbonBar(StyleManager *styleManager, QWidget *parent)
     connect(d->insertFractionAction, &QAction::triggered,
             this, &RibbonBar::insertFractionRequested);
     addAction(d->insertFractionAction);
+    
+    d->insertNumberAction = new QAction(tr("123"), this);
+    d->insertNumberAction->setToolTip(tr("插入公式文本"));
+    connect(d->insertNumberAction, &QAction::triggered,
+            this, &RibbonBar::insertNumberRequested);
+    addAction(d->insertNumberAction);
     
     d->insertRadicalAction = new QAction(tr("√"), this);
     d->insertRadicalAction->setToolTip(tr("插入根号"));

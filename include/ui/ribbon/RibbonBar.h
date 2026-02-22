@@ -122,6 +122,7 @@ signals:
     void openStyleManagerRequested();
     void insertFormulaRequested();
     void insertFractionRequested();
+    void insertNumberRequested();
     void insertRadicalRequested();
     void insertSubscriptRequested();
     void insertSuperscriptRequested();

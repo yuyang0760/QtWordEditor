@@ -250,6 +250,13 @@ void MainWindow::setupUi()
         insertFractionAtCursor();
     });
     
+    connect(m_ribbonBar, &RibbonBar::insertNumberRequested,
+            this, [this]() {
+        qDebug() << "插入公式文本";
+        // 在光标处插入公式文本
+        insertNumberAtCursor();
+    });
+    
     connect(m_ribbonBar, &RibbonBar::insertRadicalRequested,
             this, [this]() {
         qDebug() << "插入根号";
@@ -1317,6 +1324,80 @@ void MainWindow::insertFractionAtCursor()
     updateWindowTitle();
 
     qDebug() << "[insertFractionAtCursor] 完成！";
+}
+
+void MainWindow::insertNumberAtCursor()
+{
+    if (!m_document || !m_cursor) {
+        qDebug() << "[insertNumberAtCursor] 文档或光标无效";
+        return;
+    }
+
+    // 步骤1：获取当前光标位置
+    CursorPosition pos = m_cursor->position();
+    qDebug() << "[insertNumberAtCursor] 当前光标位置：块" << pos.blockIndex << "，偏移" << pos.offset;
+
+    // 步骤2：获取当前光标所在的 ParagraphBlock
+    if (!m_document->sectionCount()) {
+        qDebug() << "[insertNumberAtCursor] 文档没有section";
+        return;
+    }
+
+    Section *section = m_document->section(0);
+    if (!section) {
+        qDebug() << "[insertNumberAtCursor] section无效";
+        return;
+    }
+
+    if (pos.blockIndex < 0 || pos.blockIndex >= section->blockCount()) {
+        qDebug() << "[insertNumberAtCursor] 块索引无效：" << pos.blockIndex;
+        return;
+    }
+
+    Block *block = section->block(pos.blockIndex);
+    if (!block) {
+        qDebug() << "[insertNumberAtCursor] 块无效";
+        return;
+    }
+
+    ParagraphBlock *para = qobject_cast<ParagraphBlock*>(block);
+    if (!para) {
+        qDebug() << "[insertNumberAtCursor] 块不是ParagraphBlock";
+        return;
+    }
+
+    // 步骤3：验证偏移位置是否有效
+    int paraLength = para->length();
+    if (pos.offset < 0 || pos.offset > paraLength) {
+        qDebug() << "[insertNumberAtCursor] 偏移位置无效：" << pos.offset << "，段落长度：" << paraLength;
+        return;
+    }
+
+    qDebug() << "[insertNumberAtCursor] 段落长度：" << paraLength;
+
+    // 步骤4：创建空的 NumberMathSpan
+    NumberMathSpan *numSpan = new NumberMathSpan("");
+
+    qDebug() << "[insertNumberAtCursor] 创建 NumberMathSpan 成功";
+
+    // 步骤5：将公式文本插入到光标位置
+    para->insertInlineSpanAtPosition(pos.offset, numSpan);
+
+    qDebug() << "[insertNumberAtCursor] 公式文本插入成功，位置：" << pos.offset;
+
+    // 步骤6：更新光标位置，移动到插入位置之后
+    // MathSpan 占用 1 个字符位置
+    CursorPosition newPos = pos;
+    newPos.offset = pos.offset + 1;
+    m_cursor->setPosition(newPos);
+
+    qDebug() << "[insertNumberAtCursor] 光标已移动到：块" << newPos.blockIndex << "，偏移" << newPos.offset;
+
+    // 步骤7：标记文档已修改
+    m_isModified = true;
+    updateWindowTitle();
+
+    qDebug() << "[insertNumberAtCursor] 完成！";
 }
 
 } // namespace QtWordEditor

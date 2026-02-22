@@ -213,6 +213,11 @@ private:
     void insertFractionAtCursor();
     
     /**
+     * @brief 在光标处插入公式文本
+     */
+    void insertNumberAtCursor();
+    
+    /**
      * @brief 应用字体属性
      * @param setPropertyFunc 设置属性的函数
      * @param propertyName 属性名称（用于调试）

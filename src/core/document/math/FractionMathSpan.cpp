@@ -4,6 +4,7 @@
  */
 
 #include "core/document/math/FractionMathSpan.h"
+#include "core/document/math/NumberMathSpan.h"
 
 namespace QtWordEditor {
 
@@ -12,6 +13,9 @@ FractionMathSpan::FractionMathSpan(QObject *parent)
     , m_numerator(nullptr)
     , m_denominator(nullptr)
 {
+    // 自动创建空的 NumberMathSpan 作为分子和分母，方便用户直接编辑
+    setNumerator(new NumberMathSpan(this));
+    setDenominator(new NumberMathSpan(this));
 }
 
 FractionMathSpan::FractionMathSpan(MathSpan *numerator, MathSpan *denominator, QObject *parent)

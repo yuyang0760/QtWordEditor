@@ -229,9 +229,22 @@ bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
     if (!m_document || !m_cursor)
         return false;
 
-  //  QDebug() << "EditEventHandler::handleInputMethod called";
-  //  QDebug() << "  commitString:" << event->commitString();
-  //  QDebug() << "  preeditString:" << event->preeditString();
+    // 先检查是否有 TextBlockItem 处于公式编辑模式
+    if (m_scene) {
+        QList<QGraphicsItem *> items = m_scene->items();
+        for (QGraphicsItem *item : items) {
+            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
+            if (textBlockItem && textBlockItem->isInMathEditMode()) {
+                qDebug() << "[EditEventHandler] TextBlockItem 处于公式编辑模式，不处理输入法事件";
+                // 如果有 TextBlockItem 处于公式编辑模式，不处理，让 TextBlockItem 处理
+                return false;
+            }
+        }
+    }
+
+    qDebug() << "EditEventHandler::handleInputMethod called";
+    qDebug() << "  commitString:" << event->commitString();
+    qDebug() << "  preeditString:" << event->preeditString();
     
     if (!event->commitString().isEmpty()) {
         CharacterStyle style;

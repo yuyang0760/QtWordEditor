@@ -36,6 +36,8 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_clickedMathItem(nullptr),
       m_clickedRegion(-1),
       m_clickedLocalPos(0, 0),
+      m_mouseEventTargetMathItem(nullptr),
+      m_numberItemWithSelection(nullptr),
       m_useUnifiedCursor(true)  // 默认使用统一光标，只显示一个光标
 {
     setFlag(QGraphicsItem::ItemIsSelectable, false);
@@ -164,6 +166,13 @@ void TextBlockItem::updateBlock()
 
 void TextBlockItem::clearMathItems()
 {
+    // ========== 关键 1：在删除 MathItem 之前，先清除 m_mathCursor 的指针！ ==========
+    if (m_mathCursor) {
+        m_mathCursor->clear();
+        // ========== 关键 2：将 MathCursor 的父项设置回 TextBlockItem，防止悬空指针 ==========
+        m_mathCursor->setParentItem(this);
+    }
+    
     qDeleteAll(m_mathItems);
     m_mathItems.clear();
 }
@@ -537,28 +546,17 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
         }
     }
     
-    // ========== 默认情况（不是 FractionItem 或没有点击信息） ==========
-    qDebug() << "[enterMathEditMode] 默认情况处理";
+    // ========== 关键：没有找到 NumberItem，不设置大光标，退出公式编辑模式 ==========
+    qDebug() << "[enterMathEditMode] 没有找到 NumberItem，不设置大光标，退出公式编辑模式";
+    m_inMathEditMode = false;
+    m_mathCursor->setVisible(false);
+    m_mathCursor->clear();
+    m_mathCursor->setParentItem(this);
+    m_rootMathItem = nullptr;
     
-    // 如果找到了根 MathItem，并且它是容器，设置 MathCursor
-    if (rootContainer) {
-        m_mathCursor->setHeight(rootContainer->boundingRect().height());
-        m_mathCursor->setPosition(rootContainer, 0);
-        // 将 MathCursor 设置为 rootContainer 的子项，这样坐标是相对的
-        m_mathCursor->setParentItem(rootContainer);
-    } else if (m_rootMathItem) {
-        // 如果不是容器，也设置高度
-        m_mathCursor->setHeight(m_rootMathItem->boundingRect().height());
-        m_mathCursor->setParentItem(m_rootMathItem);
-    }
-    
-    // 设置焦点
-    setFocus();
-    
-    if (!wasInEditMode) {
-        qDebug() << "进入公式编辑模式";
-    } else {
-        qDebug() << "更新公式编辑模式光标位置";
+    // 重新显示 DocumentScene 的普通光标
+    if (scene) {
+        scene->setCursorVisible(true);
     }
 }
 
@@ -573,6 +571,10 @@ void TextBlockItem::exitMathEditMode()
     // ========== 彻底隐藏 MathCursor（确保完全不可见）==========
     if (m_mathCursor) {
         m_mathCursor->setVisible(false);
+        // ========== 关键 1：清除 MathCursor 持有的所有 MathItem 指针 ==========
+        m_mathCursor->clear();
+        // ========== 关键 2：将 MathCursor 的父项设置回 TextBlockItem，防止悬空指针 ==========
+        m_mathCursor->setParentItem(this);
     }
     
     m_rootMathItem = nullptr;
@@ -596,6 +598,13 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     qDebug() << "[TextBlockItem::mousePressEvent] 开始, scenePos=" << event->scenePos() << "button=" << event->button();
     
+    // ========== 步骤 1：清除之前 NumberItem 的选择 ==========
+    if (m_numberItemWithSelection) {
+        qDebug() << "  清除之前 NumberItem 的选择";
+        m_numberItemWithSelection->clearSelection();
+        m_numberItemWithSelection = nullptr;
+    }
+    
     // ========== 只在左键时才处理公式编辑逻辑，右键不改变光标位置 ==========
     if (event->button() != Qt::LeftButton) {
         // 右键点击：完全不处理任何光标逻辑，直接返回
@@ -609,33 +618,34 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     
     // 检查是否点击了 MathItem（包括子项）
     MathItem *clickedMathItem = nullptr;
+    NumberItem *clickedNumberItem = nullptr;
+    QPointF numberItemLocalPos(0, 0);
     
-    // 遍历所有子项，查找被点击的 MathItem
-    for (QGraphicsItem *child : childItems()) {
-        QPointF localPos = child->mapFromScene(event->scenePos());
-        if (child->contains(localPos)) {
-            qDebug() << "  找到子项: " << child << ", localPos=" << localPos;
-            
-            // 检查是否是 MathItem
-            MathItem *mathItem = dynamic_cast<MathItem*>(child);
+    // 遍历所有子项，查找被点击的 MathItem，优先查找 NumberItem（最深层）
+    QList<QGraphicsItem *> clickedItems = this->scene()->items(event->scenePos());
+    
+    // 从点击的项中，从后往前（从顶层到底层）查找 NumberItem
+    for (auto it = clickedItems.rbegin(); it != clickedItems.rend(); ++it) {
+        QGraphicsItem *item = *it;
+        NumberItem *numItem = dynamic_cast<NumberItem*>(item);
+        if (numItem) {
+            clickedNumberItem = numItem;
+            clickedMathItem = numItem;
+            // 计算相对于 NumberItem 的坐标
+            numberItemLocalPos = numItem->mapFromScene(event->scenePos());
+            qDebug() << "  找到 NumberItem: " << numItem << ", localPos=" << numberItemLocalPos;
+            break;
+        }
+    }
+    
+    // 如果没有找到 NumberItem，再查找其他 MathItem
+    if (!clickedMathItem) {
+        for (auto it = clickedItems.rbegin(); it != clickedItems.rend(); ++it) {
+            QGraphicsItem *item = *it;
+            MathItem *mathItem = dynamic_cast<MathItem*>(item);
             if (mathItem) {
                 clickedMathItem = mathItem;
                 qDebug() << "  找到 MathItem: " << clickedMathItem;
-                break;
-            }
-            
-            // 如果不是 MathItem，检查它的父项是否是 MathItem
-            QGraphicsItem *parent = child->parentItem();
-            while (parent) {
-                MathItem *parentMathItem = dynamic_cast<MathItem*>(parent);
-                if (parentMathItem) {
-                    clickedMathItem = parentMathItem;
-                    qDebug() << "  找到父 MathItem: " << clickedMathItem;
-                    break;
-                }
-                parent = parent->parentItem();
-            }
-            if (clickedMathItem) {
                 break;
             }
         }
@@ -645,7 +655,14 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         qDebug() << "  准备进入公式编辑模式, span=" << clickedMathItem->mathSpan();
         
         // 转换到 clickedMathItem 的局部坐标
-        QPointF mathLocalPos = clickedMathItem->mapFromScene(event->scenePos());
+        QPointF mathLocalPos;
+        if (clickedNumberItem) {
+            // 如果点击的是 NumberItem，直接使用预先计算的坐标
+            mathLocalPos = numberItemLocalPos;
+        } else {
+            // 否则使用 clickedMathItem 的坐标
+            mathLocalPos = clickedMathItem->mapFromScene(event->scenePos());
+        }
         qDebug() << "  mathLocalPos=" << mathLocalPos;
         
         // 检查是否是 FractionItem，判断是分子还是分母
@@ -660,12 +677,28 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // 进入公式编辑模式
         enterMathEditMode(clickedMathItem->mathSpan());
         
-        // 调用 MathItem 的鼠标事件
-        clickedMathItem->mousePressEvent(event);
+        // ========== 设置鼠标事件目标 ==========
+        m_mouseEventTargetMathItem = clickedMathItem;
+        
+        // ========== 转换坐标：从 TextBlockItem 坐标转换为 MathItem 的局部坐标 ==========
+        QPointF localPosInMathItem = clickedMathItem->mapFromItem(this, event->pos());
+        
+        // ========== 如果是 NumberItem，调用选择方法 ==========
+        NumberItem *numberItem = dynamic_cast<NumberItem*>(clickedMathItem);
+        if (numberItem) {
+            qDebug() << "  是 NumberItem，调用 startSelectionAt";
+            numberItem->startSelectionAt(localPosInMathItem.x());
+            // ========== 设置当前有选择的 NumberItem ==========
+            m_numberItemWithSelection = numberItem;
+        }
+        
         return;
     }
     
     qDebug() << "  没有点击 MathItem";
+    
+    // ========== 清除鼠标事件目标 ==========
+    m_mouseEventTargetMathItem = nullptr;
     
     // 如果不是点击 MathItem，退出公式编辑模式
     if (m_inMathEditMode) {
@@ -673,6 +706,56 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     
     QGraphicsItem::mousePressEvent(event);
+}
+
+void TextBlockItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << "[TextBlockItem::mouseMoveEvent]";
+    
+    // ========== 如果有鼠标事件目标 ==========
+    if (m_mouseEventTargetMathItem) {
+        qDebug() << "  有鼠标事件目标";
+        
+        // ========== 转换坐标：从 TextBlockItem 坐标转换为 MathItem 的局部坐标 ==========
+        QPointF localPosInMathItem = m_mouseEventTargetMathItem->mapFromItem(this, event->pos());
+        
+        // ========== 如果是 NumberItem，调用更新选择方法 ==========
+        NumberItem *numberItem = dynamic_cast<NumberItem*>(m_mouseEventTargetMathItem);
+        if (numberItem) {
+            qDebug() << "  是 NumberItem，调用 updateSelectionAt";
+            numberItem->updateSelectionAt(localPosInMathItem.x());
+        }
+        
+        return;
+    }
+    
+    QGraphicsItem::mouseMoveEvent(event);
+}
+
+void TextBlockItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << "[TextBlockItem::mouseReleaseEvent]";
+    
+    // ========== 如果有鼠标事件目标 ==========
+    if (m_mouseEventTargetMathItem) {
+        qDebug() << "  有鼠标事件目标";
+        
+        // ========== 转换坐标：从 TextBlockItem 坐标转换为 MathItem 的局部坐标 ==========
+        QPointF localPosInMathItem = m_mouseEventTargetMathItem->mapFromItem(this, event->pos());
+        
+        // ========== 如果是 NumberItem，调用结束选择方法 ==========
+        NumberItem *numberItem = dynamic_cast<NumberItem*>(m_mouseEventTargetMathItem);
+        if (numberItem) {
+            qDebug() << "  是 NumberItem，调用 endSelectionAt";
+            numberItem->endSelectionAt(localPosInMathItem.x());
+        }
+        
+        // ========== 清除鼠标事件目标 ==========
+        m_mouseEventTargetMathItem = nullptr;
+        return;
+    }
+    
+    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 void TextBlockItem::keyPressEvent(QKeyEvent *event)

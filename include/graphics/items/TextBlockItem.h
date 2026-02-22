@@ -19,6 +19,7 @@ class MathSpan;
 class MathCursor;
 class UnifiedCursorVisual;
 class RowContainerItem;
+class NumberItem;
 
 /**
  * @brief 文本块图形项类（直接绘制版）
@@ -243,6 +244,8 @@ public:
     // ========== 事件处理 ==========
     
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void inputMethodEvent(QInputMethodEvent *event) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
@@ -266,6 +269,12 @@ private:
     MathItem *m_clickedMathItem;            ///< 被点击的 MathItem
     int m_clickedRegion;                     ///< 被点击的区域（0=分子，1=分母，-1=其他）
     QPointF m_clickedLocalPos;               ///< 被点击的局部坐标
+    
+    // ========== 鼠标事件跟踪 ==========
+    MathItem *m_mouseEventTargetMathItem;   ///< 正在接收鼠标事件的 MathItem
+    
+    // ========== 选择跟踪 ==========
+    NumberItem *m_numberItemWithSelection;   ///< 当前有选择的 NumberItem
     
     // ========== 统一光标（新） ==========
     bool m_useUnifiedCursor;                 ///< 是否使用统一光标（默认false）

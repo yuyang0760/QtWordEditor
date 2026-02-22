@@ -198,6 +198,17 @@ void MathCursor::setHeight(qreal height)
     update();
 }
 
+void MathCursor::clear()
+{
+    // ========== 清除所有 MathItem 指针，防止悬空指针 ==========
+    m_currentContainer = nullptr;
+    m_currentNumberItem = nullptr;
+    m_cursorMode = ContainerMode;
+    m_position = 0;
+    
+    update();
+}
+
 void MathCursor::updateVisualPosition()
 {
     if (m_cursorMode == NumberMode && m_currentNumberItem) {

@@ -105,8 +105,67 @@ public:
      */
     int hitTestX(qreal x) const;
 
+    // ========== 文本选择 ==========
+    
+    /**
+     * @brief 获取选择起始位置
+     * @return 选择起始位置
+     */
+    int selectionStart() const;
+    
+    /**
+     * @brief 获取选择结束位置
+     * @return 选择结束位置
+     */
+    int selectionEnd() const;
+    
+    /**
+     * @brief 设置选择范围
+     * @param start 起始位置
+     * @param end 结束位置
+     */
+    void setSelection(int start, int end);
+    
+    /**
+     * @brief 清除选择
+     */
+    void clearSelection();
+    
+    /**
+     * @brief 是否有选择
+     * @return 是否有选择
+     */
+    bool hasSelection() const;
+    
+    // ========== 选择操作的公共方法（供 TextBlockItem 调用） ==========
+    
+    /**
+     * @brief 开始选择
+     * @param localX NumberItem 局部坐标的 x 值
+     */
+    void startSelectionAt(qreal localX);
+    
+    /**
+     * @brief 更新选择
+     * @param localX NumberItem 局部坐标的 x 值
+     */
+    void updateSelectionAt(qreal localX);
+    
+    /**
+     * @brief 结束选择
+     * @param localX NumberItem 局部坐标的 x 值
+     */
+    void endSelectionAt(qreal localX);
+
+protected:
+
 private:
     QFont m_font;  ///< 用于渲染文本的字体
+    
+    // ========== 选择相关成员变量 ==========
+    int m_selectionStart;  ///< 选择起始位置
+    int m_selectionEnd;    ///< 选择结束位置
+    bool m_isSelecting;    ///< 是否正在选择
 };
 
 } // namespace QtWordEditor

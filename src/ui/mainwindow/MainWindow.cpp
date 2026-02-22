@@ -15,6 +15,8 @@
 // 移除 Logger 头文件，使用 Qt 内置日志函数
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
+#include "graphics/items/TextBlockItem.h"
+#include "graphics/formula/MathCursor.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/handlers/EditEventHandler.h"
@@ -815,6 +817,30 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
     QString paragraphLength = "N/A";
     QString spanCount = "N/A";
     
+    // ========== 收集公式编辑信息 ==========
+    QString mathEditInfo = "N/A";
+    bool inMathMode = false;
+    
+    if (m_scene) {
+        MathEditInfo mathInfo = m_scene->getMathEditInfo();
+        if (mathInfo.inMathEditMode) {
+            inMathMode = true;
+            
+            QString modeStr;
+            if (mathInfo.cursorMode == 0) {
+                modeStr = "容器模式";
+            } else if (mathInfo.cursorMode == 1) {
+                modeStr = "数字模式";
+            } else {
+                modeStr = "未知模式";
+            }
+            
+            mathEditInfo = QString("模式:%1, 位置:%2")
+                .arg(modeStr)
+                .arg(mathInfo.cursorPosition);
+        }
+    }
+    
     if (m_document && m_document->sectionCount() > 0) {
         Section *section = m_document->section(0);
         if (section && m_currentCursorPos.blockIndex >= 0 && m_currentCursorPos.blockIndex < section->blockCount()) {
@@ -864,6 +890,11 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
         .arg(m_currentCursorPos.offset)
         .arg(m_currentZoom, 0, 'f', 0)
         .arg(blockType);
+    
+    // 如果在公式模式，添加公式信息
+    if (inMathMode) {
+        line1 += QString("  |  [公式编辑] %1").arg(mathEditInfo);
+    }
     
     if (page) {
         qreal pageSpacing = 30.0;

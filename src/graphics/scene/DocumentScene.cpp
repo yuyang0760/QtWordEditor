@@ -12,6 +12,7 @@
 #include "graphics/items/UnifiedCursorVisual.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
+#include "graphics/formula/MathCursor.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include <QGraphicsItem>
@@ -720,6 +721,34 @@ void DocumentScene::setUnifiedCursorVisible(bool visible)
     if (m_unifiedCursorVisual) {
         m_unifiedCursorVisual->setVisible(visible);
     }
+}
+
+// ========== 获取公式编辑信息 ==========
+
+MathEditInfo DocumentScene::getMathEditInfo() const
+{
+    MathEditInfo info;
+    
+    // 遍历所有的块图形项，查找处于公式编辑模式的 TextBlockItem
+    for (auto it = m_blockItems.begin(); it != m_blockItems.end(); ++it) {
+        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+        if (textBlockItem && textBlockItem->isInMathEditMode()) {
+            info.inMathEditMode = true;
+            info.textBlockItem = textBlockItem;
+            info.mathCursor = textBlockItem->mathCursor();
+            
+            // 如果有 MathCursor，获取其模式和位置
+            if (info.mathCursor) {
+                info.cursorMode = static_cast<int>(info.mathCursor->cursorMode());
+                info.cursorPosition = info.mathCursor->position();
+            }
+            
+            // 找到一个就可以了，应该只有一个处于编辑模式
+            break;
+        }
+    }
+    
+    return info;
 }
 
 } // namespace QtWordEditor

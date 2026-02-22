@@ -138,6 +138,11 @@ public:
      */
     void updateVisualPosition();
     
+    /**
+     * @brief 清除所有 MathItem 指针（防止悬空指针）
+     */
+    void clear();
+    
     // ========== Qt 标准接口 ==========
     
     int type() const override { return Type; }

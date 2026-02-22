@@ -19,7 +19,6 @@ class ParagraphBlock;
  * 1. 富文本格式显示
  * 2. 文本宽度和字体设置
  * 3. 几何形状的动态更新
- * 4. 与底层数据块的同步
  */
 class TextBlockItem : public BaseBlockItem
 {

@@ -175,6 +175,7 @@ private:
     TextBlockLayoutEngine *m_layoutEngine;  ///< 布局引擎
     QList<MathItem*> m_mathItems;           ///< MathItem 子项列表
     QRectF m_boundingRect;                   ///< 边界矩形
+    bool m_isUpdatingLayout;                 ///< 防止无限递归更新布局的标志
 };
 
 } // namespace QtWordEditor

@@ -33,22 +33,6 @@ public:
 
 private:
     /**
-     * @brief 创建NumberItem
-     * @param span NumberMathSpan数据对象
-     * @param parent 父MathItem
-     * @return NumberItem指针
-     */
-    static MathItem *createNumberItem(MathSpan *span, MathItem *parent);
-
-    /**
-     * @brief 创建RowContainerItem
-     * @param span RowContainerMathSpan数据对象
-     * @param parent 父MathItem
-     * @return RowContainerItem指针
-     */
-    static MathItem *createRowContainerItem(MathSpan *span, MathItem *parent);
-
-    /**
      * @brief 创建FractionItem
      * @param span FractionMathSpan数据对象
      * @param parent 父MathItem

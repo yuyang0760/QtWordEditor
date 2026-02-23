@@ -5,13 +5,9 @@
 
 #include "graphics/factory/MathItemFactory.h"
 #include "core/document/MathSpan.h"
-#include "core/document/math/NumberMathSpan.h"
-#include "core/document/math/RowContainerMathSpan.h"
 #include "core/document/math/FractionMathSpan.h"
 #include "core/document/math/GenericMathSpan.h"
 #include "graphics/formula/MathItem.h"
-#include "graphics/formula/NumberItem.h"
-#include "graphics/formula/RowContainerItem.h"
 #include "graphics/formula/FractionItem.h"
 #include "graphics/formula/GenericMathItem.h"
 #include <QDebug>
@@ -29,12 +25,6 @@ MathItem *MathItemFactory::createMathItem(MathSpan *span, MathItem *parent)
     qDebug() << "  [MathItemFactory::createMathItem] mathType=" << (int)span->mathType();
     
     switch (span->mathType()) {
-    case MathSpan::Number:
-        qDebug() << "  [MathItemFactory::createMathItem] 准备调用 createNumberItem...";
-        return createNumberItem(span, parent);
-    case MathSpan::RowContainer:
-        qDebug() << "  [MathItemFactory::createMathItem] 准备调用 createRowContainerItem...";
-        return createRowContainerItem(span, parent);
     case MathSpan::Fraction:
         qDebug() << "  [MathItemFactory::createMathItem] 准备调用 createFractionItem...";
         return createFractionItem(span, parent);
@@ -45,36 +35,6 @@ MathItem *MathItemFactory::createMathItem(MathSpan *span, MathItem *parent)
         qWarning() << "MathItemFactory::createMathItem: unsupported math type:" << span->mathType();
         return nullptr;
     }
-}
-
-MathItem *MathItemFactory::createNumberItem(MathSpan *span, MathItem *parent)
-{
-    qDebug() << "    [MathItemFactory::createNumberItem] 开始...";
-    NumberMathSpan *numSpan = static_cast<NumberMathSpan*>(span);
-    qDebug() << "    [MathItemFactory::createNumberItem] numSpan=" << numSpan;
-    NumberItem *item = new NumberItem(numSpan, parent);
-    qDebug() << "    [MathItemFactory::createNumberItem] NumberItem 创建成功, item=" << item;
-    return item;
-}
-
-MathItem *MathItemFactory::createRowContainerItem(MathSpan *span, MathItem *parent)
-{
-    qDebug() << "    [MathItemFactory::createRowContainerItem] 开始...";
-    RowContainerMathSpan *rowSpan = static_cast<RowContainerMathSpan*>(span);
-    qDebug() << "    [MathItemFactory::createRowContainerItem] rowSpan=" << rowSpan;
-    RowContainerItem *item = new RowContainerItem(rowSpan, parent);
-    qDebug() << "    [MathItemFactory::createRowContainerItem] RowContainerItem 创建成功";
-    
-    // 为每个子MathSpan创建对应的MathItem
-    for (int i = 0; i < rowSpan->childCount(); ++i) {
-        MathSpan *childSpan = rowSpan->childAt(i);
-        MathItem *childItem = createMathItem(childSpan, item);
-        if (childItem) {
-            item->appendChild(childItem);
-        }
-    }
-    
-    return item;
 }
 
 MathItem *MathItemFactory::createFractionItem(MathSpan *span, MathItem *parent)

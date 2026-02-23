@@ -1,8 +1,8 @@
 /**
  * @file UnifiedCursor.cpp
- * @brief 统一光标类实现
+ * @brief 统一光标类实现（无模式版本）
  * 
- * 内部使用新的坐标路径系统，外部保持旧 API 兼容
+ * 完全采用坐标路径系统，不再区分模式
  */
 
 #include "editcontrol/cursor/UnifiedCursor.h"
@@ -11,9 +11,6 @@
 #include "core/document/Block.h"
 #include "core/commands/InsertTextCommand.h"
 #include "core/commands/RemoveTextCommand.h"
-#include "graphics/formula/RowContainerItem.h"
-#include "graphics/formula/NumberItem.h"
-#include "graphics/formula/FractionItem.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -34,39 +31,6 @@ UnifiedCursor::UnifiedCursor(Document *document, QObject *parent)
  */
 UnifiedCursor::~UnifiedCursor()
 {
-}
-
-// ========== 模式切换 ==========
-
-/**
- * @brief 设置光标模式
- * @param mode 新的光标模式
- */
-void UnifiedCursor::setMode(CursorMode mode)
-{
-    // 转换当前位置为旧格式以获取当前模式
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
-    if (oldPos.mode != mode) {
-        CursorMode oldMode = oldPos.mode;
-        
-        // 根据新模式调整新位置
-        if (mode == CursorMode::DocumentMode) {
-            m_newPosition.mathPath = std::nullopt;
-        }
-        
-        emit modeChanged(mode, oldMode);
-        emit positionChanged(position());
-    }
-}
-
-/**
- * @brief 获取当前光标模式
- * @return 当前光标模式
- */
-CursorMode UnifiedCursor::mode() const
-{
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
-    return oldPos.mode;
 }
 
 // ========== 位置管理 ==========
@@ -93,10 +57,10 @@ void UnifiedCursor::setPosition(const UnifiedCursorPosition &pos)
     }
 }
 
-// ========== 文档模式方法 ==========
+// ========== 文档位置方法 ==========
 
 /**
- * @brief 设置文档模式光标位置
+ * @brief 设置文档光标位置
  * @param blockIndex 块索引
  * @param offset 块内偏移量
  */
@@ -322,46 +286,18 @@ void UnifiedCursor::deleteNextChar()
     }
 }
 
-// ========== 公式模式方法 ==========
+// ========== 公式位置方法 ==========
 
 /**
- * @brief 设置公式容器模式光标位置
- * @param container 光标所在的行容器
- * @param pos 光标在容器中的位置索引
+ * @brief 设置公式光标位置
+ * @param mathPath 公式坐标路径
  */
-void UnifiedCursor::setMathContainerPosition(RowContainerItem *container, int pos)
+void UnifiedCursor::setMathPosition(const CoordinatePath &mathPath)
 {
-    // 创建临时的旧位置，然后转换为新位置
-    UnifiedCursorPosition oldPos;
-    oldPos.blockIndex = m_newPosition.blockIndex;
-    oldPos.offset = m_newPosition.offset;
-    oldPos.mode = CursorMode::MathContainerMode;
-    oldPos.mathContainer = container;
-    oldPos.mathChildIndex = pos;
-    oldPos.inMathSpan = true;
-    
-    m_newPosition = CursorPositionAdapter::toNew(oldPos);
-    emit positionChanged(this->position());
-}
-
-/**
- * @brief 设置公式数字模式光标位置
- * @param numberItem 光标所在的数字项
- * @param pos 光标在数字中的字符偏移
- */
-void UnifiedCursor::setMathNumberPosition(NumberItem *numberItem, int pos)
-{
-    // 创建临时的旧位置，然后转换为新位置
-    UnifiedCursorPosition oldPos;
-    oldPos.blockIndex = m_newPosition.blockIndex;
-    oldPos.offset = m_newPosition.offset;
-    oldPos.mode = CursorMode::MathNumberMode;
-    oldPos.mathNumberItem = numberItem;
-    oldPos.mathChildOffset = pos;
-    oldPos.inMathSpan = true;
-    
-    m_newPosition = CursorPositionAdapter::toNew(oldPos);
-    emit positionChanged(this->position());
+    if (mathPath.isValid() && !mathPath.isEmpty()) {
+        m_newPosition.mathPath = mathPath;
+        emit positionChanged(position());
+    }
 }
 
 /**
@@ -369,20 +305,20 @@ void UnifiedCursor::setMathNumberPosition(NumberItem *numberItem, int pos)
  */
 void UnifiedCursor::mathMoveLeft()
 {
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
+    if (!m_newPosition.isMathMode() || !m_newPosition.mathPath->isValid() || m_newPosition.mathPath->isEmpty()) {
+        return;
+    }
     
-    if (oldPos.mode == CursorMode::MathNumberMode && oldPos.mathNumberItem) {
-        if (oldPos.mathChildOffset > 0) {
-            oldPos.mathChildOffset--;
-            m_newPosition = CursorPositionAdapter::toNew(oldPos);
-            emit positionChanged(position());
-        }
-    } else if (oldPos.mode == CursorMode::MathContainerMode && oldPos.mathContainer) {
-        if (oldPos.mathChildIndex > 0) {
-            oldPos.mathChildIndex--;
-            m_newPosition = CursorPositionAdapter::toNew(oldPos);
-            emit positionChanged(position());
-        }
+    // 在公式中向左移动（简化实现，后续根据具体需求完善）
+    CoordinatePath &path = *m_newPosition.mathPath;
+    PathSegment &lastSegment = path.top();
+    
+    if (lastSegment.childOffset > 0) {
+        lastSegment.childOffset--;
+        emit positionChanged(position());
+    } else if (lastSegment.childIndex > 0) {
+        lastSegment.childIndex--;
+        emit positionChanged(position());
     }
 }
 
@@ -391,23 +327,16 @@ void UnifiedCursor::mathMoveLeft()
  */
 void UnifiedCursor::mathMoveRight()
 {
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
-    
-    if (oldPos.mode == CursorMode::MathNumberMode && oldPos.mathNumberItem) {
-        int maxPos = oldPos.mathNumberItem->textLength();
-        if (oldPos.mathChildOffset < maxPos) {
-            oldPos.mathChildOffset++;
-            m_newPosition = CursorPositionAdapter::toNew(oldPos);
-            emit positionChanged(position());
-        }
-    } else if (oldPos.mode == CursorMode::MathContainerMode && oldPos.mathContainer) {
-        int maxPos = oldPos.mathContainer->childCount();
-        if (oldPos.mathChildIndex < maxPos) {
-            oldPos.mathChildIndex++;
-            m_newPosition = CursorPositionAdapter::toNew(oldPos);
-            emit positionChanged(position());
-        }
+    if (!m_newPosition.isMathMode() || !m_newPosition.mathPath->isValid() || m_newPosition.mathPath->isEmpty()) {
+        return;
     }
+    
+    // 在公式中向右移动（简化实现，后续根据具体需求完善）
+    CoordinatePath &path = *m_newPosition.mathPath;
+    PathSegment &lastSegment = path.top();
+    
+    lastSegment.childOffset++;
+    emit positionChanged(position());
 }
 
 /**
@@ -415,31 +344,45 @@ void UnifiedCursor::mathMoveRight()
  */
 void UnifiedCursor::mathMoveUp()
 {
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
+    if (!m_newPosition.isMathMode() || !m_newPosition.mathPath->isValid() || m_newPosition.mathPath->isEmpty()) {
+        return;
+    }
     
-    // 检查是否在 NumberItem 模式下
-    if (oldPos.mode != CursorMode::MathNumberMode || !oldPos.mathNumberItem) {
+    CoordinatePath &path = *m_newPosition.mathPath;
+    PathSegment &lastSegment = path.top();
+    MathItem *currentItem = lastSegment.container;
+    
+    if (!currentItem) {
         return;
     }
     
     // 查找父级是否是 FractionItem
-    QGraphicsItem *parent = oldPos.mathNumberItem->parentItem();
+    MathItem *parent = currentItem->parentMathItem();
     while (parent) {
-        FractionItem *fracItem = dynamic_cast<FractionItem*>(parent);
-        if (fracItem) {
+        // 检查是否是 FractionItem（通过 type() 判断）
+        if (parent->type() == QGraphicsItem::UserType + 2003) {
+            // 获取分子和分母
+            MathItem *numerator = nullptr;
+            MathItem *denominator = nullptr;
+            
+            // 通过 childAt() 获取分子（0）和分母（1）
+            if (parent->childCount() >= 2) {
+                numerator = parent->childAt(0);
+                denominator = parent->childAt(1);
+            }
+            
             // 检查当前是在分母还是分子
-            if (oldPos.mathNumberItem == fracItem->denominatorItem()) {
+            if (currentItem == denominator && numerator) {
                 // 当前在分母，移动到分子
-                NumberItem *numItem = dynamic_cast<NumberItem*>(fracItem->numeratorItem());
-                if (numItem) {
-                    // 计算相同的字符位置（或边界）
-                    int newPos = qMin(oldPos.mathChildOffset, numItem->textLength());
-                    setMathNumberPosition(numItem, newPos);
-                }
+                // 先弹出当前项
+                path.pop();
+                // 添加分子项
+                path.push(PathSegment(numerator, 0, lastSegment.childOffset));
+                emit positionChanged(position());
             }
             return;
         }
-        parent = parent->parentItem();
+        parent = parent->parentMathItem();
     }
 }
 
@@ -448,40 +391,60 @@ void UnifiedCursor::mathMoveUp()
  */
 void UnifiedCursor::mathMoveDown()
 {
-    UnifiedCursorPosition oldPos = CursorPositionAdapter::toOld(m_newPosition);
+    if (!m_newPosition.isMathMode() || !m_newPosition.mathPath->isValid() || m_newPosition.mathPath->isEmpty()) {
+        return;
+    }
     
-    // 检查是否在 NumberItem 模式下
-    if (oldPos.mode != CursorMode::MathNumberMode || !oldPos.mathNumberItem) {
+    CoordinatePath &path = *m_newPosition.mathPath;
+    PathSegment &lastSegment = path.top();
+    MathItem *currentItem = lastSegment.container;
+    
+    if (!currentItem) {
         return;
     }
     
     // 查找父级是否是 FractionItem
-    QGraphicsItem *parent = oldPos.mathNumberItem->parentItem();
+    MathItem *parent = currentItem->parentMathItem();
     while (parent) {
-        FractionItem *fracItem = dynamic_cast<FractionItem*>(parent);
-        if (fracItem) {
+        // 检查是否是 FractionItem（通过 type() 判断）
+        if (parent->type() == QGraphicsItem::UserType + 2003) {
+            // 获取分子和分母
+            MathItem *numerator = nullptr;
+            MathItem *denominator = nullptr;
+            
+            // 通过 childAt() 获取分子（0）和分母（1）
+            if (parent->childCount() >= 2) {
+                numerator = parent->childAt(0);
+                denominator = parent->childAt(1);
+            }
+            
             // 检查当前是在分子还是分母
-            if (oldPos.mathNumberItem == fracItem->numeratorItem()) {
+            if (currentItem == numerator && denominator) {
                 // 当前在分子，移动到分母
-                NumberItem *denItem = dynamic_cast<NumberItem*>(fracItem->denominatorItem());
-                if (denItem) {
-                    // 计算相同的字符位置（或边界）
-                    int newPos = qMin(oldPos.mathChildOffset, denItem->textLength());
-                    setMathNumberPosition(denItem, newPos);
-                }
+                // 先弹出当前项
+                path.pop();
+                // 添加分母项
+                path.push(PathSegment(denominator, 0, lastSegment.childOffset));
+                emit positionChanged(position());
             }
             return;
         }
-        parent = parent->parentItem();
+        parent = parent->parentMathItem();
     }
 }
 
 /**
- * @brief 移动到父容器（暂时不实现）
+ * @brief 移动到公式父容器
  */
 void UnifiedCursor::mathMoveToParent()
 {
-    // 移动到父容器（暂时不实现）
+    if (!m_newPosition.isMathMode() || !m_newPosition.mathPath->isValid() || m_newPosition.mathPath->depth() <= 1) {
+        return;
+    }
+    
+    // 弹出最后一段路径，移动到父容器
+    m_newPosition.mathPath->pop();
+    emit positionChanged(position());
 }
 
 // ========== 退出公式模式 ==========

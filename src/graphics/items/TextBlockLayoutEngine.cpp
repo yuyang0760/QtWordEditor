@@ -52,25 +52,8 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
         return;
     }
     
-    // ========== 调试信息：打印传入的 spans ==========
-    qDebug() << "TextBlockLayoutEngine::layout() - 开始布局，spans 数量:" << spans.size();
-    for (int i = 0; i < spans.size(); ++i) {
-        if (spans[i]->type() == InlineSpan::Text) {
-            const TextSpan *textSpan = static_cast<const TextSpan*>(spans[i]);
-            qDebug() << "  span" << i << ":" 
-                     << "type=Text"
-                     << "text=[" << textSpan->text() << "]" 
-                     << "bold=" << textSpan->style().bold() 
-                     << "length=" << textSpan->text().length();
-        } else if (spans[i]->type() == InlineSpan::Math) {
-            const MathSpan *mathSpan = static_cast<const MathSpan*>(spans[i]);
-            qDebug() << "  span" << i << ":" 
-                     << "type=Math"
-                     << "mathType=" << (int)mathSpan->mathType()
-                     << "hasSize=" << mathSizeMap.contains(spans[i]);
-        }
-    }
-    qDebug() << "  availableWidth:" << m_availableWidth;
+    // ========== 调试信息已禁用，避免输出过多日志 ==========
+    // qDebug() << "TextBlockLayoutEngine::layout() - 开始布局，spans 数量:" << spans.size();
     // =========================================
     
     // 重新设计的布局逻辑：
@@ -144,8 +127,8 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
                     item.ascent = size.height() * 2 / 3;
                 }
                 item.descent = item.height - item.ascent;
-                qDebug() << "  MathSpan 使用真实尺寸：size=" << size 
-                         << "ascent=" << item.ascent << "descent=" << item.descent;
+                // qDebug() << "  MathSpan 使用真实尺寸：size=" << size 
+                //          << "ascent=" << item.ascent << "descent=" << item.descent;
             } else {
                 // 如果没有预定义尺寸，使用占位符
                 item.width = 50;
@@ -184,12 +167,12 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
             
             if (currentLineX > 0 && currentItem.width > remainingWidth) {
                 // 当前行放不下，换行
-                qDebug() << "[MathSpan换行] - 当前行放不下，准备换行，currentLineY=" << currentLineY;
+                // qDebug() << "[MathSpan换行] - 当前行放不下，准备换行，currentLineY=" << currentLineY;
                 qreal lineHeightToAdd = finishLineFromItems(finalItems, currentLineY);
                 
                 currentLineX = 0;
                 if (lineHeightToAdd > 0) {
-                    qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
+                    // qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
                     currentLineY += lineHeightToAdd;
                 }
                 finalItems.clear();
@@ -209,12 +192,12 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
             
             if (remainingWidth <= 0) {
                 // 当前行已满，换行
-                qDebug() << "[TextSpan换行3] - 准备换行，currentLineY=" << currentLineY;
+                // qDebug() << "[TextSpan换行3] - 准备换行，currentLineY=" << currentLineY;
                 qreal lineHeightToAdd = finishLineFromItems(finalItems, currentLineY);
                 
                 currentLineX = 0;
                 if (lineHeightToAdd > 0) {
-                    qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
+                    // qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
                     currentLineY += lineHeightToAdd;
                 }
                 finalItems.clear();
@@ -315,12 +298,12 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
                     currentItem.globalStartOffset += charsToFit;
                     
                     // 换行
-                    qDebug() << "[TextSpan换行1] - 准备换行，currentLineY=" << currentLineY;
+                    // qDebug() << "[TextSpan换行1] - 准备换行，currentLineY=" << currentLineY;
                     qreal lineHeightToAdd = finishLineFromItems(finalItems, currentLineY);
                     
                     currentLineX = 0;
                     if (lineHeightToAdd > 0) {
-                        qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
+                        // qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
                         currentLineY += lineHeightToAdd;
                     }
                     finalItems.clear();
@@ -330,12 +313,12 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
                 }
             } else {
                 // 放不下了，换行
-                qDebug() << "[TextSpan换行2] - 准备换行，currentLineY=" << currentLineY;
+                // qDebug() << "[TextSpan换行2] - 准备换行，currentLineY=" << currentLineY;
                 qreal lineHeightToAdd = finishLineFromItems(finalItems, currentLineY);
                 
                 currentLineX = 0;
                 if (lineHeightToAdd > 0) {
-                    qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
+                    // qDebug() << "  增加 currentLineY：" << currentLineY << " + " << lineHeightToAdd << " = " << (currentLineY + lineHeightToAdd);
                     currentLineY += lineHeightToAdd;
                 }
                 finalItems.clear();
@@ -348,21 +331,8 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
         finishLineFromItems(finalItems, currentLineY);
     }
     
-    // ========== 调试信息：打印最终的行和 items ==========
-    qDebug() << "TextBlockLayoutEngine::layout() - 最终行数量:" << m_lines.size();
-    for (int i = 0; i < m_lines.size(); ++i) {
-        qDebug() << "  line" << i << ":" 
-                 << "rect=" << m_lines[i].rect 
-                 << "itemIndices=" << m_lines[i].itemIndices;
-    }
-    qDebug() << "TextBlockLayoutEngine::layout() - 最终 items 数量:" << m_layoutItems.size();
-    for (int i = 0; i < m_layoutItems.size(); ++i) {
-        qDebug() << "  m_layoutItems[" << i << "]:" 
-                 << "text=[" << m_layoutItems[i].text << "]" 
-                 << "spanIndex=" << m_layoutItems[i].spanIndex 
-                 << "position=" << m_layoutItems[i].position 
-                 << "width=" << m_layoutItems[i].width;
-    }
+    // ========== 调试信息已禁用，避免输出过多日志 ==========
+    // qDebug() << "TextBlockLayoutEngine::layout() - 最终行数量:" << m_lines.size();
     // =========================================
     
     // 计算总尺寸
@@ -403,13 +373,13 @@ qreal TextBlockLayoutEngine::finishLineFromItems(QList<LayoutItem> &items, qreal
     qreal lineMaxAscent = 0;
     qreal lineWidth = 0;
     
-    qDebug() << "[finishLineFromItems] - 开始处理一行，items数量:" << items.size() << "lineY:" << lineY;
+    // qDebug() << "[finishLineFromItems] - 开始处理一行，items数量:" << items.size() << "lineY:" << lineY;
     for (int i = 0; i < items.size(); ++i) {
         const LayoutItem &item = items[i];
-        qDebug() << "  item" << i << ":" 
-                 << "height=" << item.height 
-                 << "ascent=" << item.ascent 
-                 << "isMath=" << (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math);
+        // qDebug() << "  item" << i << ":" 
+        //          << "height=" << item.height 
+        //          << "ascent=" << item.ascent 
+        //          << "isMath=" << (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math);
         
         if (item.height > lineMaxHeight) {
             lineMaxHeight = item.height;
@@ -419,8 +389,8 @@ qreal TextBlockLayoutEngine::finishLineFromItems(QList<LayoutItem> &items, qreal
         }
         lineWidth += item.width;
     }
-    qDebug() << "  计算结果：lineMaxHeight=" << lineMaxHeight 
-             << "lineMaxAscent=" << lineMaxAscent;
+    // qDebug() << "  计算结果：lineMaxHeight=" << lineMaxHeight 
+    //          << "lineMaxAscent=" << lineMaxAscent;
     
     // 创建 LineInfo
     LineInfo lineInfo;
@@ -441,9 +411,9 @@ qreal TextBlockLayoutEngine::finishLineFromItems(QList<LayoutItem> &items, qreal
     }
     
     m_lines.append(lineInfo);
-    qDebug() << "[finishLineFromItems] - 完成，lineY=" << lineY 
-             << "lineMaxHeight=" << lineMaxHeight 
-             << "下一行将从 lineY+" << lineMaxHeight << " 开始";
+    // qDebug() << "[finishLineFromItems] - 完成，lineY=" << lineY 
+    //          << "lineMaxHeight=" << lineMaxHeight 
+    //          << "下一行将从 lineY+" << lineMaxHeight << " 开始";
     
     return lineMaxHeight;
 }

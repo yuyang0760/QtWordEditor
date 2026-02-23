@@ -7,9 +7,9 @@
 #include "core/document/CharacterStyle.h"
 #include "core/document/TableBlock.h"
 #include "core/document/Page.h"
-#include "core/document/math/NumberMathSpan.h"
 #include "core/document/math/FractionMathSpan.h"
-#include "core/document/math/RowContainerMathSpan.h"
+#include "core/document/math/GenericMathSpan.h"
+#include "core/document/TextSpan.h"
 #include "core/layout/PageBuilder.h"
 #include "core/utils/Constants.h"
 // 移除 Logger 头文件，使用 Qt 内置日志函数
@@ -548,9 +548,17 @@ void MainWindow::newDocument()
         // 添加文字："公式测试: "
         para3->insert(0, "公式测试: ", CharacterStyle());
         
+        // 创建辅助函数：生成包含简单文本的 GenericMathSpan
+        auto createSimpleTextMath = [](const QString &text) -> GenericMathSpan* {
+            auto span = new GenericMathSpan();
+            auto textSpan = new TextSpan(text);
+            span->appendSpan(textSpan);
+            return span;
+        };
+        
         // 创建分数公式：123/456
-        auto numerator = new NumberMathSpan("123");
-        auto denominator = new NumberMathSpan("456");
+        auto numerator = createSimpleTextMath("123");
+        auto denominator = createSimpleTextMath("456");
         auto fraction = new FractionMathSpan(numerator, denominator);
         para3->addInlineSpan(fraction);
         
@@ -558,7 +566,7 @@ void MainWindow::newDocument()
         para3->insert(para3->length(), " 继续测试 ", CharacterStyle());
         
         // 创建另一个公式：789
-        auto number = new NumberMathSpan("789");
+        auto number = createSimpleTextMath("789");
         para3->addInlineSpan(number);
         
         // 添加文字：" 测试完毕！"
@@ -618,13 +626,21 @@ void MainWindow::insertTestFormula()
     
     para->insert(0, "插入的公式: ", CharacterStyle());
     
-    auto number = new NumberMathSpan("x");
+    // 创建辅助函数：生成包含简单文本的 GenericMathSpan
+    auto createSimpleTextMath = [](const QString &text) -> GenericMathSpan* {
+        auto span = new GenericMathSpan();
+        auto textSpan = new TextSpan(text);
+        span->appendSpan(textSpan);
+        return span;
+    };
+    
+    auto number = createSimpleTextMath("x");
     para->addInlineSpan(number);
     
     para->insert(para->length(), " = ", CharacterStyle());
     
-    auto numerator = new NumberMathSpan("a+b");
-    auto denominator = new NumberMathSpan("c");
+    auto numerator = createSimpleTextMath("a+b");
+    auto denominator = createSimpleTextMath("c");
     auto fraction = new FractionMathSpan(numerator, denominator);
     para->addInlineSpan(fraction);
     
@@ -666,8 +682,16 @@ void MainWindow::insertTestFraction()
     
     para->insert(0, "插入的分数: ", CharacterStyle());
     
-    auto numerator = new NumberMathSpan("100");
-    auto denominator = new NumberMathSpan("200");
+    // 创建辅助函数：生成包含简单文本的 GenericMathSpan
+    auto createSimpleTextMath = [](const QString &text) -> GenericMathSpan* {
+        auto span = new GenericMathSpan();
+        auto textSpan = new TextSpan(text);
+        span->appendSpan(textSpan);
+        return span;
+    };
+    
+    auto numerator = createSimpleTextMath("100");
+    auto denominator = createSimpleTextMath("200");
     auto fraction = new FractionMathSpan(numerator, denominator);
     para->addInlineSpan(fraction);
     
@@ -1328,10 +1352,18 @@ void MainWindow::insertFractionAtCursor()
     qDebug() << "[insertFractionAtCursor] 段落长度：" << paraLength;
 
     // 步骤4：创建分数 MathSpan
+    // 创建辅助函数：生成包含简单文本的 GenericMathSpan
+    auto createSimpleTextMath = [](const QString &text) -> GenericMathSpan* {
+        auto span = new GenericMathSpan();
+        auto textSpan = new TextSpan(text);
+        span->appendSpan(textSpan);
+        return span;
+    };
+    
     // 创建分子（默认为"1"）
-    NumberMathSpan *numSpan = new NumberMathSpan("1");
+    GenericMathSpan *numSpan = createSimpleTextMath("1");
     // 创建分母（默认为"2"）
-    NumberMathSpan *denSpan = new NumberMathSpan("2");
+    GenericMathSpan *denSpan = createSimpleTextMath("2");
     // 创建分数
     FractionMathSpan *fracSpan = new FractionMathSpan(numSpan, denSpan);
 
@@ -1406,8 +1438,15 @@ void MainWindow::insertNumberAtCursor()
 
     qDebug() << "[insertNumberAtCursor] 段落长度：" << paraLength;
 
-    // 步骤4：创建空的 NumberMathSpan
-    NumberMathSpan *numSpan = new NumberMathSpan("");
+    // 步骤4：创建空的 GenericMathSpan
+    auto createSimpleTextMath = [](const QString &text) -> GenericMathSpan* {
+        auto span = new GenericMathSpan();
+        auto textSpan = new TextSpan(text);
+        span->appendSpan(textSpan);
+        return span;
+    };
+    
+    GenericMathSpan *numSpan = createSimpleTextMath("");
 
     qDebug() << "[insertNumberAtCursor] 创建 NumberMathSpan 成功";
 

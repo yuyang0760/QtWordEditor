@@ -16,6 +16,7 @@ GenericMathItem::GenericMathItem(GenericMathSpan *span, MathItem *parent)
     , m_layoutEngine(new TextBlockLayoutEngine())
     , m_mathItems()
     , m_boundingRect()
+    , m_isUpdatingLayout(false)
 {
     // 配置布局引擎为 NoWrap 模式
     m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::NoWrap);
@@ -121,6 +122,13 @@ void GenericMathItem::performLayoutWithMathSizes(const QHash<InlineSpan*, QSizeF
 
 void GenericMathItem::updateLayout()
 {
+    // 防止无限递归调用
+    if (m_isUpdatingLayout) {
+        return;
+    }
+    
+    m_isUpdatingLayout = true;
+    
     // 更新 MathItem 的布局
     for (MathItem *mathItem : m_mathItems) {
         mathItem->updateLayout();
@@ -136,7 +144,10 @@ void GenericMathItem::updateLayout()
         m_baseline = 0;
     }
     
-    notifyParentLayoutChanged();
+    // 注意：不调用 notifyParentLayoutChanged()，避免形成无限循环
+    // notifyParentLayoutChanged();
+    
+    m_isUpdatingLayout = false;
 }
 
 qreal GenericMathItem::baseline() const

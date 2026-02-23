@@ -30,9 +30,7 @@ public:
      * @brief 公式元素类型枚举
      */
     enum MathType {
-        Number,         ///< 数字/变量
         Operator,       ///< 运算符
-        RowContainer,   ///< 水平行容器
         Fraction,       ///< 分数
         Radical,        ///< 根号
         SubSup,         ///< 上下标

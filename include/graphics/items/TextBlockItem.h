@@ -17,8 +17,6 @@ class ParagraphBlock;
 class MathItem;
 class MathSpan;
 class UnifiedCursorVisual;
-class RowContainerItem;
-class NumberItem;
 
 /**
  * @brief 文本块图形项类（直接绘制版）
@@ -267,7 +265,7 @@ private:
     MathItem *m_mouseEventTargetMathItem;   ///< 正在接收鼠标事件的 MathItem
     
     // ========== 选择跟踪 ==========
-    NumberItem *m_numberItemWithSelection;   ///< 当前有选择的 NumberItem
+    MathItem *m_mathItemWithSelection;   ///< 当前有选择的 MathItem
     
     // ========== 统一光标（新） ==========
     bool m_useUnifiedCursor;                 ///< 是否使用统一光标（默认false）

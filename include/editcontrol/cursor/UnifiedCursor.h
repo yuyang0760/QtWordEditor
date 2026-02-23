@@ -6,6 +6,7 @@
 #include "core/Global.h"
 #include "core/document/CharacterStyle.h"
 #include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/NewCursorPosition.h"
 
 namespace QtWordEditor {
 
@@ -256,7 +257,7 @@ signals:
     
 private:
     Document *m_document;       ///< 关联的文档
-    UnifiedCursorPosition m_position;  ///< 当前光标位置
+    NewCursorPosition m_newPosition;  ///< 当前光标位置（使用坐标路径系统）
 };
 
 } // namespace QtWordEditor

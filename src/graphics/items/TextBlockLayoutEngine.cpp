@@ -91,6 +91,7 @@ QList<QRectF> TextBlockLayoutEngine::lines() const
 
 void TextBlockLayoutEngine::assignItemsToLines(const QList<QGraphicsItem*> &items)
 {
+    qDebug() << "[DEBUG] TextBlockLayoutEngine::assignItemsToLines - m_availableWidth:" << m_availableWidth;
     qreal currentLineWidth = 0;
     qreal currentY = 0;
     // 使用固定的行间距，因为 lineHeight() 返回的是百分比
@@ -102,9 +103,11 @@ void TextBlockLayoutEngine::assignItemsToLines(const QList<QGraphicsItem*> &item
     
     for (QGraphicsItem *item : items) {
         qreal itemWidth = getItemWidth(item);
+        qDebug() << "[DEBUG] TextBlockLayoutEngine::assignItemsToLines - itemWidth:" << itemWidth << "currentLineWidth:" << currentLineWidth;
         
         // 检查是否需要换行
         if (currentLineWidth + itemWidth > m_availableWidth && currentLineWidth > 0) {
+            qDebug() << "[DEBUG] TextBlockLayoutEngine::assignItemsToLines - wrapping!";
             // 添加当前行到列表
             m_lines.append(currentLine);
             
@@ -135,6 +138,7 @@ void TextBlockLayoutEngine::assignItemsToLines(const QList<QGraphicsItem*> &item
     if (!currentLine.items.isEmpty()) {
         m_lines.append(currentLine);
     }
+    qDebug() << "[DEBUG] TextBlockLayoutEngine::assignItemsToLines - lines:" << m_lines.size();
 }
 
 void TextBlockLayoutEngine::calculateLineBaselines()

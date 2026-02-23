@@ -59,21 +59,25 @@ QString TextSpan::text() const
 void TextSpan::setText(const QString &text)
 {
     m_text = text;
+    emit textChanged();
 }
 
 void TextSpan::append(const QString &text)
 {
     m_text.append(text);
+    emit textChanged();
 }
 
 void TextSpan::insert(int position, const QString &text)
 {
     m_text.insert(position, text);
+    emit textChanged();
 }
 
 void TextSpan::remove(int position, int length)
 {
     m_text.remove(position, length);
+    emit textChanged();
 }
 
 CharacterStyle TextSpan::style() const

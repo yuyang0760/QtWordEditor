@@ -1,6 +1,7 @@
 #include "editcontrol/handlers/EditEventHandler.h"
 #include "core/document/Document.h"
 #include "editcontrol/cursor/Cursor.h"
+#include "graphics/cursor/UnifiedCursor.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
@@ -14,6 +15,7 @@ EditEventHandler::EditEventHandler(Document *document, Cursor *cursor, Selection
     : QObject(parent)
     , m_document(document)
     , m_cursor(cursor)
+    , m_unifiedCursor(nullptr)
     , m_selection(selection)
     , m_formatController(formatController)
     , m_scene(nullptr)
@@ -32,9 +34,92 @@ void EditEventHandler::setScene(DocumentScene *scene)
     m_scene = scene;
 }
 
+void EditEventHandler::setUnifiedCursor(UnifiedCursor* unifiedCursor)
+{
+    m_unifiedCursor = unifiedCursor;
+}
+
 bool EditEventHandler::handleKeyPress(QKeyEvent *event)
 {
-    if (!m_document || !m_cursor || !m_selection)
+    if (!m_document || !m_selection)
+        return false;
+
+    // 优先使用 UnifiedCursor
+    if (m_unifiedCursor) {
+        bool handled = false;
+        switch (event->key()) {
+        case Qt::Key_Left:
+            if (event->modifiers() & Qt::ShiftModifier) {
+                // Extend selection left
+                // TODO: implement
+            } else {
+                m_unifiedCursor->moveLeft();
+            }
+            handled = true;
+            break;
+        case Qt::Key_Right:
+            if (event->modifiers() & Qt::ShiftModifier) {
+                // Extend selection right
+            } else {
+                m_unifiedCursor->moveRight();
+            }
+            handled = true;
+            break;
+        case Qt::Key_Up:
+            m_unifiedCursor->moveUp();
+            handled = true;
+            break;
+        case Qt::Key_Down:
+            m_unifiedCursor->moveDown();
+            handled = true;
+            break;
+        case Qt::Key_Home:
+            if (event->modifiers() & Qt::ShiftModifier) {
+                // Extend selection to start of line
+            } else {
+                m_unifiedCursor->moveToStartOfLine();
+            }
+            handled = true;
+            break;
+        case Qt::Key_End:
+            if (event->modifiers() & Qt::ShiftModifier) {
+                // Extend selection to end of line
+            } else {
+                m_unifiedCursor->moveToEndOfLine();
+            }
+            handled = true;
+            break;
+        case Qt::Key_Backspace:
+            m_unifiedCursor->deletePreviousChar();
+            handled = true;
+            break;
+        case Qt::Key_Delete:
+            m_unifiedCursor->deleteChar();
+            handled = true;
+            break;
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            // Insert new paragraph block
+            // TODO: implement
+            break;
+        default:
+            // Typed character
+            if (!event->text().isEmpty()) {
+                CharacterStyle style;
+                if (m_formatController) {
+                    style = m_formatController->getCurrentInputStyle();
+                }
+                m_unifiedCursor->insertText(event->text(), style);
+                handled = true;
+            }
+            break;
+        }
+
+        return handled;
+    }
+
+    // 回退到旧的 Cursor（向后兼容）
+    if (!m_cursor)
         return false;
 
     bool handled = false;
@@ -111,10 +196,24 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
 
 bool EditEventHandler::handleMousePress(const QPointF &scenePos)
 {
-    if (!m_scene || !m_cursor || !m_selection)
+    if (!m_scene || !m_selection)
         return false;
 
-  //  QDebug() << "EditEventHandler::handleMousePress at:" << scenePos;
+    // 优先使用 UnifiedCursor
+    if (m_unifiedCursor) {
+        m_unifiedCursor->setPositionFromScenePoint(scenePos);
+        m_isSelecting = true;
+        
+        // 清除之前的选择
+        m_selection->clear();
+        emit selectionNeedsUpdate();
+        
+        return true;
+    }
+
+    // 回退到旧的 Cursor（向后兼容）
+    if (!m_cursor)
+        return false;
 
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
@@ -138,7 +237,18 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
 
 bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
 {
-    if (!m_scene || !m_cursor || !m_selection || !m_isSelecting)
+    if (!m_scene || !m_selection || !m_isSelecting)
+        return false;
+
+    // 优先使用 UnifiedCursor
+    if (m_unifiedCursor) {
+        m_unifiedCursor->setPositionFromScenePoint(scenePos);
+        emit selectionNeedsUpdate();
+        return true;
+    }
+
+    // 回退到旧的 Cursor（向后兼容）
+    if (!m_cursor)
         return false;
 
     qDebug() << "EditEventHandler::handleMouseMove at:" << scenePos;
@@ -170,18 +280,10 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
 
 bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
 {
-    if (!m_scene || !m_cursor || !m_selection)
+    Q_UNUSED(scenePos);
+
+    if (!m_selection)
         return false;
-
-    qDebug() << "EditEventHandler::handleMouseRelease at:" << scenePos;
-
-    // 获取最终的选择范围
-    SelectionRange range = m_selection->range();
-    qDebug() << "  最终选择范围:";
-    qDebug() << "    Anchor: 块" << range.anchorBlock << "，偏移" << range.anchorOffset;
-    qDebug() << "    Focus: 块" << range.focusBlock << "，偏移" << range.focusOffset;
-    qDebug() << "    Start: 块" << range.startBlock << "，偏移" << range.startOffset;
-    qDebug() << "    End: 块" << range.endBlock << "，偏移" << range.endOffset;
 
     // 结束选择
     m_isSelecting = false;
@@ -194,7 +296,23 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
 
 bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
 {
-    if (!m_document || !m_cursor)
+    if (!m_document)
+        return false;
+
+    // 优先使用 UnifiedCursor
+    if (m_unifiedCursor) {
+        if (!event->commitString().isEmpty()) {
+            CharacterStyle style;
+            if (m_formatController) {
+                style = m_formatController->getCurrentInputStyle();
+            }
+            m_unifiedCursor->insertText(event->commitString(), style);
+        }
+        return true;
+    }
+
+    // 回退到旧的 Cursor（向后兼容）
+    if (!m_cursor)
         return false;
 
   //  QDebug() << "EditEventHandler::handleInputMethod called";

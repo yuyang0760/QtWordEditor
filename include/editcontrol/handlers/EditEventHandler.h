@@ -11,6 +11,7 @@ namespace QtWordEditor {
 
 class Document;
 class Cursor;
+class UnifiedCursor;
 class Selection;
 class DocumentScene;
 class FormatController;
@@ -37,6 +38,9 @@ public:
 
     // 设置场景指针
     void setScene(DocumentScene *scene);
+    
+    // 设置统一光标指针
+    void setUnifiedCursor(UnifiedCursor* unifiedCursor);
 
 signals:
     // 选择发生变化时发出信号，用于更新选择显示
@@ -46,7 +50,8 @@ signals:
 
 private:
     Document *m_document;
-    Cursor *m_cursor;
+    Cursor *m_cursor;  // 旧光标（向后兼容）
+    UnifiedCursor *m_unifiedCursor;  // 新的统一光标
     Selection *m_selection;
     FormatController *m_formatController;  // 格式控制器
     DocumentScene *m_scene;

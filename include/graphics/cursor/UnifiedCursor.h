@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QPointF>
-#include <QGraphicsLineItem>
+#include <QGraphicsRectItem>
 #include "core/Global.h"
 
 namespace QtWordEditor {
@@ -13,6 +13,7 @@ class ParagraphBlock;
 class InlineSpan;
 class MathSpan;
 class TextBlockItem;
+class CharacterStyle;
 
 /**
  * @brief 光标状态结构体
@@ -46,19 +47,27 @@ public:
     void moveRight();
     void moveUp();
     void moveDown();
+    void moveToStartOfLine();
+    void moveToEndOfLine();
+    void moveToStartOfDocument();
+    void moveToEndOfDocument();
     
     void setPosition(ParagraphBlock* paragraph, int spanIndex, int charOffset);
     void setPosition(MathSpan* mathSpan, int childIndex);
+    void setPositionFromScenePoint(const QPointF& scenePos);
     
     void insertText(const QString& text);
+    void insertText(const QString& text, const CharacterStyle& style);
     void deleteChar();
+    void deletePreviousChar();
     void backspace();
     
     CursorState state() const;
     bool isInMath() const;
     
     void updateCursor();
-    QGraphicsLineItem* cursorItem() const;
+    void updateCursor(const QPointF& position, qreal height);
+    QGraphicsRectItem* cursorItem() const;
 
 signals:
     void positionChanged();
@@ -66,12 +75,13 @@ signals:
 
 private:
     TextBlockItem* getCurrentTextBlockItem() const;
+    int getCurrentBlockIndex() const;
     void initializeCursor();
 
 private:
     DocumentView* m_view;
     CursorState m_state;
-    QGraphicsLineItem* m_cursorItem;
+    QGraphicsRectItem* m_cursorItem;
 };
 
 } // namespace QtWordEditor

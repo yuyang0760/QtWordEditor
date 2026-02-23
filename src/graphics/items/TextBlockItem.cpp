@@ -44,9 +44,12 @@ TextBlockItem::~TextBlockItem()
 
 void TextBlockItem::updateBlock()
 {
+    qDebug() << "[DEBUG] TextBlockItem::updateBlock - start";
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
-    if (!para)
+    if (!para) {
+        qDebug() << "[DEBUG] TextBlockItem::updateBlock - para is null!";
         return;
+    }
     
     // 设置段落样式
     m_layoutEngine.setParagraphStyle(para->paragraphStyle());
@@ -54,6 +57,7 @@ void TextBlockItem::updateBlock()
     // 重新创建内容项并布局
     createContentItemsFromBlock();
     performLayout();
+    qDebug() << "[DEBUG] TextBlockItem::updateBlock - done";
 }
 
 void TextBlockItem::setTextWidth(qreal width)

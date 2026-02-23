@@ -17,6 +17,8 @@ namespace QtWordEditor {
 class Document;
 class DocumentScene;
 class DocumentView;
+class Cursor;
+class UnifiedCursor;
 class Selection;
 class EditEventHandler;
 class FormatController;
@@ -208,6 +210,7 @@ private:
     DocumentScene *m_scene;                 ///< 文档场景
     DocumentView *m_view;                   ///< 文档视图
     Cursor *m_cursor;                       ///< 光标控制器
+    UnifiedCursor *m_unifiedCursor;         ///< 统一光标控制器
     Selection *m_selection;                 ///< 选择控制器
     EditEventHandler *m_editEventHandler;   ///< 编辑事件处理器
     FormatController *m_formatController;   ///< 格式控制器

@@ -14,6 +14,8 @@
 #include "core/utils/Logger.h"
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
+#include "graphics/cursor/UnifiedCursor.h"
+#include "core/document/MathSpan.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/handlers/EditEventHandler.h"
@@ -54,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_scene(nullptr)
     , m_view(nullptr)
     , m_cursor(nullptr)
+    , m_unifiedCursor(nullptr)
     , m_selection(nullptr)
     , m_editEventHandler(nullptr)
     , m_formatController(nullptr)
@@ -337,11 +340,53 @@ void MainWindow::setupUi()
     // 先创建新文档，这会调用 setDocument()
     newDocument();
     
+    qDebug() << "MainWindow - 开始初始化 UnifiedCursor";
+    
+    // 初始化统一光标（仅基础初始化，暂不处理事件）
+    m_unifiedCursor = new UnifiedCursor(m_view, this);
+    m_view->setUnifiedCursor(m_unifiedCursor);
+    
+    qDebug() << "MainWindow - UnifiedCursor 创建完成，cursorItem:" << m_unifiedCursor->cursorItem();
+    
+    // 将光标添加到场景中
+    if (m_unifiedCursor->cursorItem()) {
+        qDebug() << "MainWindow - 准备将 cursorItem 添加到场景";
+        m_scene->addItem(m_unifiedCursor->cursorItem());
+        qDebug() << "MainWindow - cursorItem 已添加到场景，场景指针:" << m_unifiedCursor->cursorItem()->scene();
+    } else {
+        qDebug() << "MainWindow - cursorItem 是空的!";
+    }
+    
+    // 设置统一光标到 EditEventHandler
+    if (m_unifiedCursor && m_editEventHandler) {
+        qDebug() << "[DEBUG] MainWindow - 准备设置 unifiedCursor 到 EditEventHandler";
+        m_editEventHandler->setUnifiedCursor(m_unifiedCursor);
+        qDebug() << "[DEBUG] MainWindow - unifiedCursor 已设置到 EditEventHandler";
+    }
+    
+    // 先设置旧光标的初始位置
     m_cursor->setPosition(0, 0);
     m_currentCursorPos = m_cursor->position();
     QPointF initialPos = calculateCursorVisualPosition(m_currentCursorPos);
     m_scene->updateCursor(initialPos, 20.0);
     m_view->setCursorVisualPosition(initialPos);
+    
+    // 同步旧光标位置到 UnifiedCursor 的 m_state
+    if (m_unifiedCursor) {
+        // 获取第一个段落
+        if (m_document->blockCount() > 0) {
+            Block* block = m_document->block(0);
+            ParagraphBlock* paraBlock = qobject_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                m_unifiedCursor->setPosition(paraBlock, 0, 0);
+            }
+        }
+    }
+    
+    // 更新光标位置，让光标显示出来
+    qDebug() << "MainWindow - 准备调用 updateCursor()";
+    m_unifiedCursor->updateCursor();
+    qDebug() << "MainWindow - updateCursor() 调用完成";
     
     // 初始化状态栏显示初始位置
     if (m_lastScenePos.isNull()) {
@@ -531,6 +576,14 @@ void MainWindow::newDocument()
         
         // 重置光标位置到 (0, 0)
         m_cursor->setPosition(0, 0);
+        
+        // 初始化统一光标位置到第一个段落（暂时注释，防止崩溃）
+        // if (m_unifiedCursor && section->blockCount() > 0) {
+        //     ParagraphBlock* firstParagraph = qobject_cast<ParagraphBlock*>(section->block(0));
+        //     if (firstParagraph) {
+        //         m_unifiedCursor->setPosition(firstParagraph, 0, 0);
+        //     }
+        // }
         
         m_currentFile.clear();
         m_isModified = false;
@@ -834,9 +887,11 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     
     // 根据光标位置的字号计算光标高度
     qreal cursorHeight = 20.0;  // 默认值
+    ParagraphBlock *paraBlock = nullptr;
+    
     if (pos.blockIndex >= 0) {
         Block *block = m_document->block(pos.blockIndex);
-        ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+        paraBlock = qobject_cast<ParagraphBlock*>(block);
         if (paraBlock) {
             CharacterStyle style = paraBlock->styleAt(pos.offset);
             int fontSize = style.fontSize();
@@ -849,6 +904,32 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     
     m_scene->updateCursor(visualPos, cursorHeight);
     m_view->setCursorVisualPosition(visualPos);
+    
+    // 同时更新 UnifiedCursor 的位置和状态
+    if (m_unifiedCursor && paraBlock) {
+        // 转换全局 offset 为 span 索引和 char 偏移
+        int positionInSpan = 0;
+        int spanIndex = paraBlock->findInlineSpanIndex(pos.offset, &positionInSpan);
+        
+        if (spanIndex >= 0) {
+            InlineSpan* span = paraBlock->inlineSpan(spanIndex);
+            if (span) {
+                if (span->type() == InlineSpan::Text) {
+                    // 文本 span
+                    m_unifiedCursor->setPosition(paraBlock, spanIndex, positionInSpan);
+                } else if (span->type() == InlineSpan::Math) {
+                    // 数学 span
+                    MathSpan* mathSpan = qobject_cast<MathSpan*>(span);
+                    if (mathSpan) {
+                        m_unifiedCursor->setPosition(mathSpan, 0);
+                    }
+                }
+            }
+        } else {
+            // 未找到 span，定位到段落开始
+            m_unifiedCursor->setPosition(paraBlock, 0, 0);
+        }
+    }
     
     // 同时更新状态栏，显示光标位置
     updateStatusBar(m_lastScenePos, m_lastViewPos);

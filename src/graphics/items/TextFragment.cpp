@@ -1,7 +1,7 @@
 #include "graphics/items/TextFragment.h"
 #include <QPainter>
 #include <QFontMetricsF>
-#include <QDebug>
+#include "core/document/CharacterStyle.h"
 
 namespace QtWordEditor {
 
@@ -9,14 +9,11 @@ TextFragment::TextFragment(const QString &text, const CharacterStyle &style, QGr
     : QGraphicsItem(parent)
     , m_text(text)
     , m_style(style)
-    , m_textColor(Qt::black)
-    , m_boundingRect(0, 0, 0, 0)
-    , m_baseline(0)
+    , m_font(createFontFromStyle(style))
+    , m_textColor(style.textColor())
+    , m_baseline(0.0)
 {
-    // 从样式创建字体
-    m_font = createFontFromStyle(style);
-    
-    // 计算初始尺寸
+    // 计算文本尺寸
     calculateSize();
 }
 
@@ -33,7 +30,6 @@ void TextFragment::setText(const QString &text)
 {
     if (m_text != text) {
         m_text = text;
-        prepareGeometryChange();
         calculateSize();
         update();
     }
@@ -46,11 +42,13 @@ CharacterStyle TextFragment::style() const
 
 void TextFragment::setStyle(const CharacterStyle &style)
 {
-    m_style = style;
-    m_font = createFontFromStyle(style);
-    prepareGeometryChange();
-    calculateSize();
-    update();
+    if (!(m_style == style)) {
+        m_style = style;
+        m_font = createFontFromStyle(style);
+        m_textColor = style.textColor();
+        calculateSize();
+        update();
+    }
 }
 
 qreal TextFragment::width() const
@@ -68,20 +66,36 @@ qreal TextFragment::baseline() const
     return m_baseline;
 }
 
+void TextFragment::calculateSize()
+{
+    QFontMetricsF fm(m_font);
+    qreal textWidth = fm.horizontalAdvance(m_text);
+    qreal textHeight = fm.height();
+    m_baseline = fm.ascent();
+    m_boundingRect = QRectF(0, 0, textWidth, textHeight);
+}
+
 QPointF TextFragment::cursorPosition(int charOffset) const
 {
-    // 使用 QFontMetricsF 计算指定偏移处的水平位置
-    QFontMetricsF fm(m_font);
-    QString textToOffset = m_text.left(qBound(0, charOffset, m_text.length()));
-    qreal x = fm.horizontalAdvance(textToOffset);
+    // 确保偏移量在有效范围内
+    if (charOffset < 0) {
+        charOffset = 0;
+    }
+    if (charOffset > m_text.length()) {
+        charOffset = m_text.length();
+    }
     
-    // y 坐标是基线位置
-    return QPointF(x, m_baseline);
+    // 计算光标位置
+    QFontMetricsF fm(m_font);
+    QString textBeforeCursor = m_text.left(charOffset);
+    qreal x = fm.horizontalAdvance(textBeforeCursor);
+    
+    // y 坐标为 0（文本顶部位置），而不是 m_baseline！
+    return QPointF(x, 0);
 }
 
 qreal TextFragment::cursorHeight() const
 {
-    // 光标高度是字体高度
     QFontMetricsF fm(m_font);
     return fm.height();
 }
@@ -93,63 +107,25 @@ QRectF TextFragment::boundingRect() const
 
 void TextFragment::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
     
-    // 设置字体和颜色
-    painter->setFont(m_font);
+    // 设置画笔颜色
     painter->setPen(m_textColor);
+    painter->setFont(m_font);
     
-    // 绘制文本，基线对齐
-    // 注意：m_baseline是从顶部到基线的距离，QPainter的drawText使用y坐标作为基线位置
+    // 绘制文本，基线对齐（y坐标从 m_baseline 开始）
     painter->drawText(QPointF(0, m_baseline), m_text);
-}
-
-void TextFragment::calculateSize()
-{
-    // 使用QFontMetricsF计算文本尺寸
-    QFontMetricsF fm(m_font);
-    
-    // 计算文本宽度
-    qreal textWidth = fm.horizontalAdvance(m_text);
-    
-    // 计算文本高度（从顶部到底部）
-    qreal textHeight = fm.height();
-    
-    // 计算基线位置（从顶部到基线的距离）
-    m_baseline = fm.ascent();
-    
-    // 设置边界矩形
-    m_boundingRect = QRectF(0, 0, textWidth, textHeight);
-    
-    qDebug() << "TextFragment::calculateSize - text:" << m_text 
-             << "width:" << textWidth << "height:" << textHeight 
-             << "baseline:" << m_baseline;
 }
 
 QFont TextFragment::createFontFromStyle(const CharacterStyle &style) const
 {
     QFont font;
-    
-    // 设置字体族
-    if (!style.fontFamily().isEmpty()) {
-        font.setFamily(style.fontFamily());
-    }
-    
-    // 设置字号
-    if (style.fontSize() > 0) {
-        font.setPointSizeF(style.fontSize());
-    }
-    
-    // 设置粗体
+    font.setFamily(style.fontFamily());
+    font.setPointSizeF(style.fontSize());
     font.setBold(style.bold());
-    
-    // 设置斜体
     font.setItalic(style.italic());
-    
-    // 设置下划线
     font.setUnderline(style.underline());
-    
     return font;
 }
 

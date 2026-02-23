@@ -50,6 +50,9 @@ public:
 
     QFont font() const;
 
+signals:
+    void textChanged();
+
 private:
     QString m_text;
     QString m_styleName;

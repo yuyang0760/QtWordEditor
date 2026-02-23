@@ -1,6 +1,7 @@
 #include "graphics/view/DocumentView.h"
 #include "graphics/scene/DocumentScene.h"
 #include "editcontrol/cursor/Cursor.h"
+#include "graphics/cursor/UnifiedCursor.h"
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QInputMethodEvent>
@@ -16,6 +17,7 @@ DocumentView::DocumentView(QWidget *parent)
     : QGraphicsView(parent)
     , m_zoom(100.0)
     , m_lastMousePos(-1, -1)
+    , m_unifiedCursor(nullptr)
     , m_cursor(nullptr)
     , m_cursorVisualPos(0, 0)
 {
@@ -83,9 +85,86 @@ void DocumentView::zoomToFit()
 
 void DocumentView::keyPressEvent(QKeyEvent *event)
 {
+    qDebug() << "[DEBUG] DocumentView::keyPressEvent - key:" << event->key() << "text:" << event->text();
+    
+    // 优先使用 UnifiedCursor 直接处理按键
+    if (m_unifiedCursor) {
+        bool handled = false;
+        switch (event->key()) {
+        case Qt::Key_Left:
+            qDebug() << "[DEBUG] DocumentView - 处理左箭头";
+            m_unifiedCursor->moveLeft();
+            handled = true;
+            break;
+        case Qt::Key_Right:
+            qDebug() << "[DEBUG] DocumentView - 处理右箭头";
+            m_unifiedCursor->moveRight();
+            handled = true;
+            break;
+        case Qt::Key_Up:
+            qDebug() << "[DEBUG] DocumentView - 处理上箭头";
+            m_unifiedCursor->moveUp();
+            handled = true;
+            break;
+        case Qt::Key_Down:
+            qDebug() << "[DEBUG] DocumentView - 处理下箭头";
+            m_unifiedCursor->moveDown();
+            handled = true;
+            break;
+        case Qt::Key_Home:
+            qDebug() << "[DEBUG] DocumentView - 处理 Home";
+            m_unifiedCursor->moveToStartOfLine();
+            handled = true;
+            break;
+        case Qt::Key_End:
+            qDebug() << "[DEBUG] DocumentView - 处理 End";
+            m_unifiedCursor->moveToEndOfLine();
+            handled = true;
+            break;
+        case Qt::Key_Backspace:
+            qDebug() << "[DEBUG] DocumentView - 处理 Backspace";
+            m_unifiedCursor->deletePreviousChar();
+            handled = true;
+            break;
+        case Qt::Key_Delete:
+            qDebug() << "[DEBUG] DocumentView - 处理 Delete";
+            m_unifiedCursor->deleteChar();
+            handled = true;
+            break;
+        default:
+            if (!event->text().isEmpty()) {
+                qDebug() << "[DEBUG] DocumentView - 处理输入字符:" << event->text();
+                m_unifiedCursor->insertText(event->text());
+                handled = true;
+            }
+            break;
+        }
+
+        if (handled) {
+            qDebug() << "[DEBUG] DocumentView - 事件已处理，接受";
+            event->accept();
+            return;
+        }
+    }
+
+    qDebug() << "[DEBUG] DocumentView - 回退到旧的事件处理";
+    // 如果 UnifiedCursor 不可用，回退到旧的事件处理
     emit keyPressed(event);
-    // Do not call base to avoid default handling (optional)
-    // QGraphicsView::keyPressEvent(event);
+    QGraphicsView::keyPressEvent(event);
+}
+
+void DocumentView::setCursor(Cursor *cursor)
+{
+    m_cursor = cursor;
+}
+
+void DocumentView::setCursorVisualPosition(const QPointF &pos)
+{
+    m_cursorVisualPos = pos;
+    QWidget::update();
+    if (QInputMethod *inputMethod = QGuiApplication::inputMethod()) {
+        inputMethod->update(Qt::ImCursorRectangle);
+    }
 }
 
 void DocumentView::keyReleaseEvent(QKeyEvent *event)
@@ -97,6 +176,15 @@ void DocumentView::keyReleaseEvent(QKeyEvent *event)
 void DocumentView::mousePressEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
+    
+    // 优先使用 UnifiedCursor 直接处理鼠标按下
+    if (m_unifiedCursor) {
+        m_unifiedCursor->setPositionFromScenePoint(scenePos);
+        event->accept();
+        return;
+    }
+    
+    // 如果 UnifiedCursor 不可用，回退到旧的事件处理
     emit mousePressed(scenePos);
     QGraphicsView::mousePressEvent(event);
 }
@@ -104,7 +192,13 @@ void DocumentView::mousePressEvent(QMouseEvent *event)
 void DocumentView::mouseMoveEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
-    emit mouseMoved(scenePos);
+    
+    // 鼠标移动时，暂时不更新光标位置（除非是选择模式，以后再完善）
+    // 优先使用 UnifiedCursor，但只更新鼠标位置信号，不更新光标位置
+    if (!m_unifiedCursor) {
+        // 如果 UnifiedCursor 不可用，回退到旧的事件处理
+        emit mouseMoved(scenePos);
+    }
     
     m_lastMousePos = event->pos();
     QPoint viewPos = event->pos();
@@ -128,6 +222,14 @@ void DocumentView::resizeEvent(QResizeEvent *event)
 void DocumentView::mouseReleaseEvent(QMouseEvent *event)
 {
     QPointF scenePos = mapToScene(event->pos());
+    
+    // 优先使用 UnifiedCursor 直接处理鼠标释放（目前暂时不需要额外处理）
+    if (m_unifiedCursor) {
+        event->accept();
+        return;
+    }
+    
+    // 如果 UnifiedCursor 不可用，回退到旧的事件处理
     emit mouseReleased(scenePos);
     QGraphicsView::mouseReleaseEvent(event);
 }
@@ -148,22 +250,25 @@ void DocumentView::wheelEvent(QWheelEvent *event)
 
 void DocumentView::inputMethodEvent(QInputMethodEvent *event)
 {
-    emit inputMethodReceived(event);
+    // 优先使用 UnifiedCursor 直接处理输入法
+    if (m_unifiedCursor && !event->commitString().isEmpty()) {
+        m_unifiedCursor->insertText(event->commitString());
+        event->accept();
+        return;
+    }
+    
+    // 如果 UnifiedCursor 不可用，回退到旧的处理
     QGraphicsView::inputMethodEvent(event);
 }
 
-void DocumentView::setCursor(Cursor *cursor)
+void DocumentView::setUnifiedCursor(UnifiedCursor *cursor)
 {
-    m_cursor = cursor;
+    m_unifiedCursor = cursor;
 }
 
-void DocumentView::setCursorVisualPosition(const QPointF &pos)
+UnifiedCursor* DocumentView::unifiedCursor() const
 {
-    m_cursorVisualPos = pos;
-    QWidget::update();
-    if (QInputMethod *inputMethod = QGuiApplication::inputMethod()) {
-        inputMethod->update(Qt::ImCursorRectangle);
-    }
+    return m_unifiedCursor;
 }
 
 QVariant DocumentView::inputMethodQuery(Qt::InputMethodQuery query) const
@@ -173,10 +278,17 @@ QVariant DocumentView::inputMethodQuery(Qt::InputMethodQuery query) const
         return true;
     case Qt::ImCursorRectangle:
     {
-        // 将场景坐标转换为视图坐标
-        QPoint viewPos = mapFromScene(m_cursorVisualPos);
-        // 返回一个合适大小的矩形，输入法候选框会显示在这个位置下方
-        return QRect(viewPos, QSize(1, 20));
+        // 优先使用 UnifiedCursor 的光标位置
+        if (m_unifiedCursor && m_unifiedCursor->cursorItem()) {
+            QRectF cursorRect = m_unifiedCursor->cursorItem()->rect();
+            QPointF scenePos = m_unifiedCursor->cursorItem()->mapToScene(cursorRect.topLeft());
+            QPoint viewPos = mapFromScene(scenePos);
+            return QRect(viewPos, QSize(2, static_cast<int>(cursorRect.height())));
+        } else {
+            // 旧系统的光标位置
+            QPoint viewPos = mapFromScene(m_cursorVisualPos);
+            return QRect(viewPos, QSize(1, 20));
+        }
     }
     case Qt::ImCursorPosition:
         return 0;

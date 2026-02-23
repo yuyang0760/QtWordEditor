@@ -44,7 +44,9 @@ void ParagraphBlock::setText(const QString &text)
     if (!text.isEmpty()) {
         TextSpan *textSpan = new TextSpan(text, CharacterStyle(), this);
         m_inlineSpans.append(textSpan);
+        connect(textSpan, &TextSpan::textChanged, this, &ParagraphBlock::onTextSpanChanged);
     }
+    qDebug() << "[DEBUG] ParagraphBlock::textChanged - emitting (setText)";
     emit textChanged();
 }
 
@@ -510,10 +512,26 @@ InlineSpan *ParagraphBlock::inlineSpan(int index) const
     return nullptr;
 }
 
+void ParagraphBlock::onTextSpanChanged()
+{
+    qDebug() << "[DEBUG] ParagraphBlock::onTextSpanChanged - emitting textChanged()";
+    emit textChanged();
+}
+
 void ParagraphBlock::addInlineSpan(InlineSpan *span)
 {
     if (span) {
         m_inlineSpans.append(span);
+        
+        // 如果是 TextSpan，连接 textChanged 信号
+        if (span->type() == InlineSpan::Text) {
+            TextSpan* textSpan = qobject_cast<TextSpan*>(span);
+            if (textSpan) {
+                connect(textSpan, &TextSpan::textChanged, this, &ParagraphBlock::onTextSpanChanged);
+            }
+        }
+        
+        qDebug() << "[DEBUG] ParagraphBlock::textChanged - emitting (addInlineSpan)";
         emit textChanged();
     }
 }
@@ -522,6 +540,16 @@ void ParagraphBlock::insertInlineSpan(int index, InlineSpan *span)
 {
     if (span && index >= 0 && index <= m_inlineSpans.size()) {
         m_inlineSpans.insert(index, span);
+        
+        // 如果是 TextSpan，连接 textChanged 信号
+        if (span->type() == InlineSpan::Text) {
+            TextSpan* textSpan = qobject_cast<TextSpan*>(span);
+            if (textSpan) {
+                connect(textSpan, &TextSpan::textChanged, this, &ParagraphBlock::onTextSpanChanged);
+            }
+        }
+        
+        qDebug() << "[DEBUG] ParagraphBlock::textChanged - emitting (insertInlineSpan)";
         emit textChanged();
     }
 }

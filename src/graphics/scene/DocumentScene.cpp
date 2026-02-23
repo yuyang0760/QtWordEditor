@@ -105,6 +105,11 @@ void DocumentScene::rebuildFromDocument()
                         // 创建 TextBlockItem
                         TextBlockItem *textBlockItem = new TextBlockItem(paraBlock);
                         
+                        // 连接 ParagraphBlock 的 textChanged 信号，当内容变化时更新 TextBlockItem
+                        connect(paraBlock, &ParagraphBlock::textChanged, this, [this, block]() {
+                            updateSingleTextItem(block);
+                        });
+                        
                         // 添加到场景
                         addItem(textBlockItem);
                         
@@ -239,10 +244,12 @@ void DocumentScene::updateBlockPositions()
 
 void DocumentScene::updateSingleTextItem(Block *block)
 {
+    qDebug() << "[DEBUG] DocumentScene::updateSingleTextItem - block:" << block;
     if (!block)
         return;
     auto it = m_blockItems.find(block);
     if (it != m_blockItems.end() && it.value()) {
+        qDebug() << "[DEBUG] DocumentScene::updateSingleTextItem - calling updateBlock() on item:" << it.value();
         it.value()->updateBlock();
     }
     // 更新所有块的位置
@@ -440,6 +447,20 @@ QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range
     // 暂时返回空列表
     
     return rects;
+}
+
+BaseBlockItem* DocumentScene::blockItemForBlock(Block* block) const
+{
+    if (!block) {
+        return nullptr;
+    }
+    
+    auto it = m_blockItems.find(block);
+    if (it != m_blockItems.end()) {
+        return it.value();
+    }
+    
+    return nullptr;
 }
 
 } // namespace QtWordEditor

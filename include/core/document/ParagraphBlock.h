@@ -55,6 +55,9 @@ public:
 signals:
     void textChanged();
 
+private slots:
+    void onTextSpanChanged();
+
 private:
     void mergeAdjacentTextSpans();
     bool validatePositionAndLength(int& position, int& length) const;

@@ -8,6 +8,7 @@ namespace QtWordEditor {
 
 class DocumentScene;
 class Cursor;
+class UnifiedCursor;
 
 /**
  * @brief 文档视图类，显示文档场景并处理缩放、滚动和事件转发
@@ -87,17 +88,31 @@ signals:
     void contextMenuParagraphRequested();
 
 public:
-    /** @brief 更新鼠标位置显示 */
+    /**
+     * @brief 更新鼠标位置显示
+     */
     void updateMousePosition();
     
     /**
-     * @brief 设置光标控制器
-     * @param cursor 光标对象指针
+     * @brief 设置统一光标控制器
+     * @param cursor 统一光标对象指针
+     */
+    void setUnifiedCursor(UnifiedCursor *cursor);
+    
+    /**
+     * @brief 获取统一光标控制器
+     * @return 统一光标对象指针
+     */
+    UnifiedCursor* unifiedCursor() const;
+    
+    /**
+     * @brief 设置旧的光标控制器（向后兼容）
+     * @param cursor 旧光标对象指针
      */
     void setCursor(Cursor *cursor);
     
     /**
-     * @brief 设置光标的视觉位置
+     * @brief 设置光标的视觉位置（向后兼容）
      * @param pos 光标在场景中的位置
      */
     void setCursorVisualPosition(const QPointF &pos);
@@ -175,8 +190,9 @@ protected:
 private:
     qreal m_zoom;              ///< 当前缩放比例
     QPoint m_lastMousePos;     ///< 上次鼠标位置
-    Cursor *m_cursor;          ///< 光标控制器
-    QPointF m_cursorVisualPos; ///< 光标视觉位置
+    UnifiedCursor *m_unifiedCursor;  ///< 统一光标控制器
+    Cursor *m_cursor;          ///< 旧光标控制器（向后兼容）
+    QPointF m_cursorVisualPos; ///< 光标视觉位置（向后兼容）
 };
 
 } // namespace QtWordEditor

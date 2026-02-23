@@ -150,6 +150,13 @@ public:
      * @return 对应的场景坐标位置
      */
     QPointF calculateCursorVisualPosition(const CursorPosition &pos) const;
+    
+    /**
+     * @brief 获取指定 Block 对应的图形项
+     * @param block Block 指针
+     * @return 对应的 BaseBlockItem 指针，如果找不到返回 nullptr
+     */
+    BaseBlockItem* blockItemForBlock(Block* block) const;
 
 public slots:
     /**

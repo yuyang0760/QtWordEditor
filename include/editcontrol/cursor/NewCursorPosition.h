@@ -4,6 +4,16 @@
 #include <optional>
 #include "editcontrol/cursor/CoordinatePath.h"
 
+/**
+ * @file NewCursorPosition.h
+ * @brief 新的光标位置（使用坐标路径）
+ * 
+ * 【未来使用】
+ * 此文件属于坐标路径系统，用于更优雅地处理嵌套公式。
+ * 目前该系统已完整实现但尚未在项目中使用，
+ * 待后续版本正式采用时再启用。
+ */
+
 namespace QtWordEditor {
 
 /**

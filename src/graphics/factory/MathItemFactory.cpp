@@ -8,10 +8,12 @@
 #include "core/document/math/NumberMathSpan.h"
 #include "core/document/math/RowContainerMathSpan.h"
 #include "core/document/math/FractionMathSpan.h"
+#include "core/document/math/GenericMathSpan.h"
 #include "graphics/formula/MathItem.h"
 #include "graphics/formula/NumberItem.h"
 #include "graphics/formula/RowContainerItem.h"
 #include "graphics/formula/FractionItem.h"
+#include "graphics/formula/GenericMathItem.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -36,6 +38,9 @@ MathItem *MathItemFactory::createMathItem(MathSpan *span, MathItem *parent)
     case MathSpan::Fraction:
         qDebug() << "  [MathItemFactory::createMathItem] 准备调用 createFractionItem...";
         return createFractionItem(span, parent);
+    case MathSpan::Generic:
+        qDebug() << "  [MathItemFactory::createMathItem] 准备调用 createGenericMathItem...";
+        return createGenericMathItem(span, parent);
     default:
         qWarning() << "MathItemFactory::createMathItem: unsupported math type:" << span->mathType();
         return nullptr;
@@ -103,6 +108,41 @@ MathItem *MathItemFactory::createFractionItem(MathSpan *span, MathItem *parent)
     }
     
     qDebug() << "    [MathItemFactory::createFractionItem] 返回";
+    return item;
+}
+
+MathItem *MathItemFactory::createGenericMathItem(MathSpan *span, MathItem *parent)
+{
+    qDebug() << "    [MathItemFactory::createGenericMathItem] 开始...";
+    GenericMathSpan *genericSpan = static_cast<GenericMathSpan*>(span);
+    qDebug() << "    [MathItemFactory::createGenericMathItem] genericSpan=" << genericSpan;
+    GenericMathItem *item = new GenericMathItem(genericSpan, parent);
+    qDebug() << "    [MathItemFactory::createGenericMathItem] GenericMathItem 创建成功";
+    
+    // 为每个 InlineSpan 创建对应的子项
+    // 注意：GenericMathSpan 使用 InlineSpan 列表，其中可能包含 TextSpan 和 MathSpan
+    // TextSpan 由 TextBlockLayoutEngine 处理文本渲染
+    // MathSpan 需要创建对应的 MathItem
+    for (int i = 0; i < genericSpan->spanCount(); ++i) {
+        InlineSpan *inlineSpan = genericSpan->spanAt(i);
+        qDebug() << "    [MathItemFactory::createGenericMathItem] 处理 InlineSpan: index=" << i << ", type=" << (int)inlineSpan->type();
+        
+        // 如果是 MathSpan，创建对应的 MathItem
+        if (inlineSpan->type() == InlineSpan::Math) {
+            MathSpan *mathSpan = static_cast<MathSpan*>(inlineSpan);
+            qDebug() << "    [MathItemFactory::createGenericMathItem] 是 MathSpan，准备创建 MathItem...";
+            MathItem *childItem = createMathItem(mathSpan, item);
+            if (childItem) {
+                qDebug() << "    [MathItemFactory::createGenericMathItem] MathItem 创建成功，添加为子项";
+                // 注意：GenericMathItem 需要有添加子项的方法
+                // 这里暂时注释，后续完善 GenericMathItem 后再启用
+                // item->appendChild(childItem);
+            }
+        }
+        // TextSpan 不需要创建 MathItem，由 TextBlockLayoutEngine 处理
+    }
+    
+    qDebug() << "    [MathItemFactory::createGenericMathItem] 返回";
     return item;
 }
 

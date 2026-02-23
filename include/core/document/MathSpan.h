@@ -36,7 +36,8 @@ public:
         Fraction,       ///< 分数
         Radical,        ///< 根号
         SubSup,         ///< 上下标
-        Bracket         ///< 括号
+        Bracket,        ///< 括号
+        Generic         ///< 通用容器（可包含文本和公式）
     };
 
     /**

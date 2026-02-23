@@ -4,6 +4,16 @@
 #include <vector>
 #include "editcontrol/cursor/PathSegment.h"
 
+/**
+ * @file CoordinatePath.h
+ * @brief 坐标路径
+ * 
+ * 【未来使用】
+ * 此文件属于坐标路径系统，用于更优雅地处理嵌套公式。
+ * 目前该系统已完整实现但尚未在项目中使用，
+ * 待后续版本正式采用时再启用。
+ */
+
 namespace QtWordEditor {
 
 /**

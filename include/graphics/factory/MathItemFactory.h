@@ -55,6 +55,14 @@ private:
      * @return FractionItem指针
      */
     static MathItem *createFractionItem(MathSpan *span, MathItem *parent);
+
+    /**
+     * @brief 创建GenericMathItem
+     * @param span GenericMathSpan数据对象
+     * @param parent 父MathItem
+     * @return GenericMathItem指针
+     */
+    static MathItem *createGenericMathItem(MathSpan *span, MathItem *parent);
 };
 
 } // namespace QtWordEditor

@@ -336,7 +336,19 @@ void TextBlockLayoutEngine::layout(const QList<InlineSpan*> &spans,
     // =========================================
     
     // 计算总尺寸
-    m_totalWidth = m_availableWidth;
+    if (m_wrapMode == WrapMode::NoWrap) {
+        // NoWrap 模式下，计算实际内容的最大宽度
+        m_totalWidth = 0;
+        for (const LineInfo &line : m_lines) {
+            if (line.rect.width() > m_totalWidth) {
+                m_totalWidth = line.rect.width();
+            }
+        }
+    } else {
+        // 其他模式下，使用 availableWidth
+        m_totalWidth = m_availableWidth;
+    }
+    
     if (!m_lines.isEmpty()) {
         m_totalHeight = m_lines.last().rect.bottom();
     }

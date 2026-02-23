@@ -17,6 +17,7 @@ FractionItem::FractionItem(FractionMathSpan *span, MathItem *parent)
     , m_denPos()
     , m_lineY(0)
     , m_lineThickness(1.0)
+    , m_lineWidth(0)
     , m_padding(2.0)
 {
 }
@@ -34,6 +35,8 @@ void FractionItem::updateLayout()
     }
 
     qreal totalWidth = 0;
+    qreal numWidth = 0;
+    qreal denWidth = 0;
     qreal numHeight = 0;
     qreal denHeight = 0;
     qreal numBaseline = 0;
@@ -43,22 +46,27 @@ void FractionItem::updateLayout()
     if (m_numeratorItem) {
         m_numeratorItem->updateLayout();
         QRectF numRect = m_numeratorItem->boundingRect();
+        numWidth = numRect.width();
         numHeight = numRect.height();
         numBaseline = m_numeratorItem->baseline();
-        if (numRect.width() > totalWidth) {
-            totalWidth = numRect.width();
+        if (numWidth > totalWidth) {
+            totalWidth = numWidth;
         }
     }
 
     if (m_denominatorItem) {
         m_denominatorItem->updateLayout();
         QRectF denRect = m_denominatorItem->boundingRect();
+        denWidth = denRect.width();
         denHeight = denRect.height();
         denBaseline = m_denominatorItem->baseline();
-        if (denRect.width() > totalWidth) {
-            totalWidth = denRect.width();
+        if (denWidth > totalWidth) {
+            totalWidth = denWidth;
         }
     }
+
+    // 保存分子和分母的最大宽度，用于绘制分数线
+    m_lineWidth = qMax(numWidth, denWidth);
 
     // 添加左右padding
     totalWidth += 2 * m_padding;
@@ -116,8 +124,8 @@ void FractionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     painter->save();
     painter->setPen(QPen(Qt::black, m_lineThickness));
     
-    qreal lineX1 = m_padding;
-    qreal lineX2 = m_boundingRect.width() - m_padding;
+    qreal lineX1 = m_padding + (m_boundingRect.width() - 2 * m_padding - m_lineWidth) / 2.0;
+    qreal lineX2 = lineX1 + m_lineWidth;
     painter->drawLine(QPointF(lineX1, m_lineY), QPointF(lineX2, m_lineY));
     
     painter->restore();

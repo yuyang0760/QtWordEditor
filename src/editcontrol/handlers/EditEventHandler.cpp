@@ -131,20 +131,6 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
 
     qDebug() << "[EditEventHandler::handleMousePress] at:" << scenePos;
 
-    // ========== 先检查是否点击了 MathItem ==========
-    QList<QGraphicsItem *> items = m_scene->items(scenePos);
-    
-    // 先检查所有 items，看是否有 MathItem
-    for (QGraphicsItem *item : items) {
-        MathItem *mathItem = dynamic_cast<MathItem *>(item);
-        if (mathItem) {
-            qDebug() << "[EditEventHandler] 点击了 MathItem，不处理选择";
-            // 如果点击了 MathItem，直接返回，不处理选择
-            m_isSelecting = false;
-            return true;
-        }
-    }
-    
     // ========== 关键修复：遍历所有 TextBlockItem，确保它们都退出公式编辑模式 ==========
     bool hadMathEditMode = false;
     QList<QGraphicsItem *> allItems = m_scene->items();
@@ -157,8 +143,8 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         }
     }
 
-    // ========== 如果没有点击 MathItem，正常处理选择 ==========
-    qDebug() << "[EditEventHandler] 没有点击 MathItem，正常处理选择";
+    // ========== 正常处理选择，即使点击了 MathItem 也继续处理 ==========
+    qDebug() << "[EditEventHandler] 正常处理选择";
     // 获取光标位置
     CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
 

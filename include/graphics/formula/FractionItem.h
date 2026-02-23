@@ -161,6 +161,7 @@ private:
     QPointF m_denPos;            ///< 分母位置
     qreal m_lineY;               ///< 分数线Y位置
     qreal m_lineThickness;       ///< 分数线厚度
+    qreal m_lineWidth;           ///< 分数线宽度（分子和分母的最大宽度）
     qreal m_padding;             ///< 内边距
 };
 

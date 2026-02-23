@@ -16,22 +16,8 @@ class SelectionItem;
 class PageItem;
 class UnifiedCursorVisual;
 class TextBlockItem;
-class MathCursor;
 struct CursorPosition;
 struct SelectionRange;
-
-/**
- * @brief 公式编辑信息结构体
- * 
- * 用于存储当前公式编辑模式的状态和光标位置信息
- */
-struct MathEditInfo {
-    bool inMathEditMode = false;              ///< 是否处于公式编辑模式
-    TextBlockItem *textBlockItem = nullptr;   ///< 对应的 TextBlockItem
-    MathCursor *mathCursor = nullptr;         ///< 公式光标
-    int cursorMode = -1;                       ///< 光标模式 (-1=未知, 0=容器模式, 1=数字模式)
-    int cursorPosition = -1;                   ///< 光标位置
-};
 
 
 /**
@@ -192,12 +178,6 @@ public:
      * @return 对应的场景坐标位置
      */
     QPointF calculateCursorVisualPosition(const CursorPosition &pos) const;
-    
-    /**
-     * @brief 获取当前公式编辑信息
-     * @return 公式编辑信息结构体
-     */
-    MathEditInfo getMathEditInfo() const;
 
 public slots:
     /**

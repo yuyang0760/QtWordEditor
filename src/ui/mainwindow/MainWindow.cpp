@@ -16,7 +16,6 @@
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
 #include "graphics/items/TextBlockItem.h"
-#include "graphics/formula/MathCursor.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/handlers/EditEventHandler.h"
@@ -821,24 +820,25 @@ void MainWindow::updateStatusBar(const QPointF &scenePos, const QPoint &viewPos)
     QString mathEditInfo = "N/A";
     bool inMathMode = false;
     
+    // 公式编辑信息暂时禁用，后续需要重新实现
     if (m_scene) {
-        MathEditInfo mathInfo = m_scene->getMathEditInfo();
-        if (mathInfo.inMathEditMode) {
-            inMathMode = true;
-            
-            QString modeStr;
-            if (mathInfo.cursorMode == 0) {
-                modeStr = "容器模式";
-            } else if (mathInfo.cursorMode == 1) {
-                modeStr = "数字模式";
-            } else {
-                modeStr = "未知模式";
-            }
-            
-            mathEditInfo = QString("模式:%1, 位置:%2")
-                .arg(modeStr)
-                .arg(mathInfo.cursorPosition);
-        }
+        // MathEditInfo mathInfo = m_scene->getMathEditInfo();
+        // if (mathInfo.inMathEditMode) {
+        //     inMathMode = true;
+        //     
+        //     QString modeStr;
+        //     if (mathInfo.cursorMode == 0) {
+        //         modeStr = "容器模式";
+        //     } else if (mathInfo.cursorMode == 1) {
+        //         modeStr = "数字模式";
+        //     } else {
+        //         modeStr = "未知模式";
+        //     }
+        //     
+        //     mathEditInfo = QString("模式:%1, 位置:%2")
+        //         .arg(modeStr)
+        //         .arg(mathInfo.cursorPosition);
+        // }
     }
     
     if (m_document && m_document->sectionCount() > 0) {

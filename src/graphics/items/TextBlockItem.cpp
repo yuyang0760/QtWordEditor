@@ -1,5 +1,6 @@
 #include "graphics/items/TextBlockItem.h"
 #include "core/document/ParagraphBlock.h"
+#include "core/document/ParagraphStyle.h"
 #include "core/document/TextSpan.h"
 #include "graphics/items/TextBlockLayoutEngine.h"
 #include "core/utils/Constants.h"
@@ -9,15 +10,16 @@
 #include <QTransform>
 #include <QInputMethodEvent>
 #include "core/utils/Logger.h"
+#include "graphics/items/UnifiedCursorVisual.h"
 #include "core/document/MathSpan.h"
 #include "graphics/formula/MathItem.h"
 #include "graphics/factory/MathItemFactory.h"
-#include "graphics/formula/MathCursor.h"
 #include "graphics/formula/RowContainerItem.h"
 #include "graphics/formula/NumberItem.h"
 #include "graphics/formula/FractionItem.h"
 #include "core/document/math/NumberMathSpan.h"
 #include "graphics/scene/DocumentScene.h"
+#include "editcontrol/cursor/Cursor.h"
 
 namespace QtWordEditor {
 
@@ -32,7 +34,7 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
       m_selectionEndOffset(-1),
       m_inMathEditMode(false),
       m_rootMathItem(nullptr),
-      m_mathCursor(nullptr),
+      m_unifiedCursorVisual(nullptr),
       m_clickedMathItem(nullptr),
       m_clickedRegion(-1),
       m_clickedLocalPos(0, 0),
@@ -50,9 +52,10 @@ TextBlockItem::TextBlockItem(ParagraphBlock *block, QGraphicsItem *parent)
 TextBlockItem::~TextBlockItem()
 {
     delete m_layoutEngine;
-    if (m_mathCursor) {
-        delete m_mathCursor;
+    if (m_unifiedCursorVisual) {
+        delete m_unifiedCursorVisual;
     }
+    clearMathItems();
 }
 
 QRectF TextBlockItem::boundingRect() const
@@ -166,13 +169,6 @@ void TextBlockItem::updateBlock()
 
 void TextBlockItem::clearMathItems()
 {
-    // ========== 关键 1：在删除 MathItem 之前，先清除 m_mathCursor 的指针！ ==========
-    if (m_mathCursor) {
-        m_mathCursor->clear();
-        // ========== 关键 2：将 MathCursor 的父项设置回 TextBlockItem，防止悬空指针 ==========
-        m_mathCursor->setParentItem(this);
-    }
-    
     qDeleteAll(m_mathItems);
     m_mathItems.clear();
 }
@@ -455,12 +451,12 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
         scene->setCursorVisible(false);
     }
     
-    // 创建 MathCursor（保持兼容性）
-    if (!m_mathCursor) {
-        m_mathCursor = new MathCursor(this);
+    // 使用新的统一光标
+    if (!m_unifiedCursorVisual) {
+        m_unifiedCursorVisual = new UnifiedCursorVisual(this);
     }
-    // 确保 MathCursor 可见
-    m_mathCursor->setVisible(true);
+    // 确保统一光标可见
+    m_unifiedCursorVisual->setVisible(true);
     
     // 查找对应的 MathItem
     m_rootMathItem = nullptr;
@@ -484,8 +480,9 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
         int charPosition = numItem->hitTestX(m_clickedLocalPos.x());
         qDebug() << "[enterMathEditMode] 字符位置=" << charPosition;
         
-        m_mathCursor->setHeight(numItem->boundingRect().height());
-        m_mathCursor->setPosition(numItem, charPosition);
+        // 设置统一光标位置
+        QPointF cursorPos = numItem->mapToParent(QPointF(numItem->boundingRect().left(), 0));
+        m_unifiedCursorVisual->setPosition(cursorPos, numItem->boundingRect().height());
         
         setFocus();
         if (!wasInEditMode) {
@@ -533,8 +530,9 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
             int charPosition = targetNumberItem->hitTestX(numberLocalPos.x());
             qDebug() << "[enterMathEditMode] 字符位置=" << charPosition;
             
-            m_mathCursor->setHeight(targetNumberItem->boundingRect().height());
-            m_mathCursor->setPosition(targetNumberItem, charPosition);
+            // 设置统一光标位置
+            QPointF cursorPos = targetNumberItem->mapToParent(QPointF(targetNumberItem->boundingRect().left(), 0));
+            m_unifiedCursorVisual->setPosition(cursorPos, targetNumberItem->boundingRect().height());
             
             setFocus();
             if (!wasInEditMode) {
@@ -549,9 +547,6 @@ void TextBlockItem::enterMathEditMode(MathSpan *mathSpan)
     // ========== 关键：没有找到 NumberItem，不设置大光标，退出公式编辑模式 ==========
     qDebug() << "[enterMathEditMode] 没有找到 NumberItem，不设置大光标，退出公式编辑模式";
     m_inMathEditMode = false;
-    m_mathCursor->setVisible(false);
-    m_mathCursor->clear();
-    m_mathCursor->setParentItem(this);
     m_rootMathItem = nullptr;
     
     // 重新显示 DocumentScene 的普通光标
@@ -568,13 +563,9 @@ void TextBlockItem::exitMathEditMode()
     
     m_inMathEditMode = false;
     
-    // ========== 彻底隐藏 MathCursor（确保完全不可见）==========
-    if (m_mathCursor) {
-        m_mathCursor->setVisible(false);
-        // ========== 关键 1：清除 MathCursor 持有的所有 MathItem 指针 ==========
-        m_mathCursor->clear();
-        // ========== 关键 2：将 MathCursor 的父项设置回 TextBlockItem，防止悬空指针 ==========
-        m_mathCursor->setParentItem(this);
+    // ========== 隐藏统一光标 ==========
+    if (m_unifiedCursorVisual) {
+        m_unifiedCursorVisual->setVisible(false);
     }
     
     m_rootMathItem = nullptr;
@@ -589,10 +580,7 @@ void TextBlockItem::exitMathEditMode()
     qDebug() << "退出公式编辑模式";
 }
 
-MathCursor *TextBlockItem::mathCursor() const
-{
-    return m_mathCursor;
-}
+
 
 void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -760,92 +748,9 @@ void TextBlockItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void TextBlockItem::keyPressEvent(QKeyEvent *event)
 {
-    if (m_inMathEditMode && m_mathCursor) {
-        qDebug() << "[TextBlockItem::keyPressEvent] 公式编辑模式，key=" << event->key() << ", text=" << event->text();
-        
-        // 检查是否在 NumberItem 内部（数字模式）
-        if (m_mathCursor->cursorMode() == MathCursor::NumberMode) {
-            NumberItem *numberItem = m_mathCursor->currentNumberItem();
-            if (numberItem) {
-                NumberMathSpan *numSpan = numberItem->numberSpan();
-                if (numSpan) {
-                    QString text = numSpan->text();
-                    int pos = m_mathCursor->position();
-                    
-                    // 处理可打印字符
-                    if (event->text().length() > 0 && event->text()[0].isPrint()) {
-                        // 插入字符
-                        text.insert(pos, event->text());
-                        numSpan->setText(text);
-                        
-                        // 更新 NumberItem 自身布局
-                        numberItem->updateLayout();
-                        
-                        // 安全更新整个段落布局（不删除 MathItem）
-                        safeUpdateLayout();
-                        
-                        // 光标向右移动
-                        m_mathCursor->setPosition(numberItem, pos + 1);
-                        return;
-                    }
-                    
-                    // 处理退格键
-                    if (event->key() == Qt::Key_Backspace) {
-                        if (pos > 0) {
-                            text.remove(pos - 1, 1);
-                            numSpan->setText(text);
-                            
-                            // 更新 NumberItem 自身布局
-                            numberItem->updateLayout();
-                            
-                            // 安全更新整个段落布局（不删除 MathItem）
-                            safeUpdateLayout();
-                            
-                            // 光标向左移动
-                            m_mathCursor->setPosition(numberItem, pos - 1);
-                        }
-                        return;
-                    }
-                    
-                    // 处理 Delete 键
-                    if (event->key() == Qt::Key_Delete) {
-                        if (pos < text.length()) {
-                            text.remove(pos, 1);
-                            numSpan->setText(text);
-                            
-                            // 更新 NumberItem 自身布局
-                            numberItem->updateLayout();
-                            
-                            // 安全更新整个段落布局（不删除 MathItem）
-                            safeUpdateLayout();
-                        }
-                        return;
-                    }
-                }
-            }
-        }
-        
-        // 处理导航键
-        switch (event->key()) {
-            case Qt::Key_Left:
-                m_mathCursor->moveLeft();
-                break;
-            case Qt::Key_Right:
-                m_mathCursor->moveRight();
-                break;
-            case Qt::Key_Up:
-                m_mathCursor->moveUp();
-                break;
-            case Qt::Key_Down:
-                m_mathCursor->moveDown();
-                break;
-            case Qt::Key_Escape:
-                exitMathEditMode();
-                break;
-            default:
-                QGraphicsItem::keyPressEvent(event);
-                break;
-        }
+    // 公式编辑模式下的键盘事件暂时禁用，后续需要重新实现
+    if (m_inMathEditMode) {
+        event->ignore();
         return;
     }
     
@@ -854,41 +759,9 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
 
 void TextBlockItem::inputMethodEvent(QInputMethodEvent *event)
 {
-    // 如果在公式编辑模式并且光标在 NumberItem 中，处理输入法输入
-    if (m_inMathEditMode && m_mathCursor && 
-        m_mathCursor->cursorMode() == MathCursor::NumberMode) {
-        
-        NumberItem *numberItem = m_mathCursor->currentNumberItem();
-        if (numberItem) {
-            NumberMathSpan *numSpan = numberItem->numberSpan();
-            if (numSpan) {
-                QString text = numSpan->text();
-                int pos = m_mathCursor->position();
-                
-                // 处理输入法提交的文本
-                QString commitString = event->commitString();
-                if (!commitString.isEmpty()) {
-                    // 插入提交的文本
-                    text.insert(pos, commitString);
-                    numSpan->setText(text);
-                    
-                    // 更新 NumberItem 自身布局
-                    numberItem->updateLayout();
-                    
-                    // 安全更新整个段落布局（不删除 MathItem）
-                    safeUpdateLayout();
-                    
-                    // 光标移动到提交文本的末尾
-                    m_mathCursor->setPosition(numberItem, pos + commitString.length());
-                }
-                
-                // 完全接受事件，阻止父类处理
-                event->accept();
-                return;
-            }
-        }
-        // 即使没有处理，只要在公式编辑模式，也接受事件
-        event->accept();
+    // 公式编辑模式下的输入法事件暂时禁用，后续需要重新实现
+    if (m_inMathEditMode) {
+        event->ignore();
         return;
     }
     
@@ -898,52 +771,12 @@ void TextBlockItem::inputMethodEvent(QInputMethodEvent *event)
 
 QVariant TextBlockItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    // 只有在公式编辑模式并且光标在 NumberItem 中，才提供输入法查询信息
-    if (m_inMathEditMode && m_mathCursor && 
-        m_mathCursor->cursorMode() == MathCursor::NumberMode) {
-        
-        NumberItem *numberItem = m_mathCursor->currentNumberItem();
-        if (numberItem) {
-            NumberMathSpan *numSpan = numberItem->numberSpan();
-            if (numSpan) {
-                QString text = numSpan->text();
-                int pos = m_mathCursor->position();
-                
-                switch (query) {
-                    case Qt::ImCursorPosition:
-                        // 返回光标位置
-                        return pos;
-                    case Qt::ImSurroundingText:
-                        // 返回周围文本
-                        return text;
-                    case Qt::ImCurrentSelection:
-                        // 当前没有选择，返回空
-                        return QString();
-                    case Qt::ImFont:
-                        // 返回 NumberItem 使用的字体
-                        return QFont("Microsoft YaHei", 12);
-                    default:
-                        break;
-                }
-            }
-        }
+    // 公式编辑模式下的输入法查询暂时禁用，后续需要重新实现
+    if (m_inMathEditMode) {
+        return QVariant();
     }
     
-    // 不在公式编辑模式，或者不在 NumberItem，返回空值，阻止输入法输入到普通文本
-    switch (query) {
-        case Qt::ImEnabled:
-            // 只有在公式编辑模式才启用输入法
-            return m_inMathEditMode;
-        case Qt::ImCursorPosition:
-        case Qt::ImSurroundingText:
-        case Qt::ImCurrentSelection:
-        case Qt::ImFont:
-            // 不在公式编辑模式，返回空
-            return QVariant();
-        default:
-            break;
-    }
-    
+    // 不在公式编辑模式，返回空值
     return QVariant();
 }
 

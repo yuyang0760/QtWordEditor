@@ -16,7 +16,6 @@ namespace QtWordEditor {
 class ParagraphBlock;
 class MathItem;
 class MathSpan;
-class MathCursor;
 class UnifiedCursorVisual;
 class RowContainerItem;
 class NumberItem;
@@ -221,12 +220,6 @@ public:
      */
     void exitMathEditMode();
     
-    /**
-     * @brief 获取当前的 MathCursor
-     * @return MathCursor 指针
-     */
-    MathCursor *mathCursor() const;
-    
     // ========== 统一光标（新）相关方法 ==========
     
     /**
@@ -263,7 +256,7 @@ private:
     // ========== 公式编辑模式 ==========
     bool m_inMathEditMode;                  ///< 是否处于公式编辑模式
     MathItem *m_rootMathItem;               ///< 当前编辑的根 MathItem
-    MathCursor *m_mathCursor;               ///< 公式光标
+    UnifiedCursorVisual *m_unifiedCursorVisual; ///< 统一光标
     
     // ========== 点击信息存储（临时） ==========
     MathItem *m_clickedMathItem;            ///< 被点击的 MathItem

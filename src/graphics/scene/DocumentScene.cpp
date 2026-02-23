@@ -12,7 +12,6 @@
 #include "graphics/items/UnifiedCursorVisual.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
-#include "graphics/formula/MathCursor.h"
 #include "editcontrol/cursor/Cursor.h"
 #include "editcontrol/selection/Selection.h"
 #include <QGraphicsItem>
@@ -616,7 +615,11 @@ void DocumentScene::updateCursorFromPosition(const CursorPosition &pos)
         }
     }
     
-    updateCursor(visualPos, cursorHeight);
+    // 使用统一光标
+    if (m_unifiedCursorVisual) {
+        m_unifiedCursorVisual->setPosition(visualPos, cursorHeight);
+        m_unifiedCursorVisual->setVisible(true);
+    }
 }
 
 QList<QRectF> DocumentScene::calculateSelectionRects(const SelectionRange &range) const
@@ -710,8 +713,8 @@ UnifiedCursorVisual *DocumentScene::unifiedCursorVisual()
     if (!m_unifiedCursorVisual) {
         m_unifiedCursorVisual = new UnifiedCursorVisual();
         addItem(m_unifiedCursorVisual);
-        // 默认隐藏统一光标，保持旧光标的行为
-        m_unifiedCursorVisual->setVisible(false);
+        // 默认显示统一光标
+        m_unifiedCursorVisual->setVisible(true);
     }
     return m_unifiedCursorVisual;
 }
@@ -723,32 +726,6 @@ void DocumentScene::setUnifiedCursorVisible(bool visible)
     }
 }
 
-// ========== 获取公式编辑信息 ==========
 
-MathEditInfo DocumentScene::getMathEditInfo() const
-{
-    MathEditInfo info;
-    
-    // 遍历所有的块图形项，查找处于公式编辑模式的 TextBlockItem
-    for (auto it = m_blockItems.begin(); it != m_blockItems.end(); ++it) {
-        TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
-        if (textBlockItem && textBlockItem->isInMathEditMode()) {
-            info.inMathEditMode = true;
-            info.textBlockItem = textBlockItem;
-            info.mathCursor = textBlockItem->mathCursor();
-            
-            // 如果有 MathCursor，获取其模式和位置
-            if (info.mathCursor) {
-                info.cursorMode = static_cast<int>(info.mathCursor->cursorMode());
-                info.cursorPosition = info.mathCursor->position();
-            }
-            
-            // 找到一个就可以了，应该只有一个处于编辑模式
-            break;
-        }
-    }
-    
-    return info;
-}
 
 } // namespace QtWordEditor

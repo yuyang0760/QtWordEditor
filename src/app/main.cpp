@@ -30,11 +30,7 @@
  */
 int main(int argc, char *argv[])
 {
-#ifdef Q_OS_WIN
-    // 设置 Windows 控制台编码为 UTF-8，解决中文乱码问题
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
-#endif
+
 
     QtWordEditor::Application app(argc, argv);
     

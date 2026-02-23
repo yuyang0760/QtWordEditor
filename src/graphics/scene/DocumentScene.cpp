@@ -6,7 +6,7 @@
 #include "core/document/Page.h"
 #include "core/document/ParagraphStyle.h"
 #include "core/utils/Constants.h"
-#include "core/utils/Logger.h"
+
 #include "graphics/items/BaseBlockItem.h"
 #include "graphics/items/TextBlockItem.h"
 #include "graphics/items/UnifiedCursorVisual.h"

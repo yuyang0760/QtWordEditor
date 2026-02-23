@@ -6,7 +6,7 @@
 
 #include "ui/dialogs/PageSetupDialog.h"
 #include "core/utils/Constants.h"
-#include "core/utils/Logger.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>

@@ -1,6 +1,6 @@
 #include "core/document/ParagraphBlock.h"
 #include "core/document/TextSpan.h"
-#include "core/utils/Logger.h"
+
 #include <QDebug>
 
 namespace QtWordEditor {

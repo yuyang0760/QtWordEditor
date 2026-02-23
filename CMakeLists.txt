@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ========== 调试输出开关 ==========
 # 设置为 OFF 可以一键禁用所有 qDebug() 输出
 # 设置为 ON 启用调试输出
-option(ENABLE_DEBUG_OUTPUT "Enable qDebug() output" OFF)
+option(ENABLE_DEBUG_OUTPUT "Enable qDebug() output" on)
 
 if(NOT ENABLE_DEBUG_OUTPUT)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -17,11 +17,7 @@ else()
     message(STATUS "Debug output enabled")
 endif()
 
-if(MSVC)
-    add_compile_options(/Zc:__cplusplus /permissive- /FS /utf-8)
-elseif(MINGW)
-    add_compile_options(-finput-charset=UTF-8 -fexec-charset=UTF-8)
-endif()
+
 
 # Find Qt6
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Gui PrintSupport OpenGLWidgets LinguistTools)
@@ -52,20 +48,7 @@ add_library(QtWordEditorGraphics STATIC ${GRAPHICS_SOURCES} ${GRAPHICS_HEADERS})
 add_library(QtWordEditorIO STATIC ${IO_SOURCES} ${IO_HEADERS})
 add_library(QtWordEditorUI STATIC ${UI_SOURCES} ${UI_HEADERS})
 
-# Set MSVC specific compile options for all targets
-if(MSVC)
-    target_compile_options(QtWordEditorCore PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-    target_compile_options(QtWordEditorEditControl PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-    target_compile_options(QtWordEditorGraphics PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-    target_compile_options(QtWordEditorIO PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-    target_compile_options(QtWordEditorUI PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-elseif(MINGW)
-    target_compile_options(QtWordEditorCore PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-    target_compile_options(QtWordEditorEditControl PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-    target_compile_options(QtWordEditorGraphics PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-    target_compile_options(QtWordEditorIO PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-    target_compile_options(QtWordEditorUI PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-endif()
+
 
 # Set include directories for libraries
 target_include_directories(QtWordEditorCore PUBLIC include)
@@ -89,12 +72,7 @@ if(TRANSLATION_FILES)
     target_sources(QtWordEditor PRIVATE ${QM_FILES})
 endif()
 
-# Set compile options for executable
-if(MSVC)
-    target_compile_options(QtWordEditor PRIVATE /Zc:__cplusplus /permissive- /FS /utf-8)
-elseif(MINGW)
-    target_compile_options(QtWordEditor PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
-endif()
+
 
 # Link libraries to main executable
 target_link_libraries(QtWordEditor

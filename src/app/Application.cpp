@@ -16,6 +16,7 @@
 #include <QLibraryInfo>
 #include <QStandardPaths>
 #include <QLocale>
+#include <QDebug>
 
 namespace QtWordEditor {
 
@@ -43,6 +44,8 @@ Application::Application(int &argc, char **argv)
     setOrganizationName(d_ptr->organizationName);
     setApplicationName(d_ptr->applicationName);
     setApplicationVersion(d_ptr->version);
+    
+
 }
 
 /**

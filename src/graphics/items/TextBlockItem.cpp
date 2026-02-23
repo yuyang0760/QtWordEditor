@@ -9,7 +9,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QTransform>
 #include <QInputMethodEvent>
-#include "core/utils/Logger.h"
+
 #include "graphics/items/UnifiedCursorVisual.h"
 #include "core/document/MathSpan.h"
 #include "graphics/formula/MathItem.h"

@@ -151,14 +151,31 @@ CharacterStyle GenericMathSpan::styleAt(int position) const
     return CharacterStyle();
 }
 
+/**
+ * @brief 在指定位置插入文本
+ * @param position 插入位置（从开头算起的全局偏移）
+ * @param text 要插入的文本
+ * @param style 字符样式
+ * 
+ * 该方法的实现逻辑与 ParagraphBlock::insertText 完全相同：
+ * 1. 如果 spans 列表为空，直接添加一个新的 TextSpan
+ * 2. 如果 spans 列表不为空：
+ *    a. 找到指定位置对应的 span 和在 span 内的位置
+ *    b. 根据位置是在 span 开头、中间还是末尾，采取不同的插入策略
+ *    c. 如果样式相同，直接合并文本
+ *    d. 如果样式不同，插入新的 TextSpan
+ *    e. 在 span 中间插入时，需要先分割 span
+ * 3. 最后合并相邻且样式相同的 TextSpan
+ * 4. 发出 spansChanged 和 contentChanged 信号，通知视图更新
+ */
 void GenericMathSpan::insert(int position, const QString &text, const CharacterStyle &style)
 {
-    qDebug() << "[GenericMathSpan::insert] 开始, position=" << position << ", text=" << text;
-    
+    // 文本为空，不做任何操作
     if (text.isEmpty())
         return;
     
     if (m_spans.isEmpty()) {
+        // 列表为空，直接添加新 TextSpan
         m_spans.append(new TextSpan(text, style, this));
     } else {
         int posInSpan = 0;
@@ -194,16 +211,20 @@ void GenericMathSpan::insert(int position, const QString &text, const CharacterS
                     QString before = spanText.left(posInSpan);
                     QString after = spanText.mid(posInSpan);
                     
+                    // 先移除旧的 span
                     m_spans.removeAt(spanIndex);
                     
+                    // 插入分割后的前半部分
                     if (!before.isEmpty()) {
                         m_spans.insert(spanIndex, new TextSpan(before, textSpan->style(), this));
                         spanIndex++;
                     }
                     
+                    // 插入新文本
                     m_spans.insert(spanIndex, new TextSpan(text, style, this));
                     spanIndex++;
                     
+                    // 插入分割后的后半部分
                     if (!after.isEmpty()) {
                         m_spans.insert(spanIndex, new TextSpan(after, textSpan->style(), this));
                     }
@@ -215,11 +236,12 @@ void GenericMathSpan::insert(int position, const QString &text, const CharacterS
         }
     }
     
+    // 合并相邻且样式相同的 TextSpan
     mergeAdjacentSpans();
-    qDebug() << "[GenericMathSpan::insert] 准备发出 spansChanged 和 contentChanged 信号";
+    
+    // 发出信号，通知视图更新
     emit spansChanged();
     emit contentChanged();
-    qDebug() << "[GenericMathSpan::insert] 信号已发出";
 }
 
 void GenericMathSpan::remove(int position, int length)

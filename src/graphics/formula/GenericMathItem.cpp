@@ -1,16 +1,35 @@
 /**
  * @file GenericMathItem.cpp
  * @brief 通用公式容器视图类（简化版）实现
+ * 
+ * 该类使用 TextBlockLayoutEngine，类似 TextBlockItem 的设计，
+ * 但配置为 NoWrap 模式，没有段落、缩进等复杂功能。
+ * 专门用于公式内部的文本和公式混排。
+ * 
+ * 主要功能：
+ * 1. 布局文本和内嵌公式
+ * 2. 监听数据变化并自动更新布局
+ * 3. 支持光标定位和点击交互
+ * 4. 通知父元素布局变化
  */
 
 #include "graphics/formula/GenericMathItem.h"
 #include "core/document/math/GenericMathSpan.h"
 #include "graphics/factory/MathItemFactory.h"
 #include <QPainter>
-#include <QDebug>
 
 namespace QtWordEditor {
 
+/**
+ * @brief 构造函数
+ * @param span 对应的 GenericMathSpan 数据对象
+ * @param parent 父 MathItem（可选）
+ * 
+ * 构造函数会执行以下操作：
+ * 1. 配置布局引擎为 NoWrap 模式（不自动换行）
+ * 2. 连接 GenericMathSpan 的 spansChanged 和 contentChanged 信号
+ * 3. 初始化 MathItem 子项
+ */
 GenericMathItem::GenericMathItem(GenericMathSpan *span, MathItem *parent)
     : MathItem(span, parent)
     , m_layoutEngine(new TextBlockLayoutEngine())
@@ -18,7 +37,7 @@ GenericMathItem::GenericMathItem(GenericMathSpan *span, MathItem *parent)
     , m_boundingRect()
     , m_isUpdatingLayout(false)
 {
-    // 配置布局引擎为 NoWrap 模式
+    // 配置布局引擎为 NoWrap 模式，不自动换行
     m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::NoWrap);
     m_layoutEngine->setAvailableWidth(100000.0); // 足够大的宽度，不换行
     
@@ -32,12 +51,28 @@ GenericMathItem::GenericMathItem(GenericMathSpan *span, MathItem *parent)
     updateMathItems();
 }
 
+/**
+ * @brief 析构函数
+ * 
+ * 释放布局引擎和 MathItem 子项。
+ */
 GenericMathItem::~GenericMathItem()
 {
     delete m_layoutEngine;
     clearMathItems();
 }
 
+/**
+ * @brief 更新 MathItem 子项
+ * 
+ * 该方法执行以下步骤：
+ * 1. 清除旧的 MathItem
+ * 2. 创建所有 MathItem 并获取它们的真实尺寸
+ * 3. 使用真实尺寸执行布局
+ * 4. 设置 MathItem 的位置并显示它们
+ * 
+ * 这样可以确保在布局前就能获取到公式的精确尺寸。
+ */
 void GenericMathItem::updateMathItems()
 {
     // 清除旧的 MathItem
@@ -68,8 +103,10 @@ void GenericMathItem::updateMathItems()
     
     // ========== 第二步：执行布局（现在可以使用真实尺寸） ==========
     if (mathSizeMap.isEmpty()) {
+        // 没有 MathItem，直接布局
         performLayout();
     } else {
+        // 有 MathItem，使用真实尺寸布局
         performLayoutWithMathSizes(mathSizeMap, mathBaselineMap);
     }
     // ===============================================================
@@ -88,12 +125,19 @@ void GenericMathItem::updateMathItems()
     // ===============================================================
 }
 
+/**
+ * @brief 清除 MathItem 子项
+ */
 void GenericMathItem::clearMathItems()
 {
     qDeleteAll(m_mathItems);
     m_mathItems.clear();
 }
 
+/**
+ * @brief 获取 InlineSpan 列表
+ * @return InlineSpan 列表
+ */
 QList<InlineSpan*> GenericMathItem::getSpans() const
 {
     GenericMathSpan *span = genericSpan();
@@ -103,47 +147,66 @@ QList<InlineSpan*> GenericMathItem::getSpans() const
     return span->spans();
 }
 
+/**
+ * @brief 执行布局（无 MathItem 尺寸）
+ * 
+ * 使用 TextBlockLayoutEngine 进行布局，没有 MathItem 尺寸信息。
+ */
 void GenericMathItem::performLayout()
 {
     QList<InlineSpan*> spans = getSpans();
     
-    // 使用布局引擎
+    // 使用布局引擎进行布局
     m_layoutEngine->layout(spans);
     
     // 更新边界矩形
     m_boundingRect = QRectF(0, 0, m_layoutEngine->totalWidth(), m_layoutEngine->totalHeight());
 }
 
+/**
+ * @brief 执行布局（使用给定的 MathSpan 尺寸）
+ * @param mathSizeMap MathSpan 到尺寸的映射
+ * @param mathBaselineMap MathSpan 到基线的映射
+ * 
+ * 使用 TextBlockLayoutEngine 进行布局，并使用提供的 MathItem 尺寸信息。
+ */
 void GenericMathItem::performLayoutWithMathSizes(const QHash<InlineSpan*, QSizeF> &mathSizeMap, 
                                                    const QHash<InlineSpan*, qreal> &mathBaselineMap)
 {
     QList<InlineSpan*> spans = getSpans();
     
-    // 使用布局引擎
+    // 使用布局引擎进行布局（提供 MathItem 尺寸）
     m_layoutEngine->layout(spans, mathSizeMap, mathBaselineMap);
     
     // 更新边界矩形
     m_boundingRect = QRectF(0, 0, m_layoutEngine->totalWidth(), m_layoutEngine->totalHeight());
 }
 
+/**
+ * @brief 更新布局
+ * 
+ * 该方法执行以下操作：
+ * 1. 防止无限递归调用（通过 m_isUpdatingLayout 标志）
+ * 2. 更新所有 MathItem 子项的布局
+ * 3. 重新创建 MathItem 并执行布局
+ * 4. 设置基线（使用第一行的基线）
+ * 5. 通知父元素布局已变化
+ */
 void GenericMathItem::updateLayout()
 {
-    qDebug() << "[GenericMathItem::updateLayout] 开始";
-    
     // 防止无限递归调用
     if (m_isUpdatingLayout) {
-        qDebug() << "[GenericMathItem::updateLayout] 正在更新中，跳过";
         return;
     }
     
     m_isUpdatingLayout = true;
     
-    // 更新 MathItem 的布局
+    // 更新所有 MathItem 子项的布局
     for (MathItem *mathItem : m_mathItems) {
         mathItem->updateLayout();
     }
     
-    // 重新创建 MathItem 并布局
+    // 重新创建 MathItem 并执行布局
     updateMathItems();
     
     // 设置基线（使用第一行的基线）
@@ -154,11 +217,9 @@ void GenericMathItem::updateLayout()
     }
     
     // 通知父元素布局已变化
-    qDebug() << "[GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()";
     notifyParentLayoutChanged();
     
     m_isUpdatingLayout = false;
-    qDebug() << "[GenericMathItem::updateLayout] 完成";
 }
 
 qreal GenericMathItem::baseline() const

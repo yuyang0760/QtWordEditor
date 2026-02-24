@@ -12,6 +12,7 @@
 
 #include "core/document/MathSpan.h"
 #include "core/document/InlineSpan.h"
+#include "core/document/CharacterStyle.h"
 #include <QList>
 #include "core/Global.h"
 
@@ -103,13 +104,69 @@ public:
      */
     void clearSpans();
 
+    // ========== 文本编辑方法（类似 ParagraphBlock） ==========
+
+    /**
+     * @brief 获取所有文本内容
+     * @return 文本内容
+     */
+    QString text() const;
+
+    /**
+     * @brief 在指定位置插入文本
+     * @param position 插入位置
+     * @param text 要插入的文本
+     * @param style 字符样式
+     */
+    void insert(int position, const QString &text, const CharacterStyle &style);
+
+    /**
+     * @brief 删除指定位置和长度的文本
+     * @param position 起始位置
+     * @param length 要删除的长度
+     */
+    void remove(int position, int length);
+
+    /**
+     * @brief 查找指定全局位置对应的 InlineSpan 索引
+     * @param globalPosition 全局位置
+     * @param positionInSpan 输出：在找到的 span 内的位置
+     * @return span 索引
+     */
+    int findInlineSpanIndex(int globalPosition, int *positionInSpan = nullptr) const;
+
+    /**
+     * @brief 获取指定位置的字符样式
+     * @param position 位置
+     * @return 字符样式
+     */
+    CharacterStyle styleAt(int position) const;
+
+    /**
+     * @brief 获取总长度
+     * @return 总长度
+     */
+    int length() const;
+
 signals:
     /**
      * @brief InlineSpan 列表变化信号
      */
     void spansChanged();
 
+    /**
+     * @brief 内容变化信号
+     */
+    void contentChanged();
+
 private:
+    // ========== 辅助方法 ==========
+
+    /**
+     * @brief 合并相邻且样式相同的 TextSpan
+     */
+    void mergeAdjacentSpans();
+
     QList<InlineSpan*> m_spans;  ///< InlineSpan 列表
 };
 

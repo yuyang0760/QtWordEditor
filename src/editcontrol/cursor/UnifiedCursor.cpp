@@ -8,7 +8,10 @@
 
 #include "editcontrol/cursor/UnifiedCursor.h"
 #include "core/document/Document.h"
+#include "core/document/Section.h"
 #include "core/document/Block.h"
+#include "core/document/ParagraphBlock.h"
+#include "core/document/math/GenericMathSpan.h"
 #include "core/commands/InsertTextCommand.h"
 #include "core/commands/RemoveTextCommand.h"
 #include <QDebug>
@@ -496,37 +499,137 @@ void UnifiedCursor::exitMathMode()
     }
 }
 
-// ========== 公式内文本编辑方法（待完善） ==========
+// ========== 公式内文本编辑方法 ==========
+
+/**
+ * @brief 辅助方法：根据 mathPath 找到对应的 GenericMathSpan
+ * @return 找到的 GenericMathSpan 指针，失败返回 nullptr
+ */
+static GenericMathSpan* findGenericMathSpanFromPath(Document *document, const UnifiedCursorPosition &pos)
+{
+    if (!document || !pos.isMathMode()) {
+        return nullptr;
+    }
+    
+    // 步骤 1：在指定块和偏移找到根 MathSpan
+    Section *section = document->section(0);
+    if (!section || pos.blockIndex < 0 || pos.blockIndex >= section->blockCount()) {
+        return nullptr;
+    }
+    
+    Block *block = section->block(pos.blockIndex);
+    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
+    if (!paraBlock) {
+        return nullptr;
+    }
+    
+    // 在段落中找到指定偏移位置的 InlineSpan
+    int posInSpan = 0;
+    int spanIndex = paraBlock->findInlineSpanIndex(pos.offset, &posInSpan);
+    if (spanIndex < 0 || spanIndex >= paraBlock->inlineSpanCount()) {
+        return nullptr;
+    }
+    
+    InlineSpan *inlineSpan = paraBlock->inlineSpan(spanIndex);
+    if (!inlineSpan || inlineSpan->type() != InlineSpan::Math) {
+        return nullptr;
+    }
+    
+    MathSpan *currentMathSpan = qobject_cast<MathSpan*>(inlineSpan);
+    if (!currentMathSpan) {
+        return nullptr;
+    }
+    
+    // 步骤 2：根据 mathPath 逐层向下遍历
+    const CoordinatePath &path = *pos.mathPath;
+    for (size_t i = 0; i < path.depth(); ++i) {
+        const PathSegment &segment = path.at(i);
+        if (segment.childIndex < 0 || segment.childIndex >= currentMathSpan->childCount()) {
+            return nullptr;
+        }
+        currentMathSpan = currentMathSpan->childAt(segment.childIndex);
+        if (!currentMathSpan) {
+            return nullptr;
+        }
+    }
+    
+    // 步骤 3：检查最终找到的是否是 GenericMathSpan
+    GenericMathSpan *genericSpan = qobject_cast<GenericMathSpan*>(currentMathSpan);
+    return genericSpan;
+}
 
 void UnifiedCursor::mathInsertText(const QString &text, const CharacterStyle &style)
 {
-    Q_UNUSED(text);
-    Q_UNUSED(style);
-    // TODO: 实现公式内文本插入功能
-    // 需要根据 mathPath 找到对应的 GenericMathSpan 并修改文本
-    qDebug() << "[UnifiedCursor::mathInsertText] 待实现: 插入文本到公式";
+    if (!m_position.isMathMode() || text.isEmpty() || !m_document) {
+        return;
+    }
+    
+    qDebug() << "[UnifiedCursor::mathInsertText] 开始, mathTextOffset=" << m_position.mathTextOffset << ", text=" << text;
+    
+    // 找到对应的 GenericMathSpan
+    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+    if (!genericSpan) {
+        qDebug() << "[UnifiedCursor::mathInsertText] 找不到 GenericMathSpan";
+        return;
+    }
+    
+    qDebug() << "[UnifiedCursor::mathInsertText] 找到 GenericMathSpan, 插入文本";
+    
+    // 在指定位置插入文本
+    genericSpan->insert(m_position.mathTextOffset, text, style);
+    
+    // 更新光标位置
+    m_position.mathTextOffset += text.length();
+    emitPositionChangedSignals();
 }
 
 void UnifiedCursor::mathDeletePreviousChar()
 {
-    // 简单实现：如果 mathTextOffset > 0，就减少它
-    if (m_position.isMathMode() && m_position.mathTextOffset > 0) {
-        m_position.mathTextOffset--;
-        emitPositionChangedSignals();
-        qDebug() << "[UnifiedCursor::mathDeletePreviousChar] mathTextOffset 减少为:" << m_position.mathTextOffset;
+    if (!m_position.isMathMode() || m_position.mathTextOffset <= 0 || !m_document) {
+        return;
     }
-    // TODO: 真正删除公式内的字符需要找到 GenericMathSpan 并修改数据
+    
+    qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
+    
+    // 找到对应的 GenericMathSpan
+    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+    if (!genericSpan) {
+        qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找不到 GenericMathSpan";
+        return;
+    }
+    
+    qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找到 GenericMathSpan, 删除前一个字符";
+    
+    // 删除前一个字符
+    genericSpan->remove(m_position.mathTextOffset - 1, 1);
+    
+    // 更新光标位置
+    m_position.mathTextOffset--;
+    emitPositionChangedSignals();
 }
 
 void UnifiedCursor::mathDeleteNextChar()
 {
-    // 简单实现：增加 mathTextOffset（假装删除了后面的字符）
-    if (m_position.isMathMode()) {
-        m_position.mathTextOffset++;
-        emitPositionChangedSignals();
-        qDebug() << "[UnifiedCursor::mathDeleteNextChar] mathTextOffset 增加为:" << m_position.mathTextOffset;
+    if (!m_position.isMathMode() || !m_document) {
+        return;
     }
-    // TODO: 真正删除公式内的字符需要找到 GenericMathSpan 并修改数据
+    
+    qDebug() << "[UnifiedCursor::mathDeleteNextChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
+    
+    // 找到对应的 GenericMathSpan
+    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+    if (!genericSpan) {
+        qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找不到 GenericMathSpan";
+        return;
+    }
+    
+    qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找到 GenericMathSpan, 删除后一个字符";
+    
+    // 删除后一个字符
+    genericSpan->remove(m_position.mathTextOffset, 1);
+    
+    // 光标位置不需要改变
+    emitPositionChangedSignals();
 }
 
 } // namespace QtWordEditor

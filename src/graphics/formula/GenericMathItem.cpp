@@ -22,6 +22,12 @@ GenericMathItem::GenericMathItem(GenericMathSpan *span, MathItem *parent)
     m_layoutEngine->setWrapMode(TextBlockLayoutEngine::WrapMode::NoWrap);
     m_layoutEngine->setAvailableWidth(100000.0); // 足够大的宽度，不换行
     
+    // 连接信号：当 GenericMathSpan 内容变化时更新布局
+    if (span) {
+        connect(span, &GenericMathSpan::spansChanged, this, &GenericMathItem::updateLayout);
+        connect(span, &GenericMathSpan::contentChanged, this, &GenericMathItem::updateLayout);
+    }
+    
     // 初始化 MathItem 子项
     updateMathItems();
 }
@@ -122,8 +128,11 @@ void GenericMathItem::performLayoutWithMathSizes(const QHash<InlineSpan*, QSizeF
 
 void GenericMathItem::updateLayout()
 {
+    qDebug() << "[GenericMathItem::updateLayout] 开始";
+    
     // 防止无限递归调用
     if (m_isUpdatingLayout) {
+        qDebug() << "[GenericMathItem::updateLayout] 正在更新中，跳过";
         return;
     }
     
@@ -144,10 +153,12 @@ void GenericMathItem::updateLayout()
         m_baseline = 0;
     }
     
-    // 注意：不调用 notifyParentLayoutChanged()，避免形成无限循环
-    // notifyParentLayoutChanged();
+    // 通知父元素布局已变化
+    qDebug() << "[GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()";
+    notifyParentLayoutChanged();
     
     m_isUpdatingLayout = false;
+    qDebug() << "[GenericMathItem::updateLayout] 完成";
 }
 
 qreal GenericMathItem::baseline() const

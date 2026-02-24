@@ -28,8 +28,9 @@ class GenericMathSpan;
  * 但配置为 NoWrap 模式，没有段落、缩进等复杂功能。
  * 专门用于公式内部的文本和公式混排。
  */
-class GenericMathItem : public MathItem
+class GenericMathItem : public QObject, public MathItem
 {
+    Q_OBJECT
 public:
     /**
      * @brief QGraphicsItem 类型标识

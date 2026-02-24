@@ -171,29 +171,24 @@ void TextBlockItem::clearMathItems()
 
 void TextBlockItem::safeUpdateLayout()
 {
+    qDebug() << "[TextBlockItem::safeUpdateLayout] 开始";
+    
     ParagraphBlock *para = qobject_cast<ParagraphBlock*>(m_block);
-    if (!para)
+    if (!para) {
+        qDebug() << "[TextBlockItem::safeUpdateLayout] ParagraphBlock 不存在";
         return;
+    }
     
     applyParagraphIndent();
     
-    // ========== 第一步：递归更新所有 MathItem 的布局 ==========
-    // 从叶子到根，确保所有 MathItem 都用最新数据计算自己的尺寸
-    for (QGraphicsItem *item : m_mathItems) {
-        MathItem *mathItem = dynamic_cast<MathItem*>(item);
-        if (mathItem) {
-            mathItem->updateLayout();
-        }
-    }
-    // ===============================================================
-    
-    // ========== 第二步：从现有 MathItem 收集尺寸信息 ==========
+    // ========== 第一步：从现有 MathItem 收集尺寸信息 ==========
+    // 注意：MathItem 已经通过 notifyParentLayoutChanged() 调用链更新过了，这里不需要再次调用 updateLayout()！
+    qDebug() << "[TextBlockItem::safeUpdateLayout] 第一步：收集尺寸信息";
     QList<InlineSpan*> spans = getSpans();
     QHash<InlineSpan*, MathItem*> mathItemMap;
     QHash<InlineSpan*, QSizeF> mathSizeMap;
     QHash<InlineSpan*, qreal> mathBaselineMap;
     
-    // 先建立 MathSpan 到 MathItem 的映射
     for (QGraphicsItem *item : m_mathItems) {
         MathItem *mathItem = dynamic_cast<MathItem*>(item);
         if (mathItem && mathItem->mathSpan()) {
@@ -204,11 +199,13 @@ void TextBlockItem::safeUpdateLayout()
     }
     // ===============================================================
     
-    // ========== 第三步：执行布局（使用现有 MathItem 的尺寸） ==========
+    // ========== 第二步：执行布局（使用现有 MathItem 的尺寸） ==========
+    qDebug() << "[TextBlockItem::safeUpdateLayout] 第二步：执行布局";
     performLayoutWithMathSizes(mathSizeMap, mathBaselineMap);
     // ===============================================================
     
-    // ========== 第四步：更新 MathItem 的位置 ==========
+    // ========== 第三步：更新 MathItem 的位置 ==========
+    qDebug() << "[TextBlockItem::safeUpdateLayout] 第三步：更新 MathItem 的位置";
     const QList<TextBlockLayoutEngine::LayoutItem> &items = m_layoutEngine->layoutItems();
     for (const TextBlockLayoutEngine::LayoutItem &item : items) {
         if (item.inlineSpan && item.inlineSpan->type() == InlineSpan::Math) {
@@ -221,6 +218,7 @@ void TextBlockItem::safeUpdateLayout()
     // ===============================================================
     
     update(); // 触发重绘
+    qDebug() << "[TextBlockItem::safeUpdateLayout] 完成";
 }
 
 QList<InlineSpan*> TextBlockItem::getSpans() const

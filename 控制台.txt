@@ -1,0 +1,230 @@
+[DEBUG] 调试控制台已清空
+[DEBUG] [DocumentView::mousePressEvent] scenePos: QPointF(152,259) button: Qt::LeftButton
+[DEBUG] [TextBlockItem::mousePressEvent] 开始, scenePos= QPointF(152,259) button= Qt::LeftButton
+[DEBUG]   找到 MathItem:  QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   点击了 MathItem, 继续处理光标定位
+[DEBUG] [EditEventHandler::handleMousePress] at: QPointF(152,259)
+[DEBUG] [EditEventHandler] itemsAtPos 数量: 4
+[DEBUG]   Item 0 : QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2)  type: 67546  pos: QPointF(2,2)
+[DEBUG]   Item 1 : QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)  type: 67539  pos: QPointF(72.5781,0)
+[DEBUG]   Item 2 : QGraphicsItem(0x1a0bf9157a0, pos=72,243, z=10, flags=(ItemIsFocusable|ItemAcceptsInputMethod))  type: 66537  pos: QPointF(72,243)
+[DEBUG]   Item 3 : QGraphicsItem(0x1a0bf91a7c0, pos=0,0)  type: 3  pos: QPointF(0,0)
+[DEBUG] [EditEventHandler] 找到 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2)  type: 67546
+[DEBUG] [EditEventHandler] 从父元素找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG] [EditEventHandler] 找到 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)  type: 67539
+[DEBUG] [EditEventHandler] 找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG] [EditEventHandler] 当前容器: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)  type: 67539  localPos: QPointF(7.42188,16)
+[DEBUG] [FractionItem::hitTestRegion] localPos= QPointF(7.42188,16)
+[DEBUG]   在分子区域
+[DEBUG] [EditEventHandler] hitTestRegion 返回: 0
+[DEBUG] [EditEventHandler] 添加路径段，容器: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)  childIndex: 0
+[DEBUG] [EditEventHandler] 当前容器: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2)  type: 67546  localPos: QPointF(5.42188,14)
+[DEBUG] [GenericMathItem::hitTestRegion] localPos= QPointF(5.42188,14)
+[DEBUG]   不在任何子 MathItem 区域
+[DEBUG] [EditEventHandler] hitTestRegion 返回: -1
+[DEBUG] [EditEventHandler] 设置了 mathPath，深度: 1
+[DEBUG] [EditEventHandler] GenericMathItem 的 hitTest 返回文本偏移: 1
+[DEBUG] [EditEventHandler] 准备调用 setUnifiedPosition, 当前 cursor 位置: false
+[DEBUG] [UnifiedCursor::setUnifiedPosition] 开始
+[DEBUG]   旧位置 blockIndex: 0  offset: 0  isMath: false
+[DEBUG]   新位置 blockIndex: 2  offset: 6  isMath: true
+[DEBUG]   pos.mathPath.has_value(): true
+[DEBUG]   pos.mathPath depth: 1
+[DEBUG]   pos.mathTextOffset: 1
+[DEBUG]   位置不同，更新并发出信号
+[DEBUG]   更新后 m_position.isMathMode(): true
+[DEBUG]   更新后 m_position.mathPath.has_value(): true
+[DEBUG] [UnifiedCursor::emitPositionChangedSignals] 开始
+[DEBUG]   m_position.isMathMode() =  true
+[DEBUG]   发出 unifiedPositionChanged 信号
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] [MainWindow::updateCursorPosition] 收到新的光标位置, isMathMode= true
+[DEBUG] [DocumentScene::updateCursorFromUnifiedPosition] 开始
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 1
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(9.375,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(155.953,245)
+[DEBUG]   视觉位置: pos= QPointF(155.953,245) , height= 21
+[DEBUG]   准备调用 unifiedCursorVisual->setPosition(), 当前位置: QPointF(72,72)
+[DEBUG]   完成设置，新位置: QPointF(155.953,245)
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 1
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(9.375,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(155.953,245)
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] [EditEventHandler] 设置了带坐标路径的光标位置, 新位置: true
+[DEBUG] "EditEventHandler::handleMouseRelease at: (152, 259)"
+[DEBUG] "Start: 块-1，偏移0  End: 块-1，偏移0 "
+[DEBUG] MainWindow: 收到 selectionFinished 信号，更新样式状态
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] [DocumentView::keyPressEvent] key: 51 , text: "3"
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] [UnifiedCursor::mathInsertText] 开始, mathTextOffset= 1 , text= "3"
+[DEBUG] [UnifiedCursor::mathInsertText] 找到 GenericMathSpan, 插入文本
+[DEBUG] [GenericMathSpan::insert] 开始, position= 1 , text= "3"
+[DEBUG] [GenericMathSpan::insert] 准备发出 spansChanged 和 contentChanged 信号
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathSpan::insert] 信号已发出
+[DEBUG] [UnifiedCursor::emitPositionChangedSignals] 开始
+[DEBUG]   m_position.isMathMode() =  true
+[DEBUG]   发出 unifiedPositionChanged 信号
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] [MainWindow::updateCursorPosition] 收到新的光标位置, isMathMode= true
+[DEBUG] [DocumentScene::updateCursorFromUnifiedPosition] 开始
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 2
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(18.75,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(165.328,245)
+[DEBUG]   视觉位置: pos= QPointF(165.328,245) , height= 21
+[DEBUG]   准备调用 unifiedCursorVisual->setPosition(), 当前位置: QPointF(155.953,245)
+[DEBUG]   完成设置，新位置: QPointF(165.328,245)
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 2
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(18.75,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(165.328,245)
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar
+[DEBUG] [DocumentView::keyPressEvent] key: 51 , text: "3"
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] [UnifiedCursor::mathInsertText] 开始, mathTextOffset= 2 , text= "3"
+[DEBUG] [UnifiedCursor::mathInsertText] 找到 GenericMathSpan, 插入文本
+[DEBUG] [GenericMathSpan::insert] 开始, position= 2 , text= "3"
+[DEBUG] [GenericMathSpan::insert] 准备发出 spansChanged 和 contentChanged 信号
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 准备调用 notifyParentLayoutChanged()
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 开始
+[DEBUG] [GenericMathItem::updateLayout] 正在更新中，跳过
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathItem::updateLayout] 完成
+[DEBUG] [GenericMathSpan::insert] 信号已发出
+[DEBUG] [UnifiedCursor::emitPositionChangedSignals] 开始
+[DEBUG]   m_position.isMathMode() =  true
+[DEBUG]   发出 unifiedPositionChanged 信号
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] [MainWindow::updateCursorPosition] 收到新的光标位置, isMathMode= true
+[DEBUG] [DocumentScene::updateCursorFromUnifiedPosition] 开始
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 3
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(28.125,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(174.703,245)
+[DEBUG]   视觉位置: pos= QPointF(174.703,245) , height= 21
+[DEBUG]   准备调用 unifiedCursorVisual->setPosition(), 当前位置: QPointF(165.328,245)
+[DEBUG]   完成设置，新位置: QPointF(174.703,245)
+[DEBUG] [DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode= true
+[DEBUG]   基础文档位置: pos= QPointF(144.578,251.75) , height= 21
+[DEBUG]   在公式模式，开始处理坐标路径...
+[DEBUG]   找到根 MathItem: QGraphicsItem(0x1a0bf8b9a50, parent=0x1a0bf9157a0, pos=72.5781,0)
+[DEBUG]   根 MathItem 位置: QPointF(144.578,243)
+[DEBUG]   路径段 0 : childIndex= 0
+[DEBUG]     找到子 MathItem: QGraphicsItem(0x1a0bf8b85c0, parent=0x1a0bf8b9a50, pos=2,2) , pos= QPointF(2,2)
+[DEBUG]   这是 GenericMathItem，使用 mathTextOffset 计算位置
+[DEBUG]   currentPos（GenericMathItem 的 scenePos）: QPointF(146.578,245)
+[DEBUG]   使用 mathTextOffset: 3
+[DEBUG]   GenericMathItem::cursorPositionAt 返回的 info.position: QPointF(28.125,0)  info.height: 21
+[DEBUG]   GenericMathItem 内光标位置（最终）: QPointF(174.703,245)
+[DEBUG] MainWindow::updateStyleState - 开始更新样式
+[DEBUG] "getCurrentDisplayStyle - 无选区，光标位置: (2, 6)"
+[DEBUG] "  获取到的样式: 加粗=0, 斜体=0, 下划线=0"
+[DEBUG] "加粗=0, 斜体=0, 下划线=0, 有选区=0"
+[DEBUG]   无选区，工具栏显示一致样式
+[DEBUG]   已更新到 ribbonBar

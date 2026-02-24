@@ -29,6 +29,8 @@ FractionItem::~FractionItem()
 
 void FractionItem::updateLayout()
 {
+    qDebug() << "[FractionItem::updateLayout] 开始";
+    
     FractionMathSpan *fracSpan = fractionSpan();
     if (!fracSpan) {
         return;
@@ -103,6 +105,12 @@ void FractionItem::updateLayout()
 
     m_boundingRect = QRectF(0, 0, totalWidth, totalHeight);
     m_baseline = m_lineY;  // 基线在分数线上
+    
+    // 通知父元素布局已变化
+    qDebug() << "[FractionItem::updateLayout] 准备调用 notifyParentLayoutChanged()";
+    notifyParentLayoutChanged();
+    
+    qDebug() << "[FractionItem::updateLayout] 完成";
 }
 
 qreal FractionItem::baseline() const

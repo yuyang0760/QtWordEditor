@@ -5,6 +5,7 @@
 
 #include "graphics/formula/MathItem.h"
 #include "core/document/MathSpan.h"
+#include "graphics/items/TextBlockItem.h"
 #include <QDebug>
 
 namespace QtWordEditor {
@@ -84,9 +85,29 @@ MathItem *MathItem::parentMathItem() const
 
 void MathItem::notifyParentLayoutChanged()
 {
+    qDebug() << "[MathItem::notifyParentLayoutChanged] 开始, this=" << this;
+    
     MathItem *parent = parentMathItem();
     if (parent) {
+        qDebug() << "[MathItem::notifyParentLayoutChanged] 有父 MathItem，调用父项 updateLayout()";
         parent->updateLayout();
+    } else {
+        qDebug() << "[MathItem::notifyParentLayoutChanged] 没有父 MathItem，寻找 TextBlockItem...";
+        // 没有父 MathItem，说明这是根 MathItem，需要通知 TextBlockItem 更新布局
+        QGraphicsItem *p = parentItem();
+        while (p) {
+            qDebug() << "[MathItem::notifyParentLayoutChanged] 检查 QGraphicsItem: type=" << p->type();
+            // 检查是否是 TextBlockItem（Type = UserType + 1001）
+            if (p->type() == QGraphicsItem::UserType + 1001) {
+                qDebug() << "[MathItem::notifyParentLayoutChanged] 找到了 TextBlockItem，调用 safeUpdateLayout()";
+                // 找到了 TextBlockItem，调用 safeUpdateLayout()
+                TextBlockItem *textBlockItem = static_cast<TextBlockItem*>(p);
+                textBlockItem->safeUpdateLayout();
+                return;
+            }
+            p = p->parentItem();
+        }
+        qDebug() << "[MathItem::notifyParentLayoutChanged] 没有找到 TextBlockItem";
     }
 }
 

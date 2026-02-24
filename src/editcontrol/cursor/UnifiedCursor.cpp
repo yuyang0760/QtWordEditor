@@ -632,5 +632,30 @@ void UnifiedCursor::mathDeleteNextChar()
     emitPositionChangedSignals();
 }
 
+/**
+ * @brief 获取统一光标位置的字符样式
+ * @return 当前位置的字符样式
+ */
+CharacterStyle UnifiedCursor::styleAtUnifiedPosition() const
+{
+    if (m_position.isDocumentMode()) {
+        // 文档模式：获取文档位置的字符样式
+        Block *block = m_document->block(m_position.blockIndex);
+        if (block && block->type() == Block::Paragraph) {
+            ParagraphBlock *paraBlock = static_cast<ParagraphBlock*>(block);
+            return paraBlock->styleAt(m_position.offset);
+        }
+    } else if (m_position.isMathMode()) {
+        // 公式模式：获取公式位置的字符样式
+        GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+        if (genericSpan) {
+            return genericSpan->styleAt(m_position.mathTextOffset);
+        }
+    }
+    
+    // 默认返回空样式
+    return CharacterStyle();
+}
+
 } // namespace QtWordEditor
 

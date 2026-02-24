@@ -368,20 +368,8 @@ bool EditEventHandler::handleMouseRelease(const QPointF &scenePos)
 
 bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
 {
-    if (!m_document || !m_cursor)
+    if (!m_document || !m_cursor) {
         return false;
-
-    // 先检查是否有 TextBlockItem 处于公式编辑模式
-    if (m_scene) {
-        QList<QGraphicsItem *> items = m_scene->items();
-        for (QGraphicsItem *item : items) {
-            TextBlockItem *textBlockItem = dynamic_cast<TextBlockItem *>(item);
-            if (textBlockItem && textBlockItem->isInMathEditMode()) {
-                qDebug() << "[EditEventHandler] TextBlockItem 处于公式编辑模式，不处理输入法事件";
-                // 如果有 TextBlockItem 处于公式编辑模式，不处理，让 TextBlockItem 处理
-                return false;
-            }
-        }
     }
 
     qDebug() << "EditEventHandler::handleInputMethod called";
@@ -393,7 +381,11 @@ bool EditEventHandler::handleInputMethod(QInputMethodEvent *event)
         if (m_formatController) {
             style = m_formatController->getCurrentInputStyle();
         }
-        m_cursor->insertText(event->commitString(), style);
+        if (m_cursor->unifiedPosition().isMathMode()) {
+            m_cursor->mathInsertText(event->commitString(), style);
+        } else {
+            m_cursor->insertText(event->commitString(), style);
+        }
         return true;
     }
     

@@ -232,6 +232,12 @@ public:
      */
     void mathDeleteNextChar();
     
+    /**
+     * @brief 获取统一光标位置的字符样式
+     * @return 当前位置的字符样式
+     */
+    CharacterStyle styleAtUnifiedPosition() const;
+    
 signals:
     /**
      * @brief 光标位置发生变化时发出的信号

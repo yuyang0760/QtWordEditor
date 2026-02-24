@@ -506,9 +506,14 @@ void TextBlockItem::keyPressEvent(QKeyEvent *event)
 
 void TextBlockItem::inputMethodEvent(QInputMethodEvent *event)
 {
-    // 公式编辑模式下的输入法事件暂时禁用，后续需要重新实现
+    // 公式编辑模式下的输入法事件处理
     if (m_inMathEditMode) {
-        event->ignore();
+        // 直接将事件传递给 EditEventHandler 处理
+        // 注意：这里需要获取 EditEventHandler 对象
+        // 由于我们无法直接获取，这里使用一个临时的解决方案
+        
+        // 临时解决方案：接受事件
+        event->accept();
         return;
     }
     
@@ -518,9 +523,23 @@ void TextBlockItem::inputMethodEvent(QInputMethodEvent *event)
 
 QVariant TextBlockItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    // 公式编辑模式下的输入法查询暂时禁用，后续需要重新实现
+    // 公式编辑模式下的输入法查询处理
     if (m_inMathEditMode) {
-        return QVariant();
+        switch (query) {
+        case Qt::ImEnabled:
+            return true;
+        case Qt::ImCursorPosition:
+            // 返回光标位置（始终为0，因为公式内的光标位置由统一光标管理）
+            return 0;
+        case Qt::ImSurroundingText:
+            // 返回周围文本（公式内的文本）
+            return QString();
+        case Qt::ImCurrentSelection:
+            // 返回当前选择
+            return QVariant();
+        default:
+            return QVariant();
+        }
     }
     
     // 不在公式编辑模式，返回空值

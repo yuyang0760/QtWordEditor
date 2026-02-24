@@ -7,7 +7,6 @@
  */
 
 #include "editcontrol/cursor/UnifiedCursor.h"
-#include "editcontrol/cursor/CursorPositionAdapter.h"
 #include "core/document/Document.h"
 #include "core/document/Block.h"
 #include "core/commands/InsertTextCommand.h"
@@ -45,46 +44,6 @@ UnifiedCursor::~UnifiedCursor()
 Document *UnifiedCursor::document() const
 {
     return m_document;
-}
-
-// ========== 位置管理（旧接口 - 兼容 Cursor） ==========
-
-/**
- * @brief 获取当前光标位置（旧格式）
- * @return 当前光标位置结构体
- */
-CursorPosition UnifiedCursor::position() const
-{
-    return CursorPositionAdapter::unifiedToCursor(unifiedPosition());
-}
-
-/**
- * @brief 设置光标位置（旧格式）
- * @param blockIndex 块索引
- * @param offset 块内偏移量
- */
-void UnifiedCursor::setPosition(int blockIndex, int offset)
-{
-    if (m_position.blockIndex != blockIndex || m_position.offset != offset) {
-        m_position.blockIndex = blockIndex;
-        m_position.offset = offset;
-        m_position.mathPath = std::nullopt;
-        m_position.mathTextOffset = 0;
-        emitPositionChangedSignals();
-    }
-}
-
-/**
- * @brief 设置光标位置（旧格式）
- * @param pos 光标位置结构体
- */
-void UnifiedCursor::setPosition(const CursorPosition &pos)
-{
-    UnifiedCursorPosition unifiedPos = CursorPositionAdapter::cursorToUnified(pos);
-    if (m_position != unifiedPos) {
-        m_position = unifiedPos;
-        emitPositionChangedSignals();
-    }
 }
 
 // ========== 位置管理（统一接口） ==========
@@ -128,18 +87,13 @@ void UnifiedCursor::setUnifiedPosition(const UnifiedCursorPosition &pos)
 }
 
 /**
- * @brief 在内部位置变化时，同时发出新旧格式的信号
+ * @brief 在内部位置变化时，发出位置变化信号
  */
 void UnifiedCursor::emitPositionChangedSignals()
 {
     qDebug() << "[UnifiedCursor::emitPositionChangedSignals] 开始";
     
-    CursorPosition cursorPos = CursorPositionAdapter::unifiedToCursor(m_position);
-    
     qDebug() << "  m_position.isMathMode() = " << m_position.isMathMode();
-    
-    qDebug() << "  发出 positionChanged 信号";
-    emit positionChanged(cursorPos);
     
     qDebug() << "  发出 unifiedPositionChanged 信号";
     emit unifiedPositionChanged(m_position);

@@ -313,18 +313,14 @@ void MainWindow::setupUi()
 
     connect(m_document, &Document::documentChanged,
             this, &MainWindow::updateWindowTitle);
-
-    connect(m_cursor, &UnifiedCursor::positionChanged,
+    
+    connect(m_cursor, &UnifiedCursor::unifiedPositionChanged,
             m_formatController, &FormatController::onCursorMoved);
-    connect(m_cursor, &UnifiedCursor::positionChanged,
+    connect(m_cursor, &UnifiedCursor::unifiedPositionChanged,
             this, &MainWindow::updateCursorPosition);
     
-    // 连接统一光标位置变化信号（支持公式模式）
-    connect(m_cursor, &UnifiedCursor::unifiedPositionChanged,
-            this, &MainWindow::updateUnifiedCursorPosition);
-    
     // 连接光标位置变化信号到样式状态更新（无选区时）
-    connect(m_cursor, &UnifiedCursor::positionChanged,
+    connect(m_cursor, &UnifiedCursor::unifiedPositionChanged,
             this, [this]() {
                 // 只有在无选区时，光标移动才更新样式
                 if (m_selection && m_selection->isEmpty()) {
@@ -380,8 +376,11 @@ void MainWindow::setupUi()
     // 先创建新文档，这会调用 setDocument()
     newDocument();
     
-    m_cursor->setPosition(0, 0);
-    m_currentCursorPos = m_cursor->position();
+    UnifiedCursorPosition initialUnifiedPos;
+    initialUnifiedPos.blockIndex = 0;
+    initialUnifiedPos.offset = 0;
+    m_cursor->setUnifiedPosition(initialUnifiedPos);
+    m_currentCursorPos = m_cursor->unifiedPosition();
     QPointF initialPos = calculateCursorVisualPosition(m_currentCursorPos);
     m_scene->updateCursor(initialPos, 20.0);
     m_view->setCursorVisualPosition(initialPos);
@@ -607,7 +606,10 @@ void MainWindow::newDocument()
         m_scene->rebuildFromDocument();
         
         // 重置光标位置到 (0, 0)
-        m_cursor->setPosition(0, 0);
+        UnifiedCursorPosition newUnifiedPos;
+        newUnifiedPos.blockIndex = 0;
+        newUnifiedPos.offset = 0;
+        m_cursor->setUnifiedPosition(newUnifiedPos);
         
         m_currentFile.clear();
         m_isModified = false;
@@ -1041,35 +1043,14 @@ void MainWindow::retranslateUi()
     statusBar()->showMessage(tr("Ready"));
 }
 
-void MainWindow::updateCursorPosition(const CursorPosition &pos)
+void MainWindow::updateCursorPosition(const UnifiedCursorPosition &pos)
 {
-    m_currentCursorPos = pos;
-    
-    // 使用 DocumentScene 的新方法来更新光标，确保高度正确
-    if (m_scene) {
-        m_scene->updateCursorFromPosition(pos);
-        
-        // 同时获取视觉位置用于 View 的光标
-        QPointF visualPos = calculateCursorVisualPosition(pos);
-        m_view->setCursorVisualPosition(visualPos);
-    }
-    
-    // 同时更新状态栏，显示光标位置
-    updateStatusBar(m_lastScenePos, m_lastViewPos);
-    
-    // 注意：不再在这里更新样式状态，只在鼠标松开时更新
-    // 无选区时的样式更新由单独的 cursor->positionChanged 连接处理
-}
-
-void MainWindow::updateUnifiedCursorPosition(const UnifiedCursorPosition &pos)
-{
-    qDebug() << "[MainWindow::updateUnifiedCursorPosition] 收到新的统一光标位置, isMathMode=" << pos.isMathMode();
+    qDebug() << "[MainWindow::updateCursorPosition] 收到新的光标位置, isMathMode=" << pos.isMathMode();
     
     // 更新当前光标位置
-    m_currentCursorPos.blockIndex = pos.blockIndex;
-    m_currentCursorPos.offset = pos.offset;
+    m_currentCursorPos = pos;
     
-    // 使用 DocumentScene 的方法来更新统一光标
+    // 使用 DocumentScene 的方法来更新光标
     if (m_scene) {
         m_scene->updateCursorFromUnifiedPosition(pos);
         
@@ -1139,14 +1120,14 @@ void MainWindow::updateStyleState()
     qDebug() << "  已更新到 ribbonBar";
 }
 
-QPointF MainWindow::calculateCursorVisualPosition(const CursorPosition &pos)
+QPointF MainWindow::calculateCursorVisualPosition(const UnifiedCursorPosition &pos)
 {
   //  QDebug() << "calculateCursorVisualPosition - 计算光标位置，位置:" << pos.blockIndex << "," << pos.offset;
     
     if (m_scene) {
-        QPointF result = m_scene->calculateCursorVisualPosition(pos);
-      //  QDebug() << "  返回场景坐标:" << result;
-        return result;
+        DocumentScene::CursorVisualResult result = m_scene->calculateUnifiedCursorVisualPosition(pos);
+      //  QDebug() << "  返回场景坐标:" << result.position;
+        return result.position;
     }
     
   //  QDebug() << "  场景为空，返回 (0,0)";
@@ -1337,7 +1318,7 @@ void MainWindow::insertFractionAtCursor()
     }
 
     // 步骤1：获取当前光标位置
-    CursorPosition pos = m_cursor->position();
+    UnifiedCursorPosition pos = m_cursor->unifiedPosition();
     qDebug() << "[insertFractionAtCursor] 当前光标位置：块" << pos.blockIndex << "，偏移" << pos.offset;
 
     // 步骤2：获取当前光标所在的 ParagraphBlock
@@ -1403,9 +1384,9 @@ void MainWindow::insertFractionAtCursor()
 
     // 步骤6：更新光标位置，移动到插入位置之后
     // MathSpan 占用 1 个字符位置
-    CursorPosition newPos = pos;
+    UnifiedCursorPosition newPos = pos;
     newPos.offset = pos.offset + 1;
-    m_cursor->setPosition(newPos);
+    m_cursor->setUnifiedPosition(newPos);
 
     qDebug() << "[insertFractionAtCursor] 光标已移动到：块" << newPos.blockIndex << "，偏移" << newPos.offset;
 
@@ -1424,7 +1405,7 @@ void MainWindow::insertNumberAtCursor()
     }
 
     // 步骤1：获取当前光标位置
-    CursorPosition pos = m_cursor->position();
+    UnifiedCursorPosition pos = m_cursor->unifiedPosition();
     qDebug() << "[insertNumberAtCursor] 当前光标位置：块" << pos.blockIndex << "，偏移" << pos.offset;
 
     // 步骤2：获取当前光标所在的 ParagraphBlock
@@ -1484,9 +1465,9 @@ void MainWindow::insertNumberAtCursor()
 
     // 步骤6：更新光标位置，移动到插入位置之后
     // MathSpan 占用 1 个字符位置
-    CursorPosition newPos = pos;
+    UnifiedCursorPosition newPos = pos;
     newPos.offset = pos.offset + 1;
-    m_cursor->setPosition(newPos);
+    m_cursor->setUnifiedPosition(newPos);
 
     qDebug() << "[insertNumberAtCursor] 光标已移动到：块" << newPos.blockIndex << "，偏移" << newPos.offset;
 

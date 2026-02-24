@@ -294,15 +294,18 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         m_cursor->setUnifiedPosition(unifiedPos);
         qDebug() << "[EditEventHandler] 设置了带坐标路径的光标位置, 新位置:" << m_cursor->unifiedPosition().isMathMode();
     } else {
-        // 使用旧的光标位置
+        // 使用统一光标位置（文档模式）
         CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
-        m_cursor->setPosition(cursorPos);
+        UnifiedCursorPosition unifiedDocPos;
+        unifiedDocPos.blockIndex = cursorPos.blockIndex;
+        unifiedDocPos.offset = cursorPos.offset;
+        m_cursor->setUnifiedPosition(unifiedDocPos);
         qDebug() << "[EditEventHandler] 设置了普通光标位置";
     }
 
     // 开始选择
     m_isSelecting = true;
-    CursorPosition cursorPosForSelection = m_cursor->position();
+    UnifiedCursorPosition cursorPosForSelection = m_cursor->unifiedPosition();
     m_selectionStartBlock = cursorPosForSelection.blockIndex;
     m_selectionStartOffset = cursorPosForSelection.offset;
 
@@ -332,7 +335,10 @@ bool EditEventHandler::handleMouseMove(const QPointF &scenePos)
     );
 
     // 更新光标位置（到选择的终点）
-    m_cursor->setPosition(cursorPos);
+    UnifiedCursorPosition unifiedDocPos;
+    unifiedDocPos.blockIndex = cursorPos.blockIndex;
+    unifiedDocPos.offset = cursorPos.offset;
+    m_cursor->setUnifiedPosition(unifiedDocPos);
 
     // 发送信号更新选择显示
     emit selectionNeedsUpdate();

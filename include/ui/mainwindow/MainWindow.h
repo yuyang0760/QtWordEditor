@@ -144,15 +144,10 @@ private slots:
     
     // ========== 光标相关槽函数 ==========
     
-    /** @brief 更新光标位置显示
+    /** @brief 更新光标位置显示（统一接口）
      * @param pos 新的光标位置
      */
-    void updateCursorPosition(const CursorPosition &pos);
-    
-    /** @brief 更新统一光标位置显示（支持公式内部）
-     * @param pos 新的统一光标位置
-     */
-    void updateUnifiedCursorPosition(const UnifiedCursorPosition &pos);
+    void updateCursorPosition(const UnifiedCursorPosition &pos);
     
     /**
      * @brief 更新样式状态显示
@@ -160,11 +155,11 @@ private slots:
     void updateStyleState();
     
     /**
-     * @brief 计算光标的视觉位置
+     * @brief 计算光标的视觉位置（统一接口）
      * @param pos 光标位置结构体
      * @return 对应的场景坐标位置
      */
-    QPointF calculateCursorVisualPosition(const CursorPosition &pos);
+    QPointF calculateCursorVisualPosition(const UnifiedCursorPosition &pos);
 
 private:
     /** @brief 设置用户界面 */
@@ -248,7 +243,7 @@ private:
     QPoint m_lastViewPos;                   ///< 上次视图位置
     PageSetup m_pageSetup;                  ///< 页面设置
     
-    CursorPosition m_currentCursorPos;      ///< 当前光标位置
+    UnifiedCursorPosition m_currentCursorPos;      ///< 当前光标位置
     
     QWidget *m_statusBarWidget;              ///< 状态栏自定义容器
     QLabel *m_statusLine1Label;              ///< 状态栏第一行

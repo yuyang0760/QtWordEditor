@@ -376,7 +376,7 @@ CharacterStyle FormatController::getCurrentDisplayStyle() const
     } else {
         // ========== 无选区的情况：使用光标前一个字符的样式 ==========
         if (m_cursor) {
-            CursorPosition targetPos = m_cursor->position();
+            UnifiedCursorPosition targetPos = m_cursor->unifiedPosition();
             qDebug() << QString("getCurrentDisplayStyle - 无选区，光标位置: (%1, %2)")
                 .arg(targetPos.blockIndex).arg(targetPos.offset);
             

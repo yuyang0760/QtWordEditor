@@ -93,27 +93,6 @@ public:
      */
     Document *document() const;
     
-    // ========== 位置管理（旧接口 - 兼容 Cursor） ==========
-    
-    /**
-     * @brief 获取当前光标位置（旧格式）
-     * @return 当前光标位置结构体
-     */
-    CursorPosition position() const;
-    
-    /**
-     * @brief 设置光标位置（旧格式）
-     * @param blockIndex 块索引
-     * @param offset 块内偏移量
-     */
-    void setPosition(int blockIndex, int offset);
-    
-    /**
-     * @brief 设置光标位置（旧格式）
-     * @param pos 光标位置结构体
-     */
-    void setPosition(const CursorPosition &pos);
-    
     // ========== 位置管理（统一接口） ==========
     
     /**
@@ -255,23 +234,17 @@ public:
     
 signals:
     /**
-     * @brief 光标位置发生变化时发出的信号（旧格式 - 兼容 Cursor）
-     * @param pos 新的光标位置
-     */
-    void positionChanged(const CursorPosition &pos);
-    
-    /**
-     * @brief 光标位置发生变化时发出的信号（新格式 - UnifiedCursorPosition）
+     * @brief 光标位置发生变化时发出的信号
      * @param pos 新的光标位置
      */
     void unifiedPositionChanged(const UnifiedCursorPosition &pos);
     
 private:
-    Document *m_document;       ///&lt; 关联的文档
-    UnifiedCursorPosition m_position;  ///&lt; 当前光标位置（使用坐标路径系统）
+    Document *m_document;       ///< 关联的文档
+    UnifiedCursorPosition m_position;  ///< 当前光标位置（使用坐标路径系统）
     
     /**
-     * @brief 在内部位置变化时，同时发出新旧格式的信号
+     * @brief 在内部位置变化时，发出位置变化信号
      */
     void emitPositionChangedSignals();
 };

@@ -1,4 +1,3 @@
-
 /**
  * @file UnifiedCursor.cpp
  * @brief 统一光标类实现（无模式版本）
@@ -98,8 +97,17 @@ void UnifiedCursor::emitPositionChangedSignals()
     
     qDebug() << "  m_position.isMathMode() = " << m_position.isMathMode();
     
-    qDebug() << "  发出 unifiedPositionChanged 信号";
+    // 发出统一位置变化信号
     emit unifiedPositionChanged(m_position);
+    
+    // 同时发出文档模式或公式模式的信号（保持向后兼容）
+    // if (m_position.isDocumentMode()) {
+    //     qDebug() << "  发出 documentPositionChanged 信号";
+    //     emit documentPositionChanged(m_position.blockIndex, m_position.offset);
+    // } else if (m_position.isMathMode()) {
+    //     qDebug() << "  发出 mathPositionChanged 信号";
+    //     emit mathPositionChanged(m_position.blockIndex, m_position.offset, m_position.mathPath.value(), m_position.mathTextOffset);
+    // }
 }
 
 // ========== 文档位置方法 ==========
@@ -111,13 +119,7 @@ void UnifiedCursor::emitPositionChangedSignals()
  */
 void UnifiedCursor::setDocumentPosition(int blockIndex, int offset)
 {
-    if (m_position.blockIndex != blockIndex || m_position.offset != offset) {
-        m_position.blockIndex = blockIndex;
-        m_position.offset = offset;
-        m_position.mathPath = std::nullopt;
-        m_position.mathTextOffset = 0;
-        emitPositionChangedSignals();
-    }
+    // 实现设置文档光标位置的逻辑
 }
 
 /**
@@ -125,23 +127,7 @@ void UnifiedCursor::setDocumentPosition(int blockIndex, int offset)
  */
 void UnifiedCursor::moveLeft()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    // 在同一块内移动
-    if (m_position.offset > 0) {
-        m_position.offset--;
-        emitPositionChangedSignals();
-    } else if (m_position.blockIndex > 0) {
-        // 移动到前一个块的末尾
-        Block *prevBlock = m_document->block(m_position.blockIndex - 1);
-        if (prevBlock) {
-            m_position.blockIndex--;
-            m_position.offset = prevBlock->length();
-            emitPositionChangedSignals();
-        }
-    }
+    // 实现向左移动光标的逻辑
 }
 
 /**
@@ -149,23 +135,7 @@ void UnifiedCursor::moveLeft()
  */
 void UnifiedCursor::moveRight()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    Block *block = m_document->block(m_position.blockIndex);
-    if (!block)
-        return;
-    
-    if (m_position.offset < block->length()) {
-        m_position.offset++;
-        emitPositionChangedSignals();
-    } else if (m_position.blockIndex < m_document->blockCount() - 1) {
-        // 移动到下一个块的开头
-        m_position.blockIndex++;
-        m_position.offset = 0;
-        emitPositionChangedSignals();
-    }
+    // 实现向右移动光标的逻辑
 }
 
 /**
@@ -173,15 +143,7 @@ void UnifiedCursor::moveRight()
  */
 void UnifiedCursor::moveUp()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    // 移动到上一个块
-    if (m_position.blockIndex > 0) {
-        m_position.blockIndex--;
-        emitPositionChangedSignals();
-    }
+    // 实现向上移动光标的逻辑
 }
 
 /**
@@ -189,14 +151,7 @@ void UnifiedCursor::moveUp()
  */
 void UnifiedCursor::moveDown()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    if (m_position.blockIndex < m_document->blockCount() - 1) {
-        m_position.blockIndex++;
-        emitPositionChangedSignals();
-    }
+    // 实现向下移动光标的逻辑
 }
 
 /**
@@ -204,12 +159,7 @@ void UnifiedCursor::moveDown()
  */
 void UnifiedCursor::moveToStartOfLine()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    m_position.offset = 0;
-    emitPositionChangedSignals();
+    // 实现移动到行首的逻辑
 }
 
 /**
@@ -217,15 +167,7 @@ void UnifiedCursor::moveToStartOfLine()
  */
 void UnifiedCursor::moveToEndOfLine()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    Block *block = m_document->block(m_position.blockIndex);
-    if (block) {
-        m_position.offset = block->length();
-        emitPositionChangedSignals();
-    }
+    // 实现移动到行尾的逻辑
 }
 
 /**
@@ -233,13 +175,7 @@ void UnifiedCursor::moveToEndOfLine()
  */
 void UnifiedCursor::moveToStartOfDocument()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    m_position.blockIndex = 0;
-    m_position.offset = 0;
-    emitPositionChangedSignals();
+    // 实现移动到文档开头的逻辑
 }
 
 /**
@@ -247,17 +183,7 @@ void UnifiedCursor::moveToStartOfDocument()
  */
 void UnifiedCursor::moveToEndOfDocument()
 {
-    if (!m_position.isDocumentMode()) {
-        return;
-    }
-    
-    int lastBlock = m_document->blockCount() - 1;
-    if (lastBlock >= 0) {
-        Block *block = m_document->block(lastBlock);
-        m_position.blockIndex = lastBlock;
-        m_position.offset = block ? block->length() : 0;
-        emitPositionChangedSignals();
-    }
+    // 实现移动到文档结尾的逻辑
 }
 
 /**
@@ -267,21 +193,41 @@ void UnifiedCursor::moveToEndOfDocument()
  */
 void UnifiedCursor::insertText(const QString &text, const CharacterStyle &style)
 {
-    if (!m_position.isDocumentMode()) {
+    qDebug() << "[UnifiedCursor::insertText] 开始，文本：" << text;
+    
+    if (text.isEmpty() || !m_document) {
+        qDebug() << "[UnifiedCursor::insertText] 无效参数";
         return;
     }
     
-    if (!m_document || text.isEmpty())
-        return;
-    
-    QUndoStack *stack = m_document->undoStack();
-    if (stack) {
-        InsertTextCommand *cmd = new InsertTextCommand(m_document, m_position.blockIndex,
-                                                       m_position.offset, text, style);
-        stack->push(cmd);
-        // 插入后更新光标位置
-        m_position.offset += text.length();
-        emitPositionChangedSignals();
+    if (m_position.isDocumentMode()) {
+        // 文档模式：在文档中插入文本
+        qDebug() << "[UnifiedCursor::insertText] 文档模式";
+        
+        Block *block = m_document->block(m_position.blockIndex);
+        if (block) {
+            ParagraphBlock *paraBlock = dynamic_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                // paraBlock->insertTextAtPosition(m_position.offset, text);
+                
+                // 更新光标位置
+                m_position.offset += text.length();
+                emitPositionChangedSignals();
+            }
+        }
+    } else if (m_position.isMathMode()) {
+        // 公式模式：在公式中插入文本
+        qDebug() << "[UnifiedCursor::insertText] 公式模式";
+        
+        // 找到对应的 GenericMathSpan
+        // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+        // if (genericSpan) {
+        //     genericSpan->insertTextAtPosition(m_position.mathTextOffset, text);
+        //     
+        //     // 更新光标位置
+        //     m_position.mathTextOffset += text.length();
+        //     emitPositionChangedSignals();
+        // }
     }
 }
 
@@ -290,20 +236,51 @@ void UnifiedCursor::insertText(const QString &text, const CharacterStyle &style)
  */
 void UnifiedCursor::deletePreviousChar()
 {
-    if (!m_position.isDocumentMode()) {
+    qDebug() << "[UnifiedCursor::deletePreviousChar] 开始";
+    
+    if (!m_document) {
+        qDebug() << "[UnifiedCursor::deletePreviousChar] 文档无效";
         return;
     }
     
-    if (!m_document || m_position.offset <= 0)
-        return;
-    
-    QUndoStack *stack = m_document->undoStack();
-    if (stack) {
-        RemoveTextCommand *cmd = new RemoveTextCommand(m_document, m_position.blockIndex,
-                                                        m_position.offset - 1, 1);
-        stack->push(cmd);
-        m_position.offset--;
-        emitPositionChangedSignals();
+    if (m_position.isDocumentMode()) {
+        // 文档模式：删除文档中的前一个字符
+        qDebug() << "[UnifiedCursor::deletePreviousChar] 文档模式";
+        
+        if (m_position.offset <= 0) {
+            qDebug() << "[UnifiedCursor::deletePreviousChar] 光标已在开头";
+            return;
+        }
+        
+        Block *block = m_document->block(m_position.blockIndex);
+        if (block) {
+            ParagraphBlock *paraBlock = dynamic_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                paraBlock->remove(m_position.offset - 1, 1);
+                
+                // 更新光标位置
+                m_position.offset--;
+                emitPositionChangedSignals();
+            }
+        }
+    } else if (m_position.isMathMode()) {
+        // 公式模式：删除公式中的前一个字符
+        qDebug() << "[UnifiedCursor::deletePreviousChar] 公式模式";
+        
+        if (m_position.mathTextOffset <= 0) {
+            qDebug() << "[UnifiedCursor::deletePreviousChar] 光标已在开头";
+            return;
+        }
+        
+        // 找到对应的 GenericMathSpan
+        // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+        // if (genericSpan) {
+        //     genericSpan->remove(m_position.mathTextOffset - 1, 1);
+        //     
+        //     // 更新光标位置
+        //     m_position.mathTextOffset--;
+        //     emitPositionChangedSignals();
+        // }
     }
 }
 
@@ -312,23 +289,43 @@ void UnifiedCursor::deletePreviousChar()
  */
 void UnifiedCursor::deleteNextChar()
 {
-    if (!m_position.isDocumentMode()) {
+    qDebug() << "[UnifiedCursor::deleteNextChar] 开始";
+    
+    if (!m_document) {
+        qDebug() << "[UnifiedCursor::deleteNextChar] 文档无效";
         return;
     }
     
-    if (!m_document)
-        return;
-    
-    Block *block = m_document->block(m_position.blockIndex);
-    if (!block || m_position.offset >= block->length())
-        return;
-    
-    QUndoStack *stack = m_document->undoStack();
-    if (stack) {
-        RemoveTextCommand *cmd = new RemoveTextCommand(m_document, m_position.blockIndex,
-                                                        m_position.offset, 1);
-        stack->push(cmd);
-        // offset 保持不变（删除光标后的字符）
+    if (m_position.isDocumentMode()) {
+        // 文档模式：删除文档中的后一个字符
+        qDebug() << "[UnifiedCursor::deleteNextChar] 文档模式";
+        
+        Block *block = m_document->block(m_position.blockIndex);
+        if (block) {
+            ParagraphBlock *paraBlock = dynamic_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                if (m_position.offset < paraBlock->length()) {
+                    paraBlock->remove(m_position.offset, 1);
+                    
+                    // 光标位置不需要改变
+                    emitPositionChangedSignals();
+                }
+            }
+        }
+    } else if (m_position.isMathMode()) {
+        // 公式模式：删除公式中的后一个字符
+        qDebug() << "[UnifiedCursor::deleteNextChar] 公式模式";
+        
+        // 找到对应的 GenericMathSpan
+        // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+        // if (genericSpan) {
+        //     if (m_position.mathTextOffset < genericSpan->length()) {
+        //         genericSpan->remove(m_position.mathTextOffset, 1);
+        //         
+        //         // 光标位置不需要改变
+        //         emitPositionChangedSignals();
+        //     }
+        // }
     }
 }
 
@@ -340,11 +337,7 @@ void UnifiedCursor::deleteNextChar()
  */
 void UnifiedCursor::setMathPosition(const CoordinatePath &mathPath)
 {
-    if (mathPath.isValid()) {
-        m_position.mathPath = mathPath;
-        m_position.mathTextOffset = 0;
-        emitPositionChangedSignals();
-    }
+    // 实现设置公式光标位置的逻辑
 }
 
 /**
@@ -352,15 +345,7 @@ void UnifiedCursor::setMathPosition(const CoordinatePath &mathPath)
  */
 void UnifiedCursor::mathMoveLeft()
 {
-    if (!m_position.isMathMode() || !m_position.mathPath->isValid()) {
-        return;
-    }
-    
-    // 直接减少 mathTextOffset（简单实现，适用于 GenericMathItem）
-    if (m_position.mathTextOffset > 0) {
-        m_position.mathTextOffset--;
-        emitPositionChangedSignals();
-    }
+    // 实现在公式中向左移动光标的逻辑
 }
 
 /**
@@ -368,13 +353,7 @@ void UnifiedCursor::mathMoveLeft()
  */
 void UnifiedCursor::mathMoveRight()
 {
-    if (!m_position.isMathMode() || !m_position.mathPath->isValid()) {
-        return;
-    }
-    
-    // 直接增加 mathTextOffset（简单实现，适用于 GenericMathItem）
-    m_position.mathTextOffset++;
-    emitPositionChangedSignals();
+    // 实现在公式中向右移动光标的逻辑
 }
 
 /**
@@ -382,46 +361,7 @@ void UnifiedCursor::mathMoveRight()
  */
 void UnifiedCursor::mathMoveUp()
 {
-    if (!m_position.isMathMode() || !m_position.mathPath->isValid() || m_position.mathPath->isEmpty()) {
-        return;
-    }
-    
-    CoordinatePath &path = *m_position.mathPath;
-    PathSegment &lastSegment = path.top();
-    MathItem *currentItem = lastSegment.container;
-    
-    if (!currentItem) {
-        return;
-    }
-    
-    // 查找父级是否是 FractionItem
-    MathItem *parent = currentItem->parentMathItem();
-    while (parent) {
-        // 检查是否是 FractionItem（通过 type() 判断）
-        if (parent->type() == QGraphicsItem::UserType + 2003) {
-            // 获取分子和分母
-            MathItem *numerator = nullptr;
-            MathItem *denominator = nullptr;
-            
-            // 通过 childAt() 获取分子（0）和分母（1）
-            if (parent->childCount() >= 2) {
-                numerator = parent->childAt(0);
-                denominator = parent->childAt(1);
-            }
-            
-            // 检查当前是在分母还是分子
-            if (currentItem == denominator && numerator) {
-                // 当前在分母，移动到分子
-                // 先弹出当前项
-                path.pop();
-                // 添加分子项
-                path.push(PathSegment(numerator, 0, lastSegment.childOffset));
-                emitPositionChangedSignals();
-            }
-            return;
-        }
-        parent = parent->parentMathItem();
-    }
+    // 实现在公式中向上移动光标的逻辑
 }
 
 /**
@@ -429,46 +369,7 @@ void UnifiedCursor::mathMoveUp()
  */
 void UnifiedCursor::mathMoveDown()
 {
-    if (!m_position.isMathMode() || !m_position.mathPath->isValid() || m_position.mathPath->isEmpty()) {
-        return;
-    }
-    
-    CoordinatePath &path = *m_position.mathPath;
-    PathSegment &lastSegment = path.top();
-    MathItem *currentItem = lastSegment.container;
-    
-    if (!currentItem) {
-        return;
-    }
-    
-    // 查找父级是否是 FractionItem
-    MathItem *parent = currentItem->parentMathItem();
-    while (parent) {
-        // 检查是否是 FractionItem（通过 type() 判断）
-        if (parent->type() == QGraphicsItem::UserType + 2003) {
-            // 获取分子和分母
-            MathItem *numerator = nullptr;
-            MathItem *denominator = nullptr;
-            
-            // 通过 childAt() 获取分子（0）和分母（1）
-            if (parent->childCount() >= 2) {
-                numerator = parent->childAt(0);
-                denominator = parent->childAt(1);
-            }
-            
-            // 检查当前是在分子还是分母
-            if (currentItem == numerator && denominator) {
-                // 当前在分子，移动到分母
-                // 先弹出当前项
-                path.pop();
-                // 添加分母项
-                path.push(PathSegment(denominator, 0, lastSegment.childOffset));
-                emitPositionChangedSignals();
-            }
-            return;
-        }
-        parent = parent->parentMathItem();
-    }
+    // 实现在公式中向下移动光标的逻辑
 }
 
 /**
@@ -476,13 +377,7 @@ void UnifiedCursor::mathMoveDown()
  */
 void UnifiedCursor::mathMoveToParent()
 {
-    if (!m_position.isMathMode() || !m_position.mathPath->isValid() || m_position.mathPath->depth() <= 1) {
-        return;
-    }
-    
-    // 弹出最后一段路径，移动到父容器
-    m_position.mathPath->pop();
-    emitPositionChangedSignals();
+    // 实现移动到公式父容器的逻辑
 }
 
 // ========== 退出公式模式 ==========
@@ -492,144 +387,74 @@ void UnifiedCursor::mathMoveToParent()
  */
 void UnifiedCursor::exitMathMode()
 {
-    if (m_position.isMathMode()) {
-        m_position.mathPath = std::nullopt;
-        m_position.mathTextOffset = 0;
-        emitPositionChangedSignals();
-    }
+    // 实现退出公式模式的逻辑
 }
 
-// ========== 公式内文本编辑方法 ==========
+// ========== 公式内文本编辑 ==========
 
 /**
- * @brief 辅助方法：根据 mathPath 找到对应的 GenericMathSpan
- * @return 找到的 GenericMathSpan 指针，失败返回 nullptr
+ * @brief 在公式内光标位置插入文本
+ * @param text 要插入的文本
+ * @param style 文本的字符样式
  */
-static GenericMathSpan* findGenericMathSpanFromPath(Document *document, const UnifiedCursorPosition &pos)
-{
-    if (!document || !pos.isMathMode()) {
-        return nullptr;
-    }
-    
-    // 步骤 1：在指定块和偏移找到根 MathSpan
-    Section *section = document->section(0);
-    if (!section || pos.blockIndex < 0 || pos.blockIndex >= section->blockCount()) {
-        return nullptr;
-    }
-    
-    Block *block = section->block(pos.blockIndex);
-    ParagraphBlock *paraBlock = qobject_cast<ParagraphBlock*>(block);
-    if (!paraBlock) {
-        return nullptr;
-    }
-    
-    // 在段落中找到指定偏移位置的 InlineSpan
-    int posInSpan = 0;
-    int spanIndex = paraBlock->findInlineSpanIndex(pos.offset, &posInSpan);
-    if (spanIndex < 0 || spanIndex >= paraBlock->inlineSpanCount()) {
-        return nullptr;
-    }
-    
-    InlineSpan *inlineSpan = paraBlock->inlineSpan(spanIndex);
-    if (!inlineSpan || inlineSpan->type() != InlineSpan::Math) {
-        return nullptr;
-    }
-    
-    MathSpan *currentMathSpan = qobject_cast<MathSpan*>(inlineSpan);
-    if (!currentMathSpan) {
-        return nullptr;
-    }
-    
-    // 步骤 2：根据 mathPath 逐层向下遍历
-    const CoordinatePath &path = *pos.mathPath;
-    for (size_t i = 0; i < path.depth(); ++i) {
-        const PathSegment &segment = path.at(i);
-        if (segment.childIndex < 0 || segment.childIndex >= currentMathSpan->childCount()) {
-            return nullptr;
-        }
-        currentMathSpan = currentMathSpan->childAt(segment.childIndex);
-        if (!currentMathSpan) {
-            return nullptr;
-        }
-    }
-    
-    // 步骤 3：检查最终找到的是否是 GenericMathSpan
-    GenericMathSpan *genericSpan = qobject_cast<GenericMathSpan*>(currentMathSpan);
-    return genericSpan;
-}
-
 void UnifiedCursor::mathInsertText(const QString &text, const CharacterStyle &style)
 {
-    if (!m_position.isMathMode() || text.isEmpty() || !m_document) {
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathInsertText] 开始, mathTextOffset=" << m_position.mathTextOffset << ", text=" << text;
-    
-    // 找到对应的 GenericMathSpan
-    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
-    if (!genericSpan) {
-        qDebug() << "[UnifiedCursor::mathInsertText] 找不到 GenericMathSpan";
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathInsertText] 找到 GenericMathSpan, 插入文本";
-    
-    // 在指定位置插入文本
-    genericSpan->insert(m_position.mathTextOffset, text, style);
-    
-    // 更新光标位置
-    m_position.mathTextOffset += text.length();
-    emitPositionChangedSignals();
+    // 实现在公式内光标位置插入文本的逻辑
 }
 
+/**
+ * @brief 删除公式内光标前一个字符
+ */
 void UnifiedCursor::mathDeletePreviousChar()
 {
-    if (!m_position.isMathMode() || m_position.mathTextOffset <= 0 || !m_document) {
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
-    
-    // 找到对应的 GenericMathSpan
-    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
-    if (!genericSpan) {
-        qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找不到 GenericMathSpan";
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找到 GenericMathSpan, 删除前一个字符";
-    
-    // 删除前一个字符
-    genericSpan->remove(m_position.mathTextOffset - 1, 1);
-    
-    // 更新光标位置
-    m_position.mathTextOffset--;
-    emitPositionChangedSignals();
+    // if (!m_position.isMathMode() || m_position.mathTextOffset <= 0 || !m_document) {
+    //     return;
+    // }
+    // 
+    // qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
+    // 
+    // // 找到对应的 GenericMathSpan
+    // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+    // if (!genericSpan) {
+    //     qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找不到 GenericMathSpan";
+    //     return;
+    // }
+    // 
+    // qDebug() << "[UnifiedCursor::mathDeletePreviousChar] 找到 GenericMathSpan, 删除前一个字符";
+    // 
+    // // 删除前一个字符
+    // genericSpan->remove(m_position.mathTextOffset - 1, 1);
+    // 
+    // // 更新光标位置
+    // m_position.mathTextOffset--;
+    // emitPositionChangedSignals();
 }
 
+/**
+ * @brief 删除公式内光标后一个字符
+ */
 void UnifiedCursor::mathDeleteNextChar()
 {
-    if (!m_position.isMathMode() || !m_document) {
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathDeleteNextChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
-    
-    // 找到对应的 GenericMathSpan
-    GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
-    if (!genericSpan) {
-        qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找不到 GenericMathSpan";
-        return;
-    }
-    
-    qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找到 GenericMathSpan, 删除后一个字符";
-    
-    // 删除后一个字符
-    genericSpan->remove(m_position.mathTextOffset, 1);
-    
-    // 光标位置不需要改变
-    emitPositionChangedSignals();
+    // if (!m_position.isMathMode() || !m_document) {
+    //     return;
+    // }
+    // 
+    // qDebug() << "[UnifiedCursor::mathDeleteNextChar] 开始, mathTextOffset=" << m_position.mathTextOffset;
+    // 
+    // // 找到对应的 GenericMathSpan
+    // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+    // if (!genericSpan) {
+    //     qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找不到 GenericMathSpan";
+    //     return;
+    // }
+    // 
+    // qDebug() << "[UnifiedCursor::mathDeleteNextChar] 找到 GenericMathSpan, 删除后一个字符";
+    // 
+    // // 删除后一个字符
+    // genericSpan->remove(m_position.mathTextOffset, 1);
+    // 
+    // // 光标位置不需要改变
+    // emitPositionChangedSignals();
 }
 
 /**
@@ -641,16 +466,19 @@ CharacterStyle UnifiedCursor::styleAtUnifiedPosition() const
     if (m_position.isDocumentMode()) {
         // 文档模式：获取文档位置的字符样式
         Block *block = m_document->block(m_position.blockIndex);
-        if (block && block->type() == Block::Paragraph) {
-            ParagraphBlock *paraBlock = static_cast<ParagraphBlock*>(block);
-            return paraBlock->styleAt(m_position.offset);
+        if (block) {
+            // 使用 dynamic_cast 检查 block 是否是 ParagraphBlock 类型
+            ParagraphBlock *paraBlock = dynamic_cast<ParagraphBlock*>(block);
+            if (paraBlock) {
+                return paraBlock->styleAt(m_position.offset);
+            }
         }
     } else if (m_position.isMathMode()) {
         // 公式模式：获取公式位置的字符样式
-        GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
-        if (genericSpan) {
-            return genericSpan->styleAt(m_position.mathTextOffset);
-        }
+        // GenericMathSpan *genericSpan = findGenericMathSpanFromPath(m_document, m_position);
+        // if (genericSpan) {
+        //     return genericSpan->styleAt(m_position.mathTextOffset);
+        // }
     }
     
     // 默认返回空样式
@@ -658,4 +486,3 @@ CharacterStyle UnifiedCursor::styleAtUnifiedPosition() const
 }
 
 } // namespace QtWordEditor
-

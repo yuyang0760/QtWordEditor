@@ -1,10 +1,10 @@
+
 /**
  * @file CursorPositionAdapter.cpp
  * @brief 光标位置适配器实现
  * 
- * 在 UnifiedCursorPosition 和 NewCursorPosition 之间进行转换
- * 由于现在 UnifiedCursorPosition 已简化为无模式版本，
- * 转换变得非常简单，主要是字段的直接复制
+ * 在各种光标位置结构体之间进行转换
+ * - CursorPosition <-> UnifiedCursorPosition
  */
 
 #include "editcontrol/cursor/CursorPositionAdapter.h"
@@ -12,35 +12,47 @@
 namespace QtWordEditor {
 
 /**
- * @brief 将 UnifiedCursorPosition 转换为 NewCursorPosition
- * @param oldPos 光标位置
- * @return 新的光标位置
+ * @brief 将 CursorPosition 转换为 UnifiedCursorPosition
+ * @param cursorPos 旧格式的光标位置
+ * @return 新格式的光标位置
  */
-NewCursorPosition CursorPositionAdapter::toNew(const UnifiedCursorPosition& oldPos) {
-    NewCursorPosition newPos;
+UnifiedCursorPosition CursorPositionAdapter::cursorToUnified(const CursorPosition &cursorPos) {
+    UnifiedCursorPosition unifiedPos;
     
-    // 直接复制字段
-    newPos.blockIndex = oldPos.blockIndex;
-    newPos.offset = oldPos.offset;
-    newPos.mathPath = oldPos.mathPath;
+    // 复制基本字段
+    unifiedPos.blockIndex = cursorPos.blockIndex;
+    unifiedPos.offset = cursorPos.offset;
     
-    return newPos;
+    // 注意：旧格式的 inMathSpan 等信息暂时不转换到 mathPath
+    // 因为 mathPath 需要更复杂的坐标路径信息
+    // 未来可以根据需要完善这部分
+    
+    return unifiedPos;
 }
 
 /**
- * @brief 将 NewCursorPosition 转换为 UnifiedCursorPosition
- * @param newPos 新的光标位置
- * @return 光标位置
+ * @brief 将 UnifiedCursorPosition 转换为 CursorPosition
+ * @param unifiedPos 新格式的光标位置
+ * @return 旧格式的光标位置
  */
-UnifiedCursorPosition CursorPositionAdapter::toOld(const NewCursorPosition& newPos) {
-    UnifiedCursorPosition oldPos;
+CursorPosition CursorPositionAdapter::unifiedToCursor(const UnifiedCursorPosition &unifiedPos) {
+    CursorPosition cursorPos;
     
-    // 直接复制字段
-    oldPos.blockIndex = newPos.blockIndex;
-    oldPos.offset = newPos.offset;
-    oldPos.mathPath = newPos.mathPath;
+    // 复制基本字段
+    cursorPos.blockIndex = unifiedPos.blockIndex;
+    cursorPos.offset = unifiedPos.offset;
     
-    return oldPos;
+    // 检查是否在公式模式
+    if (unifiedPos.isMathMode()) {
+        cursorPos.inMathSpan = true;
+        // 注意：mathSpan、mathChildIndex、mathChildOffset 需要根据 mathPath 计算
+        // 未来可以根据需要完善这部分
+    } else {
+        cursorPos.inMathSpan = false;
+    }
+    
+    return cursorPos;
 }
 
 } // namespace QtWordEditor
+

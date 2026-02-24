@@ -10,7 +10,7 @@
 namespace QtWordEditor {
 
 class Document;
-class Cursor;
+class UnifiedCursor;
 class Selection;
 class DocumentScene;
 class FormatController;
@@ -23,7 +23,7 @@ class EditEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit EditEventHandler(Document *document, Cursor *cursor, Selection *selection,
+    explicit EditEventHandler(Document *document, UnifiedCursor *cursor, Selection *selection,
                               FormatController *formatController = nullptr,
                               QObject *parent = nullptr);
     ~EditEventHandler() override;
@@ -46,7 +46,7 @@ signals:
 
 private:
     Document *m_document;
-    Cursor *m_cursor;
+    UnifiedCursor *m_cursor;
     Selection *m_selection;
     FormatController *m_formatController;  // 格式控制器
     DocumentScene *m_scene;

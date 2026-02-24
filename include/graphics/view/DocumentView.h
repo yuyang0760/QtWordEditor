@@ -7,7 +7,7 @@
 namespace QtWordEditor {
 
 class DocumentScene;
-class Cursor;
+class UnifiedCursor;
 
 /**
  * @brief 文档视图类，显示文档场景并处理缩放、滚动和事件转发
@@ -94,7 +94,7 @@ public:
      * @brief 设置光标控制器
      * @param cursor 光标对象指针
      */
-    void setCursor(Cursor *cursor);
+    void setCursor(UnifiedCursor *cursor);
     
     /**
      * @brief 设置光标的视觉位置
@@ -175,7 +175,7 @@ protected:
 private:
     qreal m_zoom;              ///< 当前缩放比例
     QPoint m_lastMousePos;     ///< 上次鼠标位置
-    Cursor *m_cursor;          ///< 光标控制器
+    UnifiedCursor *m_cursor;   ///< 光标控制器
     QPointF m_cursorVisualPos; ///< 光标视觉位置
 };
 

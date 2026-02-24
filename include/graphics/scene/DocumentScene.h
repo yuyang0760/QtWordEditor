@@ -18,6 +18,7 @@ class UnifiedCursorVisual;
 class TextBlockItem;
 struct CursorPosition;
 struct SelectionRange;
+struct UnifiedCursorPosition;
 
 
 /**
@@ -96,6 +97,12 @@ public:
      * @param pos 光标位置
      */
     void updateCursorFromPosition(const CursorPosition &pos);
+    
+    /**
+     * @brief 根据 UnifiedCursorPosition 直接更新光标（支持公式内部）
+     * @param pos 光标位置
+     */
+    void updateCursorFromUnifiedPosition(const UnifiedCursorPosition &pos);
     
     /**
      * @brief 设置光标是否可见
@@ -178,6 +185,17 @@ public:
      * @return 对应的场景坐标位置
      */
     QPointF calculateCursorVisualPosition(const CursorPosition &pos) const;
+    
+    /**
+     * @brief 根据 UnifiedCursorPosition 计算视觉位置（支持公式内部）
+     * @param pos 光标位置结构体
+     * @return 对应的场景坐标位置和高度
+     */
+    struct CursorVisualResult {
+        QPointF position;  // 场景坐标位置
+        qreal height;      // 光标高度
+    };
+    CursorVisualResult calculateUnifiedCursorVisualPosition(const UnifiedCursorPosition &pos) const;
 
 public slots:
     /**

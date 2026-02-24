@@ -12,7 +12,7 @@ namespace QtWordEditor {
 
 class Document;
 class Selection;
-class Cursor;
+class UnifiedCursor;
 class StyleManager;
 class ParagraphBlock;
 struct CursorPosition;
@@ -38,7 +38,7 @@ public:
      * @param styleManager 可选的样式管理器对象
      * @param parent 父对象指针，默认为nullptr
      */
-    explicit FormatController(Document *document, Cursor *cursor = nullptr,
+    explicit FormatController(Document *document, UnifiedCursor *cursor = nullptr,
                               Selection *selection = nullptr,
                               StyleManager *styleManager = nullptr,
                               QObject *parent = nullptr);
@@ -347,7 +347,7 @@ private:
 
     // ========== 成员变量 ==========
     Document *m_document;       ///< 关联的文档对象
-    Cursor *m_cursor;           ///< 关联的光标对象
+    UnifiedCursor *m_cursor;    ///< 关联的光标对象
     Selection *m_selection;     ///< 关联的选择区域对象
     StyleManager *m_styleManager; ///< 关联的样式管理器对象
     CharacterStyle m_currentInputStyle;  ///< 当前输入样式

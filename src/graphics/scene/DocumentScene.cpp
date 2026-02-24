@@ -12,8 +12,10 @@
 #include "graphics/items/UnifiedCursorVisual.h"
 #include "graphics/items/SelectionItem.h"
 #include "graphics/items/PageItem.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "graphics/formula/MathItem.h"
+#include "graphics/formula/GenericMathItem.h"
 #include "editcontrol/selection/Selection.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
 #include <QGraphicsItem>
 #include <QGraphicsTextItem>
 #include <QTextDocument>
@@ -723,6 +725,141 @@ void DocumentScene::setUnifiedCursorVisible(bool visible)
 {
     if (m_unifiedCursorVisual) {
         m_unifiedCursorVisual->setVisible(visible);
+    }
+}
+
+// ========== UnifiedCursorPosition 支持 ==========
+
+DocumentScene::CursorVisualResult DocumentScene::calculateUnifiedCursorVisualPosition(const UnifiedCursorPosition &pos) const
+{
+    qDebug() << "[DocumentScene::calculateUnifiedCursorVisualPosition] 开始, isMathMode=" << pos.isMathMode();
+    
+    CursorVisualResult result;
+    result.position = QPointF(0, 0);
+    result.height = 20.0;
+    
+    if (!m_document) {
+        return result;
+    }
+    
+    // 首先处理基础的文档位置
+    Section *section = m_document->section(0);
+    if (!section) {
+        return result;
+    }
+    
+    int pageIndex = 0;
+    if (pageIndex < 0 || pageIndex >= section->pageCount()) {
+        return result;
+    }
+    
+    Page *page = section->page(pageIndex);
+    if (!page) {
+        return result;
+    }
+    
+    // 获取 TextBlockItem
+    TextBlockItem *textBlockItem = nullptr;
+    if (pos.blockIndex >= 0 && pos.blockIndex < page->blockCount()) {
+        Block *block = page->block(pos.blockIndex);
+        auto it = m_blockItems.find(block);
+        if (it != m_blockItems.end()) {
+            textBlockItem = dynamic_cast<TextBlockItem*>(it.value());
+        }
+    }
+    
+    if (!textBlockItem) {
+        return result;
+    }
+    
+    // 获取基础光标位置
+    TextBlockItem::CursorVisualInfo visualInfo = textBlockItem->cursorPositionAt(pos.offset);
+    QPointF blockScenePos = textBlockItem->scenePos();
+    
+    result.position.setX(blockScenePos.x() + visualInfo.position.x());
+    result.position.setY(blockScenePos.y() + visualInfo.position.y());
+    result.height = visualInfo.height;
+    
+    qDebug() << "  基础文档位置: pos=" << result.position << ", height=" << result.height;
+    
+    // 如果在公式模式，需要根据 mathPath 调整位置
+    if (pos.isMathMode()) {
+        qDebug() << "  在公式模式，开始处理坐标路径...";
+        
+        // 从 TextBlockItem 中找到 MathItem
+        MathItem *currentItem = nullptr;
+        for (QGraphicsItem *item : textBlockItem->childItems()) {
+            MathItem *mathItem = dynamic_cast<MathItem*>(item);
+            if (mathItem) {
+                qDebug() << "  找到根 MathItem:" << mathItem;
+                currentItem = mathItem;
+                break;
+            }
+        }
+        
+        if (currentItem) {
+            QPointF currentPos = currentItem->scenePos();
+            qDebug() << "  根 MathItem 位置:" << currentPos;
+            
+            // 遍历坐标路径
+            const CoordinatePath &path = *pos.mathPath;
+            for (size_t i = 0; i < path.depth(); ++i) {
+                const PathSegment &segment = path.at(i);
+                qDebug() << "  路径段" << i << ": childIndex=" << segment.childIndex;
+                
+                MathItem *childItem = currentItem->childAt(segment.childIndex);
+                if (childItem) {
+                    qDebug() << "    找到子 MathItem:" << childItem << ", pos=" << childItem->pos();
+                    currentPos += childItem->pos();
+                    currentItem = childItem;
+                } else {
+                    qDebug() << "    找不到子 MathItem，停止";
+                    break;
+                }
+            }
+            
+            // 检查 currentItem 是否是 GenericMathItem
+            GenericMathItem *genericMathItem = dynamic_cast<GenericMathItem*>(currentItem);
+            if (genericMathItem && path.depth() == 0) {
+                qDebug() << "  这是 GenericMathItem，深度为 0，使用 mathTextOffset 计算位置";
+                qDebug() << "  currentPos（GenericMathItem 的 scenePos）:" << currentPos;
+                qDebug() << "  使用 mathTextOffset:" << pos.mathTextOffset;
+                GenericMathItem::CursorVisualInfo info = genericMathItem->cursorPositionAt(pos.mathTextOffset);
+                qDebug() << "  GenericMathItem::cursorPositionAt 返回的 info.position:" << info.position << " info.height:" << info.height;
+                result.position = currentPos + info.position;
+                result.height = info.height;
+                qDebug() << "  GenericMathItem 内光标位置（最终）:" << result.position;
+            } else {
+                // 其他 MathItem 暂时使用左上角
+                result.position = currentPos;
+                qDebug() << "  最终公式内位置:" << result.position;
+            }
+        }
+    }
+    
+    return result;
+}
+
+void DocumentScene::updateCursorFromUnifiedPosition(const UnifiedCursorPosition &pos)
+{
+    qDebug() << "[DocumentScene::updateCursorFromUnifiedPosition] 开始";
+    
+    CursorVisualResult visualResult = calculateUnifiedCursorVisualPosition(pos);
+    
+    qDebug() << "  视觉位置: pos=" << visualResult.position << ", height=" << visualResult.height;
+    
+    if (m_unifiedCursorVisual) {
+        qDebug() << "  准备调用 unifiedCursorVisual->setPosition(), 当前位置:" << m_unifiedCursorVisual->pos();
+        m_unifiedCursorVisual->setPosition(visualResult.position, visualResult.height);
+        m_unifiedCursorVisual->setVisible(true);
+        qDebug() << "  完成设置，新位置:" << m_unifiedCursorVisual->pos();
+    } else {
+        qDebug() << "  m_unifiedCursorVisual 为空，创建它...";
+        unifiedCursorVisual();
+        if (m_unifiedCursorVisual) {
+            m_unifiedCursorVisual->setPosition(visualResult.position, visualResult.height);
+            m_unifiedCursorVisual->setVisible(true);
+        }
     }
 }
 

@@ -1,16 +1,15 @@
+
 #ifndef CURSORPOSITIONADAPTER_H
 #define CURSORPOSITIONADAPTER_H
 
 #include "editcontrol/cursor/UnifiedCursor.h"
-#include "editcontrol/cursor/NewCursorPosition.h"
 
 /**
  * @file CursorPositionAdapter.h
  * @brief 光标位置适配器
  * 
- * 在 UnifiedCursorPosition 和 NewCursorPosition 之间进行转换
- * 由于现在 UnifiedCursorPosition 已简化为无模式版本，
- * 转换变得非常简单，主要是字段的直接复制
+ * 在各种光标位置结构体之间进行转换
+ * - CursorPosition <-> UnifiedCursorPosition
  */
 
 namespace QtWordEditor {
@@ -18,25 +17,28 @@ namespace QtWordEditor {
 /**
  * @brief 光标位置适配器
  * 
- * 在 UnifiedCursorPosition 和 NewCursorPosition 之间进行转换
+ * 在各种光标位置结构体之间进行转换
  */
 class CursorPositionAdapter {
 public:
-    /**
-     * @brief 将 UnifiedCursorPosition 转换为 NewCursorPosition
-     * @param oldPos 光标位置
-     * @return 新的光标位置
-     */
-    static NewCursorPosition toNew(const UnifiedCursorPosition& oldPos);
+    // ========== CursorPosition <-> UnifiedCursorPosition 转换 ==========
     
     /**
-     * @brief 将 NewCursorPosition 转换为 UnifiedCursorPosition
-     * @param newPos 新的光标位置
-     * @return 光标位置
+     * @brief 将 CursorPosition 转换为 UnifiedCursorPosition
+     * @param cursorPos 旧格式的光标位置
+     * @return 新格式的光标位置
      */
-    static UnifiedCursorPosition toOld(const NewCursorPosition& newPos);
+    static UnifiedCursorPosition cursorToUnified(const CursorPosition &cursorPos);
+    
+    /**
+     * @brief 将 UnifiedCursorPosition 转换为 CursorPosition
+     * @param unifiedPos 新格式的光标位置
+     * @return 旧格式的光标位置
+     */
+    static CursorPosition unifiedToCursor(const UnifiedCursorPosition &unifiedPos);
 };
 
 } // namespace QtWordEditor
 
 #endif // CURSORPOSITIONADAPTER_H
+

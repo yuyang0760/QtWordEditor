@@ -79,7 +79,7 @@ MathSpan *MathItem::mathSpan() const
 
 MathItem *MathItem::parentMathItem() const
 {
-    return static_cast<MathItem*>(parentItem());
+    return dynamic_cast<MathItem*>(parentItem());
 }
 
 void MathItem::notifyParentLayoutChanged()

@@ -10,7 +10,7 @@
 #include <functional>
 #include "core/Global.h"
 #include "ui/dialogs/PageSetupDialog.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
 
 namespace QtWordEditor {
 
@@ -149,6 +149,8 @@ private slots:
      */
     void updateCursorPosition(const CursorPosition &pos);
     
+
+    
     /**
      * @brief 更新样式状态显示
      */
@@ -229,7 +231,7 @@ private:
     Document *m_document;                   ///< 当前文档
     DocumentScene *m_scene;                 ///< 文档场景
     DocumentView *m_view;                   ///< 文档视图
-    Cursor *m_cursor;                       ///< 光标控制器
+    UnifiedCursor *m_cursor;                ///< 光标控制器
     Selection *m_selection;                 ///< 选择控制器
     EditEventHandler *m_editEventHandler;   ///< 编辑事件处理器
     FormatController *m_formatController;   ///< 格式控制器

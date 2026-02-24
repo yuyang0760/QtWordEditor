@@ -1,6 +1,6 @@
 #include "graphics/view/DocumentView.h"
 #include "graphics/scene/DocumentScene.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
 #include "graphics/items/TextBlockItem.h"
 #include <QKeyEvent>
 #include <QWheelEvent>
@@ -28,6 +28,9 @@ DocumentView::DocumentView(QWidget *parent)
     setAlignment(Qt::AlignHCenter | Qt::AlignTop);
     setDragMode(QGraphicsView::NoDrag);
     setMouseTracking(true);
+    
+    // 设置鼠标样式为文本输入光标（I 型光标）
+    viewport()->setCursor(Qt::IBeamCursor);
     
     // 启用输入法支持
     setAttribute(Qt::WA_InputMethodEnabled, true);
@@ -187,7 +190,7 @@ void DocumentView::inputMethodEvent(QInputMethodEvent *event)
     QGraphicsView::inputMethodEvent(event);
 }
 
-void DocumentView::setCursor(Cursor *cursor)
+void DocumentView::setCursor(UnifiedCursor *cursor)
 {
     m_cursor = cursor;
 }

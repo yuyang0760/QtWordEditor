@@ -4,7 +4,7 @@
 #include "core/document/Section.h"
 #include "core/document/TextSpan.h"
 #include "editcontrol/selection/Selection.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
 #include "core/commands/SetCharacterStyleCommand.h"
 #include "core/commands/SetParagraphStyleCommand.h"
 #include "core/styles/StyleManager.h"
@@ -12,7 +12,7 @@
 
 namespace QtWordEditor {
 
-FormatController::FormatController(Document *document, Cursor *cursor,
+FormatController::FormatController(Document *document, UnifiedCursor *cursor,
                                     Selection *selection,
                                     StyleManager *styleManager, QObject *parent)
     : QObject(parent)

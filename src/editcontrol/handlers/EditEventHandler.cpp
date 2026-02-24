@@ -1,16 +1,19 @@
 #include "editcontrol/handlers/EditEventHandler.h"
 #include "core/document/Document.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
+#include "editcontrol/cursor/CoordinatePath.h"
+#include "editcontrol/cursor/PathSegment.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/formatting/FormatController.h"
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/formula/MathItem.h"
+#include "graphics/formula/GenericMathItem.h"
 #include "graphics/items/TextBlockItem.h"
 // 移除 Logger 头文件，使用 Qt 内置日志函数
 
 namespace QtWordEditor {
 
-EditEventHandler::EditEventHandler(Document *document, Cursor *cursor, Selection *selection,
+EditEventHandler::EditEventHandler(Document *document, UnifiedCursor *cursor, Selection *selection,
                                    FormatController *formatController,
                                    QObject *parent)
     : QObject(parent)
@@ -59,7 +62,11 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
             // Extend selection left
             // TODO: implement
         } else {
-            m_cursor->moveLeft();
+            if (m_cursor->unifiedPosition().isMathMode()) {
+                m_cursor->mathMoveLeft();
+            } else {
+                m_cursor->moveLeft();
+            }
         }
         handled = true;
         break;
@@ -67,16 +74,28 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
         if (event->modifiers() & Qt::ShiftModifier) {
             // Extend selection right
         } else {
-            m_cursor->moveRight();
+            if (m_cursor->unifiedPosition().isMathMode()) {
+                m_cursor->mathMoveRight();
+            } else {
+                m_cursor->moveRight();
+            }
         }
         handled = true;
         break;
     case Qt::Key_Up:
-        m_cursor->moveUp();
+        if (m_cursor->unifiedPosition().isMathMode()) {
+            m_cursor->mathMoveUp();
+        } else {
+            m_cursor->moveUp();
+        }
         handled = true;
         break;
     case Qt::Key_Down:
-        m_cursor->moveDown();
+        if (m_cursor->unifiedPosition().isMathMode()) {
+            m_cursor->mathMoveDown();
+        } else {
+            m_cursor->moveDown();
+        }
         handled = true;
         break;
     case Qt::Key_Home:
@@ -101,6 +120,11 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
         break;
     case Qt::Key_Delete:
         m_cursor->deleteNextChar();
+        handled = true;
+        break;
+    case Qt::Key_Escape:
+        // 退出公式模式
+        m_cursor->exitMathMode();
         handled = true;
         break;
     case Qt::Key_Return:
@@ -143,18 +167,128 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         }
     }
 
-    // ========== 正常处理选择，即使点击了 MathItem 也继续处理 ==========
-    qDebug() << "[EditEventHandler] 正常处理选择";
-    // 获取光标位置
-    CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
+    // ========== 检查是否点击了 MathItem ==========
+    bool clickedMathItem = false;
+    UnifiedCursorPosition unifiedPos;
+    unifiedPos.mathPath = std::nullopt;
+    
+    QList<QGraphicsItem *> itemsAtPos = m_scene->items(scenePos);
+    qDebug() << "[EditEventHandler] itemsAtPos 数量:" << itemsAtPos.size();
+    
+    // 打印所有 itemsAtPos 的信息，看看都是什么
+    for (int i = 0; i < itemsAtPos.size(); ++i) {
+        QGraphicsItem *item = itemsAtPos.at(i);
+        qDebug() << "  Item" << i << ":" << item 
+                 << " type:" << item->type() 
+                 << " pos:" << item->pos();
+    }
+    
+    // 找到点击位置的根 MathItem（最顶层的 MathItem，排除 TextBlockItem）
+    MathItem *rootMathItem = nullptr;
+    for (QGraphicsItem *item : itemsAtPos) {
+        MathItem *mathItem = dynamic_cast<MathItem *>(item);
+        if (mathItem) {
+            qDebug() << "[EditEventHandler] 找到 MathItem:" << mathItem << " type:" << mathItem->type();
+            
+            // 检查这是不是根 MathItem（没有父 MathItem）
+            if (!mathItem->parentMathItem()) {
+                rootMathItem = mathItem;
+                qDebug() << "[EditEventHandler] 找到根 MathItem:" << rootMathItem;
+                break;
+            }
+            
+            // 如果不是根，查找父元素直到根
+            MathItem *parent = mathItem->parentMathItem();
+            while (parent) {
+                if (!parent->parentMathItem()) {
+                    rootMathItem = parent;
+                    qDebug() << "[EditEventHandler] 从父元素找到根 MathItem:" << rootMathItem;
+                    break;
+                }
+                parent = parent->parentMathItem();
+            }
+        }
+    }
+    
+    if (rootMathItem) {
+        clickedMathItem = true;
+        
+        // 先获取基础的光标位置
+        CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
+        unifiedPos.blockIndex = cursorPos.blockIndex;
+        unifiedPos.offset = cursorPos.offset;
+        
+        // 现在从根 MathItem 开始，向下构建坐标路径
+        CoordinatePath mathPath;
+        MathItem *currentContainer = rootMathItem;
+        QPointF currentLocalPos = rootMathItem->mapFromScene(scenePos);
+        
+        while (currentContainer) {
+            qDebug() << "[EditEventHandler] 当前容器:" << currentContainer 
+                     << " type:" << currentContainer->type()
+                     << " localPos:" << currentLocalPos;
+            
+            // 调用 hitTestRegion 判断点击的是哪个子区域
+            int childIndex = currentContainer->hitTestRegion(currentLocalPos);
+            qDebug() << "[EditEventHandler] hitTestRegion 返回:" << childIndex;
+            
+            if (childIndex >= 0) {
+                // 添加路径段
+                PathSegment segment(currentContainer, childIndex, 0);
+                mathPath.push(segment);
+                qDebug() << "[EditEventHandler] 添加路径段，容器:" << currentContainer 
+                         << " childIndex:" << childIndex;
+                
+                // 获取子元素
+                MathItem *childItem = currentContainer->childAt(childIndex);
+                if (childItem) {
+                    // 转换坐标到子元素的局部坐标
+                    currentLocalPos = childItem->mapFromItem(currentContainer, currentLocalPos);
+                    currentContainer = childItem;
+                } else {
+                    // 没有子元素了，停止
+                    currentContainer = nullptr;
+                }
+            } else {
+                // 没有找到子区域，停止
+                currentContainer = nullptr;
+            }
+        }
+        
+        // 只要有根 MathItem，就设置 mathPath（即使是空的，也表示在公式内）
+        unifiedPos.mathPath = mathPath;
+        qDebug() << "[EditEventHandler] 设置了 mathPath，深度:" << mathPath.depth();
+        
+        // 如果根 MathItem 是 GenericMathItem 且深度为0，尝试计算点击位置的文本偏移
+        if (mathPath.depth() == 0) {
+            GenericMathItem *genericItem = dynamic_cast<GenericMathItem*>(rootMathItem);
+            if (genericItem) {
+                QPointF localPos = genericItem->mapFromScene(scenePos);
+                int textOffset = genericItem->hitTest(localPos);
+                qDebug() << "[EditEventHandler] GenericMathItem 的 hitTest 返回文本偏移:" << textOffset;
+                unifiedPos.mathTextOffset = textOffset;
+            }
+        }
+    }
 
-    // 设置光标位置
-    m_cursor->setPosition(cursorPos);
+    // ========== 设置光标位置 ==========
+    if (clickedMathItem && unifiedPos.mathPath.has_value()) {
+        // 使用新的统一光标位置
+        qDebug() << "[EditEventHandler] 准备调用 setUnifiedPosition, 当前 cursor 位置:" << m_cursor->unifiedPosition().isMathMode();
+        m_cursor->setUnifiedPosition(unifiedPos);
+        qDebug() << "[EditEventHandler] 设置了带坐标路径的光标位置, 新位置:" << m_cursor->unifiedPosition().isMathMode();
+    } else {
+        // 使用旧的光标位置
+        CursorPosition cursorPos = m_scene->cursorPositionAt(scenePos);
+        m_cursor->setPosition(cursorPos);
+        qDebug() << "[EditEventHandler] 设置了普通光标位置";
+    }
 
     // 开始选择
     m_isSelecting = true;
-    m_selectionStartBlock = cursorPos.blockIndex;
-    m_selectionStartOffset = cursorPos.offset;
+    CursorPosition cursorPosForSelection = m_cursor->position();
+    m_selectionStartBlock = cursorPosForSelection.blockIndex;
+    m_selectionStartOffset = cursorPosForSelection.offset;
 
     // 清除之前的选择
     m_selection->clear();

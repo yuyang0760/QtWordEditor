@@ -6,8 +6,7 @@
 #include <optional>
 #include "core/Global.h"
 #include "core/document/CharacterStyle.h"
-#include "editcontrol/cursor/Cursor.h"
-#include "editcontrol/cursor/NewCursorPosition.h"
+#include "editcontrol/cursor/CursorPosition.h"
 #include "editcontrol/cursor/CoordinatePath.h"
 
 namespace QtWordEditor {
@@ -26,6 +25,7 @@ struct UnifiedCursorPosition {
     int blockIndex = -1;              ///< 块索引
     int offset = 0;                    ///< 块内偏移量
     std::optional<CoordinatePath> mathPath;  ///< 公式坐标路径（可选，存在表示在公式中）
+    int mathTextOffset = 0;            ///< 公式内的文本偏移（仅在 mathPath 存在时使用）
     
     /**
      * @brief 相等性比较运算符
@@ -35,7 +35,8 @@ struct UnifiedCursorPosition {
     bool operator==(const UnifiedCursorPosition &other) const {
         return blockIndex == other.blockIndex 
                && offset == other.offset
-               && mathPath == other.mathPath;
+               && mathPath == other.mathPath
+               && mathTextOffset == other.mathTextOffset;
     }
     
     /**
@@ -52,7 +53,7 @@ struct UnifiedCursorPosition {
      * @return 如果在公式中返回true
      */
     bool isMathMode() const {
-        return mathPath.has_value() && mathPath->isValid() && !mathPath->isEmpty();
+        return mathPath.has_value() && mathPath->isValid();
     }
     
     /**
@@ -86,19 +87,46 @@ public:
      */
     ~UnifiedCursor() override;
     
-    // ========== 位置管理 ==========
+    /**
+     * @brief 获取关联的文档
+     * @return 当前文档指针
+     */
+    Document *document() const;
+    
+    // ========== 位置管理（旧接口 - 兼容 Cursor） ==========
+    
+    /**
+     * @brief 获取当前光标位置（旧格式）
+     * @return 当前光标位置结构体
+     */
+    CursorPosition position() const;
+    
+    /**
+     * @brief 设置光标位置（旧格式）
+     * @param blockIndex 块索引
+     * @param offset 块内偏移量
+     */
+    void setPosition(int blockIndex, int offset);
+    
+    /**
+     * @brief 设置光标位置（旧格式）
+     * @param pos 光标位置结构体
+     */
+    void setPosition(const CursorPosition &pos);
+    
+    // ========== 位置管理（统一接口） ==========
     
     /**
      * @brief 获取当前光标位置
      * @return 当前光标位置结构体
      */
-    UnifiedCursorPosition position() const;
+    UnifiedCursorPosition unifiedPosition() const;
     
     /**
      * @brief 设置光标位置
      * @param pos 光标位置结构体
      */
-    void setPosition(const UnifiedCursorPosition &pos);
+    void setUnifiedPosition(const UnifiedCursorPosition &pos);
     
     // ========== 文档位置方法 ==========
     
@@ -208,14 +236,25 @@ public:
     
 signals:
     /**
-     * @brief 光标位置发生变化时发出的信号
+     * @brief 光标位置发生变化时发出的信号（旧格式 - 兼容 Cursor）
      * @param pos 新的光标位置
      */
-    void positionChanged(const UnifiedCursorPosition &pos);
+    void positionChanged(const CursorPosition &pos);
+    
+    /**
+     * @brief 光标位置发生变化时发出的信号（新格式 - UnifiedCursorPosition）
+     * @param pos 新的光标位置
+     */
+    void unifiedPositionChanged(const UnifiedCursorPosition &pos);
     
 private:
-    Document *m_document;       ///< 关联的文档
-    NewCursorPosition m_newPosition;  ///< 当前光标位置（使用坐标路径系统）
+    Document *m_document;       ///&lt; 关联的文档
+    UnifiedCursorPosition m_position;  ///&lt; 当前光标位置（使用坐标路径系统）
+    
+    /**
+     * @brief 在内部位置变化时，同时发出新旧格式的信号
+     */
+    void emitPositionChangedSignals();
 };
 
 } // namespace QtWordEditor

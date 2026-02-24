@@ -75,8 +75,9 @@ void UnifiedCursorVisual::stopBlink()
 
 QRectF UnifiedCursorVisual::boundingRect() const
 {
-    // ========== 光标是一个 2px 宽的竖线 ==========
-    return QRectF(0, 0, 2, m_height);
+    // 光标是一个竖线，宽度为 2px，高度为 m_height
+    // 稍微扩大一点边界矩形，确保绘制完整
+    return QRectF(-1, -1, 4, m_height + 2);
 }
 
 void UnifiedCursorVisual::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -89,9 +90,9 @@ void UnifiedCursorVisual::paint(QPainter *painter, const QStyleOptionGraphicsIte
         return;
     }
     
-    // ========== 绘制黑色光标（2px 宽） ==========
-    painter->setPen(QPen(Qt::black, 2));
-    painter->drawLine(QPointF(1, 0), QPointF(1, m_height));
+    // ========== 绘制黑色竖线光标（1px 宽） ==========
+    painter->setPen(QPen(Qt::black, 1));
+    painter->drawLine(QPointF(0, 0), QPointF(0, m_height));
 }
 
 void UnifiedCursorVisual::blink()

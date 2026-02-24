@@ -16,7 +16,6 @@
 #include "graphics/factory/MathItemFactory.h"
 #include "graphics/formula/FractionItem.h"
 #include "graphics/scene/DocumentScene.h"
-#include "editcontrol/cursor/Cursor.h"
 
 namespace QtWordEditor {
 
@@ -459,7 +458,7 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
     
-    // 检查是否点击了 MathItem
+    // 检查是否点击了 MathItem（仅用于调试输出）
     MathItem *clickedMathItem = nullptr;
     QList<QGraphicsItem *> clickedItems = this->scene()->items(event->scenePos());
     
@@ -475,13 +474,12 @@ void TextBlockItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     
     if (clickedMathItem) {
-        qDebug() << "  准备进入公式编辑模式, span=" << clickedMathItem->mathSpan();
-        // 公式编辑模式暂时禁用
-        return;
+        qDebug() << "  点击了 MathItem, 继续处理光标定位";
+    } else {
+        qDebug() << "  没有点击 MathItem";
     }
     
-    qDebug() << "  没有点击 MathItem";
-    
+    // 继续处理，让 EditEventHandler 正常工作
     QGraphicsItem::mousePressEvent(event);
 }
 

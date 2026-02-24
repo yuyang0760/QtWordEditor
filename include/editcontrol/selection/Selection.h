@@ -5,7 +5,7 @@
 #include <QList>
 #include <QRectF>
 #include "core/Global.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/CursorPosition.h"
 
 namespace QtWordEditor {
 

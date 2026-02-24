@@ -231,4 +231,24 @@ int GenericMathItem::hitTest(const QPointF &localPos) const
     return result.globalOffset;
 }
 
+int GenericMathItem::hitTestRegion(const QPointF &localPos) const
+{
+    qDebug() << "[GenericMathItem::hitTestRegion] localPos=" << localPos;
+    
+    // 遍历所有子 MathItem，检查点击位置是否在某个子 MathItem 上
+    for (int i = 0; i < m_mathItems.size(); ++i) {
+        MathItem *mathItem = m_mathItems.at(i);
+        QRectF mathItemRect = mathItem->boundingRect();
+        mathItemRect.translate(mathItem->pos());
+        if (mathItemRect.contains(localPos)) {
+            qDebug() << "  在子 MathItem 区域，索引=" << i;
+            return i;
+        }
+    }
+    
+    // 如果不在任何子 MathItem 区域，返回 -1
+    qDebug() << "  不在任何子 MathItem 区域";
+    return -1;
+}
+
 } // namespace QtWordEditor

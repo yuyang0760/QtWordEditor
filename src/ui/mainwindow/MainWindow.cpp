@@ -16,7 +16,7 @@
 #include "graphics/scene/DocumentScene.h"
 #include "graphics/view/DocumentView.h"
 #include "graphics/items/TextBlockItem.h"
-#include "editcontrol/cursor/Cursor.h"
+#include "editcontrol/cursor/UnifiedCursor.h"
 #include "editcontrol/selection/Selection.h"
 #include "editcontrol/handlers/EditEventHandler.h"
 #include "editcontrol/formatting/FormatController.h"
@@ -113,7 +113,7 @@ void MainWindow::setupUi()
     setCentralWidget(centralContainer);
 
     m_document = new Document(this);
-    m_cursor = new Cursor(m_document, this);
+    m_cursor = new UnifiedCursor(m_document, this);
     m_selection = new Selection(m_document, this);
     m_styleManager = new StyleManager(this);
     m_formatController = new FormatController(m_document, m_cursor, m_selection, m_styleManager, this);
@@ -314,13 +314,13 @@ void MainWindow::setupUi()
     connect(m_document, &Document::documentChanged,
             this, &MainWindow::updateWindowTitle);
 
-    connect(m_cursor, &Cursor::positionChanged,
+    connect(m_cursor, &UnifiedCursor::positionChanged,
             m_formatController, &FormatController::onCursorMoved);
-    connect(m_cursor, &Cursor::positionChanged,
+    connect(m_cursor, &UnifiedCursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
     
     // 连接光标位置变化信号到样式状态更新（无选区时）
-    connect(m_cursor, &Cursor::positionChanged,
+    connect(m_cursor, &UnifiedCursor::positionChanged,
             this, [this]() {
                 // 只有在无选区时，光标移动才更新样式
                 if (m_selection && m_selection->isEmpty()) {

@@ -116,6 +116,13 @@ public:
      * @return 固定返回 true
      */
     bool isContainer() const override { return true; }
+    
+    /**
+     * @brief 判断一个点在公式的哪个子 MathItem 区域
+     * @param localPos 相对于自身的局部坐标
+     * @return 子 MathItem 的索引，如果不在任何子 MathItem 区域返回 -1
+     */
+    int hitTestRegion(const QPointF &localPos) const override;
 
     /**
      * @brief 获取对应的 GenericMathSpan

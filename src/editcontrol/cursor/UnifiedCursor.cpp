@@ -399,18 +399,9 @@ void UnifiedCursor::mathMoveLeft()
         return;
     }
     
-    // 在公式中向左移动（简化实现，后续根据具体需求完善）
-    CoordinatePath &path = *m_position.mathPath;
-    if (path.isEmpty()) {
-        return;
-    }
-    PathSegment &lastSegment = path.top();
-    
-    if (lastSegment.childOffset > 0) {
-        lastSegment.childOffset--;
-        emitPositionChangedSignals();
-    } else if (lastSegment.childIndex > 0) {
-        lastSegment.childIndex--;
+    // 直接减少 mathTextOffset（简单实现，适用于 GenericMathItem）
+    if (m_position.mathTextOffset > 0) {
+        m_position.mathTextOffset--;
         emitPositionChangedSignals();
     }
 }
@@ -424,14 +415,8 @@ void UnifiedCursor::mathMoveRight()
         return;
     }
     
-    // 在公式中向右移动（简化实现，后续根据具体需求完善）
-    CoordinatePath &path = *m_position.mathPath;
-    if (path.isEmpty()) {
-        return;
-    }
-    PathSegment &lastSegment = path.top();
-    
-    lastSegment.childOffset++;
+    // 直接增加 mathTextOffset（简单实现，适用于 GenericMathItem）
+    m_position.mathTextOffset++;
     emitPositionChangedSignals();
 }
 
@@ -555,6 +540,39 @@ void UnifiedCursor::exitMathMode()
         m_position.mathTextOffset = 0;
         emitPositionChangedSignals();
     }
+}
+
+// ========== 公式内文本编辑方法（待完善） ==========
+
+void UnifiedCursor::mathInsertText(const QString &text, const CharacterStyle &style)
+{
+    Q_UNUSED(text);
+    Q_UNUSED(style);
+    // TODO: 实现公式内文本插入功能
+    // 需要根据 mathPath 找到对应的 GenericMathSpan 并修改文本
+    qDebug() << "[UnifiedCursor::mathInsertText] 待实现: 插入文本到公式";
+}
+
+void UnifiedCursor::mathDeletePreviousChar()
+{
+    // 简单实现：如果 mathTextOffset > 0，就减少它
+    if (m_position.isMathMode() && m_position.mathTextOffset > 0) {
+        m_position.mathTextOffset--;
+        emitPositionChangedSignals();
+        qDebug() << "[UnifiedCursor::mathDeletePreviousChar] mathTextOffset 减少为:" << m_position.mathTextOffset;
+    }
+    // TODO: 真正删除公式内的字符需要找到 GenericMathSpan 并修改数据
+}
+
+void UnifiedCursor::mathDeleteNextChar()
+{
+    // 简单实现：增加 mathTextOffset（假装删除了后面的字符）
+    if (m_position.isMathMode()) {
+        m_position.mathTextOffset++;
+        emitPositionChangedSignals();
+        qDebug() << "[UnifiedCursor::mathDeleteNextChar] mathTextOffset 增加为:" << m_position.mathTextOffset;
+    }
+    // TODO: 真正删除公式内的字符需要找到 GenericMathSpan 并修改数据
 }
 
 } // namespace QtWordEditor

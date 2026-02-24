@@ -115,11 +115,19 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
         handled = true;
         break;
     case Qt::Key_Backspace:
-        m_cursor->deletePreviousChar();
+        if (m_cursor->unifiedPosition().isMathMode()) {
+            m_cursor->mathDeletePreviousChar();
+        } else {
+            m_cursor->deletePreviousChar();
+        }
         handled = true;
         break;
     case Qt::Key_Delete:
-        m_cursor->deleteNextChar();
+        if (m_cursor->unifiedPosition().isMathMode()) {
+            m_cursor->mathDeleteNextChar();
+        } else {
+            m_cursor->deleteNextChar();
+        }
         handled = true;
         break;
     case Qt::Key_Escape:
@@ -139,7 +147,11 @@ bool EditEventHandler::handleKeyPress(QKeyEvent *event)
             if (m_formatController) {
                 style = m_formatController->getCurrentInputStyle();
             }
-            m_cursor->insertText(event->text(), style);
+            if (m_cursor->unifiedPosition().isMathMode()) {
+                m_cursor->mathInsertText(event->text(), style);
+            } else {
+                m_cursor->insertText(event->text(), style);
+            }
             handled = true;
         }
         break;
@@ -222,6 +234,9 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         CoordinatePath mathPath;
         MathItem *currentContainer = rootMathItem;
         QPointF currentLocalPos = rootMathItem->mapFromScene(scenePos);
+        // 记录最后到达的容器和坐标，用于计算文本偏移
+        MathItem *finalContainer = rootMathItem;
+        QPointF finalLocalPos = currentLocalPos;
         
         while (currentContainer) {
             qDebug() << "[EditEventHandler] 当前容器:" << currentContainer 
@@ -245,6 +260,9 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
                     // 转换坐标到子元素的局部坐标
                     currentLocalPos = childItem->mapFromItem(currentContainer, currentLocalPos);
                     currentContainer = childItem;
+                    // 更新最后到达的容器和坐标
+                    finalContainer = currentContainer;
+                    finalLocalPos = currentLocalPos;
                 } else {
                     // 没有子元素了，停止
                     currentContainer = nullptr;
@@ -259,15 +277,13 @@ bool EditEventHandler::handleMousePress(const QPointF &scenePos)
         unifiedPos.mathPath = mathPath;
         qDebug() << "[EditEventHandler] 设置了 mathPath，深度:" << mathPath.depth();
         
-        // 如果根 MathItem 是 GenericMathItem 且深度为0，尝试计算点击位置的文本偏移
-        if (mathPath.depth() == 0) {
-            GenericMathItem *genericItem = dynamic_cast<GenericMathItem*>(rootMathItem);
-            if (genericItem) {
-                QPointF localPos = genericItem->mapFromScene(scenePos);
-                int textOffset = genericItem->hitTest(localPos);
-                qDebug() << "[EditEventHandler] GenericMathItem 的 hitTest 返回文本偏移:" << textOffset;
-                unifiedPos.mathTextOffset = textOffset;
-            }
+        // 检查最后到达的容器是否是 GenericMathItem，计算文本偏移
+        GenericMathItem *genericItem = dynamic_cast<GenericMathItem*>(finalContainer);
+        if (genericItem) {
+            // finalLocalPos 已经是 finalContainer 的局部坐标
+            int textOffset = genericItem->hitTest(finalLocalPos);
+            qDebug() << "[EditEventHandler] GenericMathItem 的 hitTest 返回文本偏移:" << textOffset;
+            unifiedPos.mathTextOffset = textOffset;
         }
     }
 

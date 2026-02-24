@@ -319,6 +319,10 @@ void MainWindow::setupUi()
     connect(m_cursor, &UnifiedCursor::positionChanged,
             this, &MainWindow::updateCursorPosition);
     
+    // 连接统一光标位置变化信号（支持公式模式）
+    connect(m_cursor, &UnifiedCursor::unifiedPositionChanged,
+            this, &MainWindow::updateUnifiedCursorPosition);
+    
     // 连接光标位置变化信号到样式状态更新（无选区时）
     connect(m_cursor, &UnifiedCursor::positionChanged,
             this, [this]() {
@@ -1055,6 +1059,29 @@ void MainWindow::updateCursorPosition(const CursorPosition &pos)
     
     // 注意：不再在这里更新样式状态，只在鼠标松开时更新
     // 无选区时的样式更新由单独的 cursor->positionChanged 连接处理
+}
+
+void MainWindow::updateUnifiedCursorPosition(const UnifiedCursorPosition &pos)
+{
+    qDebug() << "[MainWindow::updateUnifiedCursorPosition] 收到新的统一光标位置, isMathMode=" << pos.isMathMode();
+    
+    // 更新当前光标位置
+    m_currentCursorPos.blockIndex = pos.blockIndex;
+    m_currentCursorPos.offset = pos.offset;
+    
+    // 使用 DocumentScene 的方法来更新统一光标
+    if (m_scene) {
+        m_scene->updateCursorFromUnifiedPosition(pos);
+        
+        // 同时获取视觉位置用于 View 的光标
+        DocumentScene::CursorVisualResult result = m_scene->calculateUnifiedCursorVisualPosition(pos);
+        m_view->setCursorVisualPosition(result.position);
+    }
+    
+    // 同时更新状态栏，显示光标位置
+    updateStatusBar(m_lastScenePos, m_lastViewPos);
+    
+    // 注意：不再在这里更新样式状态，只在鼠标松开时更新
 }
 
 void MainWindow::updateStyleState()

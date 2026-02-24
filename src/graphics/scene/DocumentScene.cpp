@@ -820,8 +820,8 @@ DocumentScene::CursorVisualResult DocumentScene::calculateUnifiedCursorVisualPos
             
             // 检查 currentItem 是否是 GenericMathItem
             GenericMathItem *genericMathItem = dynamic_cast<GenericMathItem*>(currentItem);
-            if (genericMathItem && path.depth() == 0) {
-                qDebug() << "  这是 GenericMathItem，深度为 0，使用 mathTextOffset 计算位置";
+            if (genericMathItem) {
+                qDebug() << "  这是 GenericMathItem，使用 mathTextOffset 计算位置";
                 qDebug() << "  currentPos（GenericMathItem 的 scenePos）:" << currentPos;
                 qDebug() << "  使用 mathTextOffset:" << pos.mathTextOffset;
                 GenericMathItem::CursorVisualInfo info = genericMathItem->cursorPositionAt(pos.mathTextOffset);

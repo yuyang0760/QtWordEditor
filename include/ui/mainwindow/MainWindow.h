@@ -149,7 +149,10 @@ private slots:
      */
     void updateCursorPosition(const CursorPosition &pos);
     
-
+    /** @brief 更新统一光标位置显示（支持公式内部）
+     * @param pos 新的统一光标位置
+     */
+    void updateUnifiedCursorPosition(const UnifiedCursorPosition &pos);
     
     /**
      * @brief 更新样式状态显示

@@ -234,6 +234,25 @@ public:
      */
     void exitMathMode();
     
+    // ========== 公式内文本编辑 ==========
+    
+    /**
+     * @brief 在公式内光标位置插入文本
+     * @param text 要插入的文本
+     * @param style 文本的字符样式
+     */
+    void mathInsertText(const QString &text, const CharacterStyle &style);
+    
+    /**
+     * @brief 删除公式内光标前一个字符
+     */
+    void mathDeletePreviousChar();
+    
+    /**
+     * @brief 删除公式内光标后一个字符
+     */
+    void mathDeleteNextChar();
+    
 signals:
     /**
      * @brief 光标位置发生变化时发出的信号（旧格式 - 兼容 Cursor）
